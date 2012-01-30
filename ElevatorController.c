@@ -44,18 +44,19 @@ int main(int argc, char* argv[]) {
 		Die("Mismatch in number of sent bytes");
 	}
 	/* Receive the word back from the server */
-	fprintf(stdout, "Received: ");
+	printf("Received: ");
+	fflush(stdout);
 	while (received < echolen) {
 		int bytes = 0;
-		if ((bytes = recv(sock, buffer, BUFFSIZE-1, 0)) > 1) {
+		if ((bytes = recv(sock, buffer, BUFFSIZE-1, 0)) < 1) {
 			Die("Failed to receive bytes from server");
 		}
 		received += bytes;
 		buffer[bytes] = '\0';
-		fprintf(stdout, buffer);
+		printf(buffer);
 	}
 
-	fprintf(stdout, "\n");
+	printf("\n");
 	close(sock);
 	exit(0);
 }
