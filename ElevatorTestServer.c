@@ -64,13 +64,13 @@ int main(int argc, char* argv[]) {
 	/* Run until cancelled */
 	while (1) {
 		unsigned int clientlen = sizeof(echoclient);
-		/* ait for client connection */
+		/* Wait for client connection */
 		if ((clientsock =
 					accept(serversock, (struct sockaddr *) &echoclient,
 						&clientlen)) < 0) {
 			Die("Failed to accept client connection");
 		}
-		fprintf(stdout, "Client connected: %s\n",
+		printf("Client connected: %s\n",
 				inet_ntoa(echoclient.sin_addr));
 		HandleClient(clientsock);
 	}
