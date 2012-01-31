@@ -10,7 +10,12 @@
 
 class ElevatorController {
 	public:
-		ElevatorController() {};
+		ElevatorController() {
+			/* Create the TCP socket */
+			if ((sock = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0) {
+				Die("Failed to create socket");
+			}
+		}
 		~ElevatorController() {};
 
 		void connectToGD(char* gdAddress, int port) {
@@ -19,6 +24,13 @@ class ElevatorController {
 			echoserver.sin_family = AF_INET;
 			echoserver.sin_addr.s_addr = inet_addr(gdAddress);
 			echoserver.sin_port = htons(port);
+
+			/* Establish connection */
+			if (connect(sock,
+						(struct sockaddr *) &(echoserver),
+					sizeof(echoserver)) < 0) {
+				Die("Failed to connect with server");
+			}
 		}
 
 		int sock;
@@ -37,19 +49,7 @@ int main(int argc, char* argv[]) {
 		exit(1);
 	}
 
-	/* Create the TCP socket */
-	if ((ec->sock = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0) {
-		Die("Failed to create socket");
-	}
-
 	ec->connectToGD(argv[1], atoi(argv[3]));
-
-	/* Establish connection */
-	if (connect(ec->sock,
-				(struct sockaddr *) &(ec->echoserver),
-			sizeof(ec->echoserver)) < 0) {
-		Die("Failed to connect with server");
-	}
 
 	/* Send the word to the server */
 	echolen = strlen(argv[2]);
