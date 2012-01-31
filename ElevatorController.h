@@ -4,6 +4,9 @@
 #include <stdio.h>
 #include <string>
 
+// Common Values
+#define BUFFSIZE 32
+
 // Types for messages received from the GroupDispatcher
 #define STATUS_REQUEST 1
 

@@ -10,63 +10,69 @@
 
 class ElevatorController {
 	public:
-		ElevatorController();
-		~ElevatorController();
+		ElevatorController() {};
+		~ElevatorController() {};
 
-		int registerWithGD(char* gdAddress, int gdPort);
+		void connectToGD(char* gdAddress, int port) {
+			/* Construct the server sockaddr_in structure */
+			memset(&echoserver, 0, sizeof(echoserver));
+			echoserver.sin_family = AF_INET;
+			echoserver.sin_addr.s_addr = inet_addr(gdAddress);
+			echoserver.sin_port = htons(port);
+		}
 
-	private:
-		int gdSock;
-		struct sockaddr_in gdSockAddr;
-		unsigned int gdSockAddrLen;
+		int sock;
+		struct sockaddr_in echoserver;
 };
 
-ElevatorController::ElevatorController() {
-	this->gdSockAddrLen = sizeof(this->gdSockAddr);
+int main(int argc, char* argv[]) {
+	ElevatorController* ec = new ElevatorController();
 
-	// Clear the struct
-	memset(&(this->gdSockAddr), 0, this->gdSockAddrLen);
-}
+	char buffer[BUFFSIZE];
+	unsigned int echolen;
+	int received = 0;
 
-ElevatorController::~ElevatorController() {
-	close(gdSock);
-}
+	if (argc != 4) {
+		fprintf(stderr, "USAGE: TCPecho <server_ip> <word> <port>\n");
+		exit(1);
+	}
 
-int ElevatorController::registerWithGD(char* gdAddress, int gdPort) {
-	int tempSock;
-	struct sockaddr_in tempSockAddr, gdSockAddr;
-
-	if ((tempSock = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0) {
+	/* Create the TCP socket */
+	if ((ec->sock = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0) {
 		Die("Failed to create socket");
 	}
 
-	/* Construct the a temporary sockaddr_in structure to initiate communication*/
-	memset(&tempSockAddr, 0, sizeof(tempSockAddr)); /* Clear struct */
-	tempSockAddr.sin_family = AF_INET; 						/* Internet/IP */
-	tempSockAddr.sin_addr.s_addr = inet_addr(gdAddress); /* IP address */
-	tempSockAddr.sin_port = htons(gdPort);				/* Server port */
+	ec->connectToGD(argv[1], atoi(argv[3]));
 
 	/* Establish connection */
-	if (connect(tempSock,
-				(struct sockaddr *) &tempSockAddr,
-			sizeof(tempSockAddr)) < 0) {
-		Die("Failed to connect with GroupDispatcher");
+	if (connect(ec->sock,
+				(struct sockaddr *) &(ec->echoserver),
+			sizeof(ec->echoserver)) < 0) {
+		Die("Failed to connect with server");
 	}
 
 	/* Send the word to the server */
-	char request[1];
-	request[0] = REGISTER_MESSAGE;
-
-	if (send(tempSock, request, 1, 0) != 1) {
+	echolen = strlen(argv[2]);
+	if (send(ec->sock, argv[2], echolen, 0) != echolen) {
 		Die("Mismatch in number of sent bytes");
 	}
-
-	/* Save the socket that the GroupDispatcher is using to communicate */
-	if (this->gdSock =
-			accept(tempSock, (struct sockaddr *) &(this->gdSockAddr),
-				&(this->gdSockAddrLen)) < 0) {
-		Die("Failed to accept GroupDispatcher connection");
+	/* Receive the word back from the server */
+	printf("Received: ");
+	fflush(stdout);
+	while (received < echolen) {
+		int bytes = 0;
+		if ((bytes = recv(ec->sock, buffer, BUFFSIZE-1, 0)) < 1) {
+			Die("Failed to receive bytes from server");
+		}
+		received += bytes;
+		buffer[bytes] = '\0';
+		printf(buffer);
 	}
 
-	close(tempSock);
+	printf("\n");
+	close(ec->sock);
+	delete ec;
+	exit(0);
 }
+
+
