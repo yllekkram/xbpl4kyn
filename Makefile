@@ -29,7 +29,7 @@ ElevatorTestServer: ElevatorTestServer.o
 	$(CC) -o $@ ElevatorTestServer.o
 
 ElevatorControllerCPP: ElevatorController.opp
-	g++ -o $@ ElevatorController.o
+	g++ -o $@ ElevatorController.opp
 
 ElevatorController.opp: ElevatorController.cpp ElevatorController.h
 	g++ -c -o $@ ElevatorController.cpp
