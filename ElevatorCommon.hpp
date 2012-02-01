@@ -4,6 +4,7 @@
 #include <string>
 
 // Common Values
+#define MAXPENDING 5 /* Max connection requests */
 #define BUFFSIZE 32
 
 // Types for messages received from the GroupDispatcher

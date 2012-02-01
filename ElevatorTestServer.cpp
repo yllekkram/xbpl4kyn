@@ -8,8 +8,6 @@
 
 #include "ElevatorCommon.hpp"
 
-#define MAXPENDING 5 /* Max connection requests */
-
 void HandleClient(int sock) {
 	char buffer[BUFFSIZE];
 	int received = -1;
