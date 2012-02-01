@@ -16,7 +16,7 @@ class ElevatorController {
 				Die("Failed to create socket");
 			}
 		}
-		~ElevatorController() {};
+		~ElevatorController() { close(sock); }
 
 		void connectToGD(char* gdAddress, int port) {
 			/* Construct the server sockaddr_in structure */
@@ -33,44 +33,51 @@ class ElevatorController {
 			}
 		}
 
+		void sendMessage(char* message) {
+			unsigned int echolen = strlen(message);
+
+			/* Send the word to the server */
+			if (send(sock, message, echolen, 0) != echolen) {
+				Die("Mismatch in number of sent bytes");
+			}
+		}
+
+		void receiveMessage(unsigned int echolen) {
+			char buffer[BUFFSIZE];
+			int received = 0;
+
+			/* Receive the word back from the server */
+			printf("Received: ");
+			fflush(stdout);
+			while (received < echolen) {
+				int bytes = 0;
+				if ((bytes = recv(sock, buffer, BUFFSIZE-1, 0)) < 1) {
+					Die("Failed to receive bytes from server");
+				}
+				received += bytes;
+				buffer[bytes] = '\0';
+				printf(buffer);
+			}
+		}
+
+	private:
 		int sock;
 		struct sockaddr_in echoserver;
 };
 
 int main(int argc, char* argv[]) {
-	ElevatorController* ec = new ElevatorController();
-
-	char buffer[BUFFSIZE];
-	unsigned int echolen;
-	int received = 0;
-
 	if (argc != 4) {
 		fprintf(stderr, "USAGE: TCPecho <server_ip> <word> <port>\n");
 		exit(1);
 	}
 
-	ec->connectToGD(argv[1], atoi(argv[3]));
+	ElevatorController* ec = new ElevatorController();
 
-	/* Send the word to the server */
-	echolen = strlen(argv[2]);
-	if (send(ec->sock, argv[2], echolen, 0) != echolen) {
-		Die("Mismatch in number of sent bytes");
-	}
-	/* Receive the word back from the server */
-	printf("Received: ");
-	fflush(stdout);
-	while (received < echolen) {
-		int bytes = 0;
-		if ((bytes = recv(ec->sock, buffer, BUFFSIZE-1, 0)) < 1) {
-			Die("Failed to receive bytes from server");
-		}
-		received += bytes;
-		buffer[bytes] = '\0';
-		printf(buffer);
-	}
+	ec->connectToGD(argv[1], atoi(argv[3]));
+	ec->sendMessage(argv[2]);
+	ec->receiveMessage(strlen(argv[2]));
 
 	printf("\n");
-	close(ec->sock);
 	delete ec;
 	exit(0);
 }
