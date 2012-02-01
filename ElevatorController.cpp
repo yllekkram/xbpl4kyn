@@ -49,8 +49,7 @@ void ElevatorController::receiveMessage(unsigned int echolen) {
 	int received = 0;
 
 	/* Receive the word back from the server */
-	printf("Received: ");
-	fflush(stdout);
+	std::cout << "Received: ";
 	while (received < echolen) {
 		int bytes = 0;
 		if ((bytes = recv(sock, buffer, BUFFSIZE-1, 0)) < 1) {
@@ -58,6 +57,6 @@ void ElevatorController::receiveMessage(unsigned int echolen) {
 		}
 		received += bytes;
 		buffer[bytes] = '\0';
-		printf("%s", buffer);
+		std::cout << buffer;
 	}
 }

@@ -1,12 +1,13 @@
 #include <cstring>
 #include <cstdlib>
+#include <iostream>
 
 #include "ElevatorCommon.hpp"
 #include "ElevatorController.hpp"
 
 int main(int argc, char* argv[]) {
 	if (argc != 4) {
-		fprintf(stderr, "USAGE: main <server_ip> <port> <word>\n");
+		std::cerr << "USAGE: main <server_ip> <port> <word>" << std::endl;
 		exit(1);
 	}
 
@@ -16,7 +17,7 @@ int main(int argc, char* argv[]) {
 	ec->sendMessage(argv[3]);
 	ec->receiveMessage(strlen(argv[2]));
 
-	printf("\n");
+	std::cout << std::endl;
 	delete ec;
 	exit(0);
 }
