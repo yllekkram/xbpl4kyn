@@ -7,6 +7,7 @@
 #include <unistd.h>
 
 #include "ElevatorCommon.hpp"
+#include "ElevatorController.hpp"
 
 ElevatorController::ElevatorController() {
 	/* Create the TCP socket */

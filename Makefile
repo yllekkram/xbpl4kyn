@@ -34,7 +34,7 @@ ElevatorCommon.opp: ElevatorCommon.hpp ElevatorCommon.cpp
 ElevatorTestServer: ElevatorCommon.opp ElevatorTestServer.opp
 	$(CPPLD) $(CPPLDFLAGS) -o $@ ElevatorTestServer.opp ElevatorCommon.opp
 
-main: ElevatorCommon.hpp ElevatorCommon.opp ElevatorController.opp main.opp
+main: ElevatorCommon.hpp ElevatorCommon.opp ElevatorController.hpp ElevatorController.opp main.opp
 	$(CPPLD) $(CPPLDFLAGS) -o $@ ElevatorController.opp main.opp ElevatorCommon.opp
 
 ElevatorController.opp: ElevatorCommon.hpp ElevatorController.cpp
