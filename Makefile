@@ -1,17 +1,21 @@
-CC			= gcc
-CFLAGS	=
-LD			=	$(CC)
-LDFLAGS	=
-RM			= rm
+CC					= gcc
+CFLAGS			=
+LD					=	$(CC)
+LDFLAGS			=
+CPP					= g++
+CPPFLAGS		=
+CPPLD				= $(CPP)
+CPPLDFLAGS	=
+RM					= rm
 
-EXE			= ElevatorController ElevatorTestServer ElevatorControllerCPP
-SRCS 		= ElevatorController.c ElevatorTestServer.c
+EXE			= ElevatorController ElevatorTestServer
+SRCS		= ElevatorTestServer.c
 OBJS		= ${SRCS:.c=.o}
 
 # clear out all the suffixes
 .SUFFIXES:
 # list only those that we use
-.SUFFIXES: .o .c .cpp
+.SUFFIXES: .o .c
 
 # define a suffix rule for .c -> .o
 .c.o:
@@ -20,16 +24,13 @@ OBJS		= ${SRCS:.c=.o}
 all: $(EXE)
 
 clean:
-	-$(RM) -f $(EXE) $(OBJS)
-
-ElevatorController: ElevatorController.o
-	$(CC) -o $@ ElevatorController.o
+	-$(RM) -f $(EXE) $(OBJS) *.opp
 
 ElevatorTestServer: ElevatorTestServer.o
-	$(CC) -o $@ ElevatorTestServer.o
+	$(CC) $(CFLAGS) -o $@ ElevatorTestServer.o
 
-ElevatorControllerCPP: ElevatorController.opp
-	g++ -o $@ ElevatorController.opp
+ElevatorController: ElevatorController.opp
+	$(CPP) $(CPPFLAGS) -o $@ ElevatorController.opp
 
-ElevatorController.opp: ElevatorController.cpp ElevatorController.h
-	g++ -c -o $@ ElevatorController.cpp
+ElevatorController.opp: ElevatorController.cpp ElevatorController.hpp
+	$(CPP) $(CPPFLAGS) -o $@ -c ElevatorController.cpp
