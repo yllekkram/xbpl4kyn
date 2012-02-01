@@ -1,8 +1,8 @@
 #include <arpa/inet.h>
+#include <cstdlib>
+#include <cstring>
 #include <iostream>
 #include <netinet/in.h>
-#include <stdlib.h>
-#include <string.h>
 #include <sys/socket.h>
 #include <unistd.h>
 
@@ -60,23 +60,3 @@ void ElevatorController::receiveMessage(unsigned int echolen) {
 		printf(buffer);
 	}
 }
-
-
-int main(int argc, char* argv[]) {
-	if (argc != 4) {
-		fprintf(stderr, "USAGE: TCPecho <server_ip> <word> <port>\n");
-		exit(1);
-	}
-
-	ElevatorController* ec = new ElevatorController();
-
-	ec->connectToGD(argv[1], atoi(argv[3]));
-	ec->sendMessage(argv[2]);
-	ec->receiveMessage(strlen(argv[2]));
-
-	printf("\n");
-	delete ec;
-	exit(0);
-}
-
-

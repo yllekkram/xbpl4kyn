@@ -8,7 +8,7 @@ CPPLD				= $(CPP)
 CPPLDFLAGS	=
 RM					= rm
 
-EXE			= ElevatorController ElevatorTestServer
+EXE			= main ElevatorTestServer
 SRCS		= ElevatorTestServer.c
 OBJS		= ${SRCS:.c=.o}
 
@@ -29,8 +29,11 @@ clean:
 ElevatorTestServer: ElevatorTestServer.o
 	$(CC) $(CFLAGS) -o $@ ElevatorTestServer.o
 
-ElevatorController: ElevatorController.opp
-	$(CPP) $(CPPFLAGS) -o $@ ElevatorController.opp
+main: ElevatorController.opp main.opp
+	$(CPPLD) $(CPPLDFLAGS) -o $@ ElevatorController.opp main.opp
+
+main.opp: main.cpp
+	$(CPP) $(CPPFLAGS) -o $@ -c main.cpp
 
 ElevatorController.opp: ElevatorController.cpp ElevatorController.hpp
 	$(CPP) $(CPPFLAGS) -o $@ -c ElevatorController.cpp
