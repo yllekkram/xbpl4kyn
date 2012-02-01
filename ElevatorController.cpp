@@ -57,6 +57,6 @@ void ElevatorController::receiveMessage(unsigned int echolen) {
 		}
 		received += bytes;
 		buffer[bytes] = '\0';
-		printf(buffer);
+		printf("%s", buffer);
 	}
 }
