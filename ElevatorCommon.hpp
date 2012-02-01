@@ -1,7 +1,6 @@
 #ifndef ELEVATOR_CONTROLLER_HPP
 #define ELEVATOR_CONTROLLER_HPP
 
-#include <cstdlib>
 #include <netinet/in.h>
 #include <stdio.h>
 #include <string>
@@ -20,8 +19,7 @@
 #define ERROR_RESPONSE 2
 
 // Common functions
-inline void Die(std::string mess) { perror(mess.c_str()); exit(1); }
-
+void Die(std::string);
 
 class ElevatorController {
 	public:

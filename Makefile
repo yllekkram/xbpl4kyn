@@ -1,7 +1,3 @@
-CC					= gcc
-CFLAGS			=
-LD					=	$(CC)
-LDFLAGS			=
 CPP					= g++
 CPPFLAGS		=
 CPPLD				= $(CPP)
@@ -9,31 +5,37 @@ CPPLDFLAGS	=
 RM					= rm
 
 EXE			= main ElevatorTestServer
-SRCS		= ElevatorTestServer.c
-OBJS		= ${SRCS:.c=.o}
+SRCS		= ElevatorTestServer.cpp main.cpp ElevatorCommon.cpp ElevatorController.cpp
+OBJS		= ${SRCS:.cpp=.opp}
 
 # clear out all the suffixes
 .SUFFIXES:
 # list only those that we use
-.SUFFIXES: .o .c
+.SUFFIXES: .opp .cpp
 
-# define a suffix rule for .c -> .o
-.c.o:
-	$(CC) $(CLFAGS) -c $<
+# define a suffix rule for .cpp -> .opp
+# .cpp.opp:
+# 	$(CPP) $(CPPFLAGS) -c $<
 
 all: $(EXE)
 
 clean:
-	-$(RM) -f $(EXE) $(OBJS) *.opp
+	-$(RM) -f $(EXE) $(OBJS)
 
-ElevatorTestServer: ElevatorTestServer.o
-	$(CC) $(CFLAGS) -o $@ ElevatorTestServer.o
+ElevatorTestServer.opp: ElevatorCommon.hpp ElevatorTestServer.cpp
+	$(CPP) $(CPPFLAGS) -c -o $@ ElevatorTestServer.cpp
 
-main: ElevatorController.opp main.opp
-	$(CPPLD) $(CPPLDFLAGS) -o $@ ElevatorController.opp main.opp
+main.opp: ElevatorCommon.hpp main.cpp
+	$(CPP) $(CPPFLAGS) -c -o $@ main.cpp
 
-main.opp: main.cpp
-	$(CPP) $(CPPFLAGS) -o $@ -c main.cpp
+ElevatorCommon.opp: ElevatorCommon.hpp ElevatorCommon.cpp
+	$(CPP) $(CPPFLAGS) -c -o $@ ElevatorCommon.cpp
 
-ElevatorController.opp: ElevatorController.cpp ElevatorController.hpp
-	$(CPP) $(CPPFLAGS) -o $@ -c ElevatorController.cpp
+ElevatorTestServer: ElevatorCommon.opp ElevatorTestServer.opp
+	$(CPPLD) $(CPPLDFLAGS) -o $@ ElevatorTestServer.opp ElevatorCommon.opp
+
+main: ElevatorCommon.hpp ElevatorCommon.opp ElevatorController.opp main.opp
+	$(CPPLD) $(CPPLDFLAGS) -o $@ ElevatorController.opp main.opp ElevatorCommon.opp
+
+ElevatorController.opp: ElevatorCommon.hpp ElevatorController.cpp
+	$(CPP) $(CPPFLAGS) -c -o $@ ElevatorController.cpp

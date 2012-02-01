@@ -1,6 +1,7 @@
 #include <cstring>
+#include <cstdlib>
 
-#include "ElevatorController.hpp"
+#include "ElevatorCommon.hpp"
 
 int main(int argc, char* argv[]) {
 	if (argc != 4) {
