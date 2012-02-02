@@ -24,6 +24,33 @@ ElevatorController::~ElevatorController() {
 	close(sock);
 }
 
+void ElevatorController::run() {
+	while (true) {
+		this->waitForGDRequest();
+	}
+}
+
+void ElevatorController::addView(ElevatorControllerView* ecv) {
+	this->views.push_back(ecv);
+	ecv->setController(this);
+}
+
+void ElevatorController::waitForGDRequest() {
+	char* request = receiveTCP(MAX_GD_REQUEST_SIZE);
+	char requestType = request[0];
+	
+	switch (requestType) {
+		case STATUS_REQUEST:
+			std::cout << "Status Request" << std::endl;
+			break;
+		case HALL_CALL_REQUEST:
+			std::cout << "Hall Call Assigned: Floor" << (int) request[1] << std::endl;
+			break;
+		default:
+			std::cout << "Unknown Message Type" << std::endl;
+	}
+}
+
 void ElevatorController::connectToGD(char* gdAddress, int port) {
 	/* Construct the server sockaddr_in structure */
 	memset(&echoserver, 0, sizeof(echoserver));
@@ -42,7 +69,7 @@ void ElevatorController::connectToGD(char* gdAddress, int port) {
 }
 
 void ElevatorController::sendRegistration() {
-	char message[4] = {this->id,0,0,0};
+	char message[4] = {this->id,REGISTER_MESSAGE,0,0};
 	unsigned int echolen = 4;
 	/* Send the word to the server */
 	if (send(sock, message, echolen, 0) != echolen) {

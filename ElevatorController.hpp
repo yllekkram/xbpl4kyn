@@ -1,12 +1,26 @@
+#ifndef ELEVATOR_CONTROLLER_HPP
+#define ELEVATOR_CONTROLLER_HPP
+
 #include <netinet/in.h>
+#include <vector>
 #include <sys/socket.h>
+
+#include "ElevatorControllerView.hpp"
 
 class ElevatorController {
 	public:
 		ElevatorController();
 		~ElevatorController();
 
+		void run();
+		void addView(ElevatorControllerView* ecv);
+		void waitForGDRequest();
 		void connectToGD(char* gdAddress, int port);
+		
+		void pushFloorButton(char floor);
+		void pushOpenDoor();
+		void pushCloseDoorButton();
+		void pushStopButton();
 
 	private:
 		static char nextID;
@@ -14,6 +28,7 @@ class ElevatorController {
 		char id;
 		int sock;
 		struct sockaddr_in echoserver;
+		std::vector<ElevatorControllerView*> views;
 				
 		static char getNextID() {
 			char temp = nextID;
@@ -26,3 +41,9 @@ class ElevatorController {
 		char* receiveTCP(unsigned int length);
 };
 
+class ElevatorControllerStatus {
+	public:
+		char speed;
+};
+
+#endif

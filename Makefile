@@ -5,7 +5,7 @@ CPPLDFLAGS	=
 RM					= rm
 
 EXE			= main ElevatorTestServer
-SRCS		= ElevatorTestServer.cpp main.cpp ElevatorCommon.cpp ElevatorController.cpp
+SRCS		= ElevatorTestServer.cpp main.cpp ElevatorCommon.cpp ElevatorController.cpp UDPView.cpp
 OBJS		= ${SRCS:.cpp=.opp}
 
 # clear out all the suffixes
@@ -39,3 +39,9 @@ main: ElevatorCommon.hpp ElevatorCommon.opp ElevatorController.hpp ElevatorContr
 
 ElevatorController.opp: ElevatorCommon.hpp ElevatorController.cpp
 	$(CPP) $(CPPFLAGS) -c -o $@ ElevatorController.cpp
+
+ElevatorControllerView.opp: ElevatorControllerView.hpp ElevatorControllerView.cpp
+	$(CPP) $(CPPFLAGS) -c -o $@ ElevatorControllerView.cpp
+	
+UDPView.opp: ElevatorControllerView.hpp UDPView.hpp UDPView.cpp
+	$(CPP) $(CPPFLAGS) -c -o $@ UDPView.cpp
