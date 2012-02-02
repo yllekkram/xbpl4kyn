@@ -1,6 +1,7 @@
 #include <cstdio>
 #include <cstring>
 #include <cstdlib>
+#include <iostream>
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <unistd.h>
@@ -17,6 +18,19 @@ void HandleClient(int sock) {
 	}
 	/* Send bytes and check for more incoming data in loop */
 	while (received > 0) {
+		switch(buffer[1]) {
+			case 0:
+				std::cout << "Register " << (int) buffer[0] << std::endl;
+				buffer[0] = '0';
+				buffer[1] = '\0';
+				break;
+			case 1:
+				std::cout << "Status" << std::endl;
+				buffer[0] = '1';
+				buffer[1] = '\0';
+				break;
+		}
+		
 		/* Send back received data */
 		if (send(sock, buffer, received, 0) != received) {
 			Die("Failed to send bytes to client");
@@ -68,8 +82,7 @@ int main(int argc, char* argv[]) {
 						&clientlen)) < 0) {
 			Die("Failed to accept client connection");
 		}
-		printf("Client connected: %s\n",
-				inet_ntoa(echoclient.sin_addr));
+		std::cout << "Client connected: " << inet_ntoa(echoclient.sin_addr) << std::endl;
 		HandleClient(clientsock);
 	}
 }

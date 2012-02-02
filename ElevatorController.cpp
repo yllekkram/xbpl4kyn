@@ -9,7 +9,11 @@
 #include "ElevatorCommon.hpp"
 #include "ElevatorController.hpp"
 
+char ElevatorController::nextID = 0;
+
 ElevatorController::ElevatorController() {
+	this->id = ElevatorController::getNextID();
+	
 	/* Create the TCP socket */
 	if ((sock = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0) {
 		Die("Failed to create socket");
@@ -33,30 +37,38 @@ void ElevatorController::connectToGD(char* gdAddress, int port) {
 			sizeof(echoserver)) < 0) {
 		Die("Failed to connect with server");
 	}
+	
+	this->sendRegistration();
 }
 
-void ElevatorController::sendMessage(char* message) {
-	unsigned int echolen = strlen(message);
-
+void ElevatorController::sendRegistration() {
+	char message[4] = {this->id,0,0,0};
+	unsigned int echolen = 4;
 	/* Send the word to the server */
 	if (send(sock, message, echolen, 0) != echolen) {
 		Die("Mismatch in number of sent bytes");
 	}
+	
+	receiveAck();
 }
 
-void ElevatorController::receiveMessage(unsigned int echolen) {
+void ElevatorController::receiveAck() {
+	this->receiveTCP(2);
+}
+
+char* ElevatorController::receiveTCP(unsigned int length) {
 	char buffer[BUFFSIZE];
 	int received = 0;
 
 	/* Receive the word back from the server */
 	std::cout << "Received: ";
-	while (received < echolen) {
+	while (received < length) {
 		int bytes = 0;
 		if ((bytes = recv(sock, buffer, BUFFSIZE-1, 0)) < 1) {
 			Die("Failed to receive bytes from server");
 		}
 		received += bytes;
 		buffer[bytes] = '\0';
-		std::cout << buffer;
 	}
+	std::cout << buffer;
 }

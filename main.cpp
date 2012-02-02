@@ -6,18 +6,18 @@
 #include "ElevatorController.hpp"
 
 int main(int argc, char* argv[]) {
-	if (argc != 4) {
-		std::cerr << "USAGE: main <server_ip> <port> <word>" << std::endl;
+	if (argc != 3) {
+		std::cerr << "USAGE: main <server_ip> <port>" << std::endl;
 		exit(1);
 	}
 
-	ElevatorController* ec = new ElevatorController();
-
-	ec->connectToGD(argv[1], atoi(argv[2]));
-	ec->sendMessage(argv[3]);
-	ec->receiveMessage(strlen(argv[2]));
-
-	std::cout << std::endl;
-	delete ec;
+	ElevatorController* ec;
+	
+	for (int i = 0; i < 5; i++) {
+		ec = new ElevatorController();
+		ec->connectToGD(argv[1], atoi(argv[2]));
+		delete ec;
+		std::cout << std::endl;
+	}
 	exit(0);
 }
