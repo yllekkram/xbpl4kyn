@@ -14,7 +14,6 @@ class ElevatorControllerView {
 			this->ec = ec;
 		}
 		
-	private:
 		ElevatorController* ec;
 };
 

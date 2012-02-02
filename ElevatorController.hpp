@@ -17,6 +17,8 @@ class ElevatorController {
 		void waitForGDRequest();
 		void connectToGD(char* gdAddress, int port);
 		
+		char getID() { return this->id; }
+		
 		void pushFloorButton(char floor);
 		void pushOpenDoor();
 		void pushCloseDoorButton();

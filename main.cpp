@@ -15,6 +15,7 @@ int main(int argc, char* argv[]) {
 	ElevatorController* ec = new ElevatorController();
 	UDPView* uv = new UDPView(argv[3], argv[4]);
 	ec->addView(uv);
+	uv->registerWithGUI();
 
 	ec->connectToGD(argv[1], atoi(argv[2]));
 	

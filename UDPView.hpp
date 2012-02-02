@@ -9,6 +9,7 @@ class UDPView : public ElevatorControllerView {
 	
 		void receiveStatus(ElevatorControllerStatus* status);
 		void receiveEvent();
+		void registerWithGUI();
 		
 	private:
 		int sfd;

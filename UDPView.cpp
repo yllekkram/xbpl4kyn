@@ -7,10 +7,20 @@
 #include <unistd.h>
 
 #include "ElevatorCommon.hpp"
+#include "ElevatorController.hpp"
 #include "UDPView.hpp"
 
 UDPView::UDPView(char* guiAddress, char* guiPort) {
 	initUDP(guiAddress, guiPort);
+}
+
+void UDPView::registerWithGUI() {
+	size_t len = 2;
+	char message[2] = {ec->getID(),0};
+	
+	if (write(this->sfd, message, len) != len) {
+		Die("partial/failed write");
+	}
 }
 
 void UDPView::initUDP(char* guiAddress, char* guiPort) {
