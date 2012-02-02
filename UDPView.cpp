@@ -61,22 +61,3 @@ void UDPView::receiveMessage(unsigned int len) {
 	buffer[received] = '\0';
 	printf("Received: %s\n", buffer);
 }
-
-int main(int argc, char* argv[]) {
-	struct sockaddr_in echoclient;
-	char buffer[BUFFSIZE];
-	unsigned int echolen, clientlen;
-	
-	if (argc != 4) {
-		fprintf(stderr, "USAGE: %s <server_ip> <port> <word>\n", argv[0]);
-		exit(1);
-	}
-	
-	UDPView* uv = new UDPView(argv[1], argv[2]);
-	
-	uv->sendMessage(argv[3]);
-	uv->receiveMessage(strlen(argv[3]));
-	
-	delete uv;
-	exit(0);
-}

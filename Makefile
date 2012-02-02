@@ -4,8 +4,8 @@ CPPLD				= $(CPP)
 CPPLDFLAGS	=
 RM					= rm
 
-EXE			= testTCP ElevatorTestServer UDPView UDPTestServer
-SRCS		= ElevatorTestServer.cpp testTCP.cpp ElevatorCommon.cpp ElevatorController.cpp UDPView.cpp UDPTestServer
+EXE			= ElevatorTestServer UDPTestServer testTCP testUDP
+SRCS		= ElevatorTestServer.cpp testTCP.cpp testUDP.cpp ElevatorCommon.cpp ElevatorController.cpp UDPView.cpp UDPTestServer
 OBJS		= ${SRCS:.cpp=.opp}
 
 # clear out all the suffixes
@@ -43,9 +43,6 @@ ElevatorController.opp: ElevatorCommon.hpp ElevatorController.cpp
 ElevatorControllerView.opp: ElevatorControllerView.hpp ElevatorControllerView.cpp
 	$(CPP) $(CPPFLAGS) -c -o $@ ElevatorControllerView.cpp
 	
-UDPView: ElevatorCommon.opp UDPView.opp
-	$(CPPLD) $(CPPLDFLAGS) -o $@ ElevatorCommon.opp UDPView.opp
-	
 UDPView.opp: UDPView.hpp UDPView.cpp
 	$(CPP) $(CPPFLAGS) -c -o $@ UDPView.cpp
 	
@@ -55,3 +52,8 @@ UDPTestServer: ElevatorCommon.opp UDPTestServer.opp
 UDPTestServer.opp: ElevatorCommon.hpp UDPTestServer.cpp
 	$(CPP) $(CPPFLAGS) -c -o $@ UDPTestServer.cpp
 	
+testUDP: ElevatorCommon.opp UDPView.opp testUDP.opp
+	$(CPPLD) $(CPPLDFLAGS) -o $@ ElevatorCommon.opp UDPView.opp testUDP.opp
+	
+testUDP.opp: ElevatorCommon.hpp UDPView.hpp testUDP.cpp
+	$(CPP) $(CPPFLAGS) -c -o $@ testUDP.cpp
