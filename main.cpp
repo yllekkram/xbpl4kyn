@@ -16,6 +16,7 @@ int main(int argc, char* argv[]) {
 	UDPView* uv = new UDPView(argv[3], argv[4]);
 	ec->addView(uv);
 	uv->registerWithGUI();
+	uv->receiveEvent();
 
 	ec->connectToGD(argv[1], atoi(argv[2]));
 	

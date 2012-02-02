@@ -14,6 +14,7 @@ class UDPView : public ElevatorControllerView {
 	private:
 		int sfd;
 		
+		void sendMessage(char* message, size_t len=0);
 		void initUDP(char* guiAddress, char* guiPort);
 };
 

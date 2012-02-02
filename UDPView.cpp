@@ -15,12 +15,8 @@ UDPView::UDPView(char* guiAddress, char* guiPort) {
 }
 
 void UDPView::registerWithGUI() {
-	size_t len = 2;
 	char message[2] = {ec->getID(),0};
-	
-	if (write(this->sfd, message, len) != len) {
-		Die("partial/failed write");
-	}
+	sendMessage(message);
 }
 
 void UDPView::initUDP(char* guiAddress, char* guiPort) {
@@ -74,4 +70,15 @@ void UDPView::receiveEvent() {
 	}
 	
 	std::cout << "Received event" << std::endl;
+	sendMessage("Received event");
+}
+
+void UDPView::sendMessage(char * message, size_t len) {
+	if (len=0) {
+		len = strlen(message);
+	}
+	
+	if (write(this->sfd, message, len) != len) {
+		Die("partial/failed write");
+	}
 }

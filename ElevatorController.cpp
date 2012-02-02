@@ -39,12 +39,15 @@ void ElevatorController::waitForGDRequest() {
 	char* request = receiveTCP(MAX_GD_REQUEST_SIZE);
 	char requestType = request[0];
 	
+	sendMessage("received request");
+	
 	switch (requestType) {
 		case STATUS_REQUEST:
 			std::cout << "Status Request" << std::endl;
 			break;
 		case HALL_CALL_REQUEST:
-			std::cout << "Hall Call Assigned: Floor" << (int) request[1] << std::endl;
+			std::cout << "Hall Call Assigned: Floor" << (int) request[1];
+			std::cout << std::endl;
 			break;
 		default:
 			std::cout << "Unknown Message Type" << std::endl;
@@ -70,13 +73,21 @@ void ElevatorController::connectToGD(char* gdAddress, int port) {
 
 void ElevatorController::sendRegistration() {
 	char message[4] = {this->id,REGISTER_MESSAGE,0,0};
-	unsigned int echolen = 4;
-	/* Send the word to the server */
-	if (send(sock, message, echolen, 0) != echolen) {
-		Die("Mismatch in number of sent bytes");
-	}
+
+	sendMessage(message, 4);
 	
 	receiveAck();
+}
+
+void ElevatorController::sendMessage(char * message, unsigned int len) {
+	if (len == 0) {
+		len = strlen(message);
+	}
+	
+	/* Send the word to the server */
+	if (send(sock, message, len, 0) != len) {
+		Die("Mismatch in number of sent bytes");
+	}
 }
 
 void ElevatorController::receiveAck() {

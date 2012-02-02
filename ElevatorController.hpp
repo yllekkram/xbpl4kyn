@@ -17,7 +17,7 @@ class ElevatorController {
 		void waitForGDRequest();
 		void connectToGD(char* gdAddress, int port);
 		
-		char getID() { return this->id; }
+		char getID() const { return this->id; }
 		
 		void pushFloorButton(char floor);
 		void pushOpenDoor();
@@ -40,6 +40,8 @@ class ElevatorController {
 		
 		void sendRegistration();
 		void receiveAck();
+		
+		void sendMessage(char * message, unsigned int len=0);
 		char* receiveTCP(unsigned int length);
 };
 
