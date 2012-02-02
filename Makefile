@@ -48,3 +48,10 @@ UDPView: ElevatorCommon.hpp ElevatorCommon.opp UDPView.opp
 	
 UDPView.opp: UDPView.cpp
 	$(CPP) $(CPPFLAGS) -c -o $@ UDPView.cpp
+	
+UDPTestServer: ElevatorCommon.hpp ElevatorCommon.opp UDPTestServer.opp
+	$(CPPLD) $(CPPLDFLAGS) -o $@ ElevatorCommon.opp UDPTestServer.opp
+	
+UDPTestServer.opp: ElevatorCommon.hpp UDPTestServer.cpp
+	$(CPP) $(CPPFLAGS) -c -o $@ UDPTestServer.cpp
+	

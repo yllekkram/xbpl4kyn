@@ -29,11 +29,11 @@ int main(int argc, char* argv[]) {
 	memset(&echoserver, 0, sizeof(echoserver));				/* Clear struct */
 	echoserver.sin_family = AF_INET;									/* Clear struct */
 	echoserver.sin_addr.s_addr = inet_addr(argv[1]);	/* Ineternet IP */
-	echoserver.sin_port = htons(atoi(argv[3]));				/* server port */
+	echoserver.sin_port = htons(atoi(argv[2]));				/* server port */
 	
 	/* Send the word to the server */
-	echolen = strlen(argv[2]);
-	if (sendto(sock, argv[2], echolen, 0,
+	echolen = strlen(argv[3]);
+	if (sendto(sock, argv[3], echolen, 0,
 						(struct sockaddr *) &echoserver,
 						sizeof(echoserver)) != echolen) {
 		Die("Mismatch in number of bytes sent");
