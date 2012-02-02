@@ -15,8 +15,8 @@ UDPView::UDPView(char* guiAddress, char* guiPort) {
 }
 
 void UDPView::registerWithGUI() {
-	char message[2] = {ec->getID(),0};
-	sendMessage(message);
+	char message[2] = {ec->getID(),GUI_REGISTER_MESSAGE};
+	sendMessage(message, 2);
 }
 
 void UDPView::initUDP(char* guiAddress, char* guiPort) {
@@ -70,7 +70,7 @@ void UDPView::receiveEvent() {
 	}
 	
 	std::cout << "Received event" << std::endl;
-	sendMessage("Received event");
+	sendMessage("Received event\n");
 }
 
 void UDPView::sendMessage(char * message, size_t len) {

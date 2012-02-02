@@ -18,6 +18,9 @@
 #define STATUS_RESPONSE 1
 #define ERROR_RESPONSE 2
 
+// Types for EC to GUI
+#define GUI_REGISTER_MESSAGE 1
+
 // Common functions
 void Die(std::string);
 

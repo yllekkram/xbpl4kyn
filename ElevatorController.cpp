@@ -9,7 +9,7 @@
 #include "ElevatorCommon.hpp"
 #include "ElevatorController.hpp"
 
-char ElevatorController::nextID = 0;
+char ElevatorController::nextID = 1;
 
 ElevatorController::ElevatorController() {
 	this->id = ElevatorController::getNextID();
@@ -39,7 +39,7 @@ void ElevatorController::waitForGDRequest() {
 	char* request = receiveTCP(MAX_GD_REQUEST_SIZE);
 	char requestType = request[0];
 	
-	sendMessage("received request");
+	sendMessage("received request\n");
 	
 	switch (requestType) {
 		case STATUS_REQUEST:
@@ -72,7 +72,7 @@ void ElevatorController::connectToGD(char* gdAddress, int port) {
 }
 
 void ElevatorController::sendRegistration() {
-	char message[4] = {this->id,REGISTER_MESSAGE,0,0};
+	char message[4] = {this->id,REGISTER_MESSAGE,0,'\n'};
 
 	sendMessage(message, 4);
 	
@@ -83,7 +83,6 @@ void ElevatorController::sendMessage(char * message, unsigned int len) {
 	if (len == 0) {
 		len = strlen(message);
 	}
-	
 	/* Send the word to the server */
 	if (send(sock, message, len, 0) != len) {
 		Die("Mismatch in number of sent bytes");
