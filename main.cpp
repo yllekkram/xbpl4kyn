@@ -4,20 +4,24 @@
 
 #include "ElevatorCommon.hpp"
 #include "ElevatorController.hpp"
+#include "UDPView.hpp"
 
 int main(int argc, char* argv[]) {
-	if (argc != 3) {
-		std::cerr << "USAGE: main <server_ip> <port>" << std::endl;
+	if (argc != 5) {
+		std::cerr << "USAGE: main <gd_ip> <gd_port> <gui_ip> <gui_port>" << std::endl;
 		exit(1);
 	}
 
-	ElevatorController* ec;
+	ElevatorController* ec = new ElevatorController();
+	UDPView* uv = new UDPView(argv[3], argv[4]);
+	ec->addView(uv);
+
+	ec->connectToGD(argv[1], atoi(argv[2]));
 	
-	for (int i = 0; i < 5; i++) {
-		ec = new ElevatorController();
-		ec->connectToGD(argv[1], atoi(argv[2]));
-		delete ec;
-		std::cout << std::endl;
-	}
+	delete ec;
+	delete uv;
+	
+	std::cout << std::endl;
+
 	exit(0);
 }

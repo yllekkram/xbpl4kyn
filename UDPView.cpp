@@ -1,11 +1,19 @@
+#include <cstdlib>
+#include <cstring>
+#include <iostream>
+#include <netdb.h>
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <unistd.h>
+
 #include "ElevatorCommon.hpp"
 #include "UDPView.hpp"
 
-UDPView::UDPView(char* guiAddress, int guiPort) {
-	this->initUDP(guiAddress, guiPort);
+UDPView::UDPView(char* guiAddress, char* guiPort) {
+	initUDP(guiAddress, guiPort);
 }
 
-void UDPView::initUDP(char* guiAddress, int guiPort) {
+void UDPView::initUDP(char* guiAddress, char* guiPort) {
 	struct addrinfo hints;
 	struct addrinfo *result, *rp;
 	int s;
@@ -36,11 +44,14 @@ void UDPView::initUDP(char* guiAddress, int guiPort) {
     }
 
     if (rp == NULL) {               /* No address succeeded */
-        fprintf(stderr, "Could not connect\n");
+        std::cerr << "Could not connect" << std::endl;
         exit(EXIT_FAILURE);
     }
 
     freeaddrinfo(result);           /* No longer needed */
+}
+
+void UDPView::receiveStatus(ElevatorControllerStatus* status) {
 }
 
 void UDPView::receiveEvent() {

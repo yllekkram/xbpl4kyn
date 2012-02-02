@@ -1,11 +1,11 @@
-#ifndef UDPVIEW_HPP
+#ifndef UDP_VIEW_HPP
 #define UDP_VIEW_HPP
 
 #include "ElevatorControllerView.hpp"
 
 class UDPView : public ElevatorControllerView {
 	public:
-		UDPView(char* guiAddress, int guiPort);
+		UDPView(char* guiAddress, char* guiPort);
 	
 		void receiveStatus(ElevatorControllerStatus* status);
 		void receiveEvent();
@@ -13,7 +13,7 @@ class UDPView : public ElevatorControllerView {
 	private:
 		int sfd;
 		
-		void initUDP(char* guiAddress, int guiPort);
+		void initUDP(char* guiAddress, char* guiPort);
 };
 
 #endif
