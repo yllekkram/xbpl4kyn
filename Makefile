@@ -43,13 +43,13 @@ ElevatorController.opp: ElevatorCommon.hpp ElevatorController.cpp
 ElevatorControllerView.opp: ElevatorControllerView.hpp ElevatorControllerView.cpp
 	$(CPP) $(CPPFLAGS) -c -o $@ ElevatorControllerView.cpp
 	
-UDPView: ElevatorCommon.hpp ElevatorCommon.opp UDPView.opp
+UDPView: ElevatorCommon.opp UDPView.opp
 	$(CPPLD) $(CPPLDFLAGS) -o $@ ElevatorCommon.opp UDPView.opp
 	
-UDPView.opp: UDPView.cpp
+UDPView.opp: UDPView.hpp UDPView.cpp
 	$(CPP) $(CPPFLAGS) -c -o $@ UDPView.cpp
 	
-UDPTestServer: ElevatorCommon.hpp ElevatorCommon.opp UDPTestServer.opp
+UDPTestServer: ElevatorCommon.opp UDPTestServer.opp
 	$(CPPLD) $(CPPLDFLAGS) -o $@ ElevatorCommon.opp UDPTestServer.opp
 	
 UDPTestServer.opp: ElevatorCommon.hpp UDPTestServer.cpp

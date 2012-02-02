@@ -7,54 +7,76 @@
 #include <netinet/in.h>
 
 #include "ElevatorCommon.hpp"
+#include "UDPView.hpp"
+
+UDPView::UDPView(char* guiAddress, char* guiPort) {
+	initUDP(guiAddress, guiPort);
+}
+
+UDPView::~UDPView() {
+	close(this->sock);
+}
+
+void UDPView::initUDP(char* address, char* port) {
+	if ((this->sock = socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP)) < 0) {
+		Die("Failed to create socket");
+	}
+	
+	/* Construct the server sockaddr_in structure */
+	memset(&(this->server), 0, sizeof(this->server));		/* Clear struct */
+	this->server.sin_family = AF_INET;									/* Internet/IP */
+	this->server.sin_addr.s_addr = inet_addr(address);	/* IP Address */
+	this->server.sin_port = htons(atoi(port));					/* Server Port */
+}
+
+void UDPView::sendMessage(char* message, unsigned int len) {
+	if (len == 0) {
+		len = strlen(message);
+	}
+	
+	if (sendto(this->sock, message, len, 0,
+							(struct sockaddr *) &(this->server),
+							sizeof(this->server)) != len) {
+		Die("Mismatch in number of bytes sent");
+	}
+}
+
+void UDPView::receiveMessage(unsigned int len) {
+	char buffer[BUFFSIZE];
+	struct sockaddr_in client;
+	unsigned int clientlen = sizeof(client);
+	int received = 0;
+	
+	if ((received = recvfrom(this->sock, buffer, BUFFSIZE, 0,
+														(struct sockaddr *) &client,
+														&clientlen)) != len) {
+		Die("Mismatch in number of received bytes");
+	}
+	
+	/* Check that the client and server are using the same socket */
+	if (this->server.sin_addr.s_addr != client.sin_addr.s_addr) {
+		Die("Received a packet from an unexpected server");
+	}
+	
+	buffer[received] = '\0';
+	printf("Received: %s\n", buffer);
+}
 
 int main(int argc, char* argv[]) {
-	int sock;
-	struct sockaddr_in echoserver;
 	struct sockaddr_in echoclient;
 	char buffer[BUFFSIZE];
 	unsigned int echolen, clientlen;
-	int received = 0;
 	
 	if (argc != 4) {
 		fprintf(stderr, "USAGE: %s <server_ip> <port> <word>\n", argv[0]);
 		exit(1);
 	}
 	
-	/* Create UDP socket */
-	if ((sock = socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP)) < 0) {
-		Die("Failed to create socket");
-	}
-	/* Construct the server sockaddr_in structure */
-	memset(&echoserver, 0, sizeof(echoserver));				/* Clear struct */
-	echoserver.sin_family = AF_INET;									/* Clear struct */
-	echoserver.sin_addr.s_addr = inet_addr(argv[1]);	/* Ineternet IP */
-	echoserver.sin_port = htons(atoi(argv[2]));				/* server port */
+	UDPView* uv = new UDPView(argv[1], argv[2]);
 	
-	/* Send the word to the server */
-	echolen = strlen(argv[3]);
-	if (sendto(sock, argv[3], echolen, 0,
-						(struct sockaddr *) &echoserver,
-						sizeof(echoserver)) != echolen) {
-		Die("Mismatch in number of bytes sent");
-	}
+	uv->sendMessage(argv[3]);
+	uv->receiveMessage(strlen(argv[3]));
 	
-	/* Receive the word back from the server */
-	clientlen = sizeof(echoclient);
-	if ((received = recvfrom(sock, buffer, BUFFSIZE, 0,
-														(struct sockaddr *) &echoclient,
-														&clientlen)) != echolen) {
-		Die("Mismatch in number of received bytes");
-	}
-	
-	/* Check that the client and server are using the same socket */
-	if (echoserver.sin_addr.s_addr != echoclient.sin_addr.s_addr) {
-		Die("Received a packet from an unexpected server");
-	}
-	
-	buffer[received] = '\0';
-	printf("Received: %s\n", buffer);
-	
-	close(sock);
+	delete uv;
 	exit(0);
 }
