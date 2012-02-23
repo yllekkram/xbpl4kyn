@@ -17,6 +17,10 @@ UDPView::~UDPView() {
 	close(this->sock);
 }
 
+void UDPView::receiveStatus(ElevatorControllerStatus* status) {
+	printf("Received Status\n");
+}
+
 void UDPView::initUDP(char* address, char* port) {
 	if ((this->sock = socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP)) < 0) {
 		Die("Failed to create socket");

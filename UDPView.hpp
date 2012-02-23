@@ -3,10 +3,14 @@
 
 #include <netinet/in.h>
 
-class UDPView {
+#include "ElevatorControllerView.hpp"
+
+class UDPView : public ElevatorControllerView {
 	public:
 		UDPView(char* guiAddress, char* guiPort);
 		~UDPView();
+		
+		void receiveStatus(ElevatorControllerStatus* status);
 		
 		void sendMessage(char* message, unsigned int len=0);
 		void receiveMessage(unsigned int len=0);
