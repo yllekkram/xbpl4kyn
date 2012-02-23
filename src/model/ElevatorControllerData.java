@@ -3,8 +3,6 @@ package model;
 
 public class ElevatorControllerData {
 
-	
-	
 	private int direction;
 	private int speed;
 	

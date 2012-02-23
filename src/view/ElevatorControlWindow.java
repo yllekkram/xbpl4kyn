@@ -130,15 +130,15 @@ public class ElevatorControlWindow extends JFrame implements ActionListener{
 		
 		
 		//top floor
-		floorPanels.add(new FloorPanel(Constants.FLOOR_COUNT, "Penthouse", FloorPanel.DIRECTION_DOWN));
+		floorPanels.add(new FloorPanel(Constants.FLOOR_COUNT, "Penthouse", Constants.DIRECTION_DOWN));
 		
 		//middle floors
 		for(int i=Constants.FLOOR_COUNT-1; i>=2; --i){
-			floorPanels.add(new FloorPanel(i, "Floor "+i, FloorPanel.DIRECTION_BOTH));
+			floorPanels.add(new FloorPanel(i, "Floor "+i, Constants.DIRECTION_BOTH));
 		}
 		
 		//bottom floor
-		floorPanels.add(new FloorPanel(1, "Basement", FloorPanel.DIRECTION_UP));
+		floorPanels.add(new FloorPanel(1, "Basement", Constants.DIRECTION_UP));
 	}
 	
 	

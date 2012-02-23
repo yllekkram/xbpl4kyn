@@ -3,19 +3,15 @@ package view;
 import javax.swing.*;
 import javax.swing.border.Border;
 
+import util.Constants;
+import view.util.UIUtils;
+
 import java.awt.*;
 import java.awt.event.*;
 
 public class FloorPanel extends JPanel implements ActionListener { 
 
 	private static final long serialVersionUID = 8967073701202397640L;
-	
-	private static final String UP_ARROW = "\u25B2";
-	private static final String DOWN_ARROW = "\u25BC";
-	
-	public static final int DIRECTION_UP = 0;
-	public static final int DIRECTION_DOWN = 1;
-	public static final int DIRECTION_BOTH = 2;
 	
 	JButton up;
 	JButton down;
@@ -33,16 +29,16 @@ public class FloorPanel extends JPanel implements ActionListener {
      	setBorder(border);
      	
  
-     	if(directions==DIRECTION_UP || directions==DIRECTION_BOTH){
+     	if(directions==Constants.DIRECTION_UP || directions==Constants.DIRECTION_BOTH){
      		//up button
-         	up = new JButton(UP_ARROW);
+         	up = new JButton( UIUtils.UP_ARROW );
          	add( up );
          	up.addActionListener( this );
      	}
      	
-     	if(directions==DIRECTION_DOWN || directions==DIRECTION_BOTH){
+     	if(directions==Constants.DIRECTION_DOWN || directions==Constants.DIRECTION_BOTH){
      		//down button
-         	down = new JButton (DOWN_ARROW);
+         	down = new JButton ( UIUtils.DOWN_ARROW );
          	add( down );
          	down.addActionListener( this );
      	}
@@ -54,9 +50,9 @@ public class FloorPanel extends JPanel implements ActionListener {
  
   	public void actionPerformed( ActionEvent e ) {
   		if (e.getSource().equals( up )) {
-  			ElevatorMonitor.getInstance().onHallCall(floorNumber, ElevatorMonitor.HALLCALL_DIRECTION_UP);
+  			ElevatorMonitor.getInstance().onHallCall(floorNumber, Constants.DIRECTION_UP);
   		} else {
-  			ElevatorMonitor.getInstance().onHallCall(floorNumber, ElevatorMonitor.HALLCALL_DIRECTION_DOWN);
+  			ElevatorMonitor.getInstance().onHallCall(floorNumber, Constants.DIRECTION_DOWN);
   		}
   	}
 }

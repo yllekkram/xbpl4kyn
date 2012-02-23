@@ -14,10 +14,7 @@ public class Constants {
 	public static final int GD_TO_GUI_UDP_PORT = 5002; //GD to GUI
 	public static final int EC_TO_GUI_UDP_PORT = 5003; //EC to GUI
 	
-	
-	//unicode arrows
-	public static final String UP_ARROW = "\u25B2";
-	public static final String RIGHT_ARROW = "\u2192";
-	public static final String LEFT_ARROW = "\u2190";
-	public static final String DOWN_ARROW = "\u25BC";
+	public static final int DIRECTION_UP = 1;
+	public static final int DIRECTION_DOWN = 2;
+	public static final int DIRECTION_BOTH = 3;
 }

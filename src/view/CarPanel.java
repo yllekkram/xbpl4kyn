@@ -5,7 +5,6 @@ import javax.swing.border.EmptyBorder;
 
 import util.Constants;
 import view.util.UIUtils;
-import exception.IllegalDirectionException;
 
 import java.awt.*;
 import java.awt.event.*;
@@ -14,9 +13,6 @@ import java.awt.event.*;
 public class CarPanel extends JScrollPane implements ActionListener {
 	
 	private static final long serialVersionUID = 2562440202529823914L;
-	
-	private static final int DIRECTION_UP = 1;
-	private static final int DIRECTION_DOWN = 2;
 	
 	private JPanel buttonGrid;
 	private JPanel delegate;
@@ -62,18 +58,18 @@ public class CarPanel extends JScrollPane implements ActionListener {
     	buttonGrid.add(stopButton);
     	
     	//create the "open door" button
-    	openDoorButton = new JButton(Constants.LEFT_ARROW + Constants.RIGHT_ARROW);
+    	openDoorButton = new JButton(UIUtils.LEFT_ARROW + UIUtils.RIGHT_ARROW);
     	openDoorButton.addActionListener( this );
     	buttonGrid.add(openDoorButton);
     	
     	//create the "open door" button
-    	closeDoorButton = new JButton(Constants.RIGHT_ARROW + Constants.LEFT_ARROW);
+    	closeDoorButton = new JButton(UIUtils.RIGHT_ARROW + UIUtils.LEFT_ARROW);
     	closeDoorButton.addActionListener( this );
     	buttonGrid.add(closeDoorButton);
     	
     	//create the floor indicator screen
     	floorIndicator = new JLabel("");
-    	setFloorAndDirection(0, DIRECTION_UP);
+    	setFloorAndDirection(0, Constants.DIRECTION_UP);
     	floorIndicator.setFont(new Font("Serif", Font.PLAIN, 36));
     	JComponent indicatorBox = UIUtils.centralizeComponent(floorIndicator);
     	gridBagContraints.gridwidth = 0;
@@ -105,15 +101,7 @@ public class CarPanel extends JScrollPane implements ActionListener {
   	}
   	
   	public void setFloorAndDirection(final int floorNumber, int direction){
-  		String directionArrow;
-  		if(direction == DIRECTION_UP){
-  			directionArrow = Constants.UP_ARROW;
-  		}else if(direction == DIRECTION_DOWN){
-  			directionArrow = Constants.DOWN_ARROW;
-  		}else{
-  			throw new IllegalDirectionException();
-  		}
-  		final String directionArrowFinal = directionArrow;
+  		final String directionArrowFinal = UIUtils.getDirectionArrow(direction);
   		SwingUtilities.invokeLater(new Runnable(){
   			public void run(){
   				floorIndicator.setText( floorNumber + "  " + directionArrowFinal);

@@ -2,19 +2,16 @@ package view;
 
 import java.util.concurrent.ConcurrentHashMap;
 
-import exception.IllegalDirectionException;
 import util.Constants;
 import view.connection.UDPConnectionManager;
 import view.connection.UDPElevatorAddress;
+import view.util.UIUtils;
 import groupDispatcher.control.GroupDispatcher;
 
 
 public class ElevatorMonitor {
 
 	private static ElevatorMonitor instance; 
-	
-	public static final int HALLCALL_DIRECTION_UP = 1;
-	public static final int HALLCALL_DIRECTION_DOWN = 2;
 	
 	private ConcurrentHashMap<Integer, UDPElevatorAddress> elevatorAddressList;
 	
@@ -67,14 +64,7 @@ public class ElevatorMonitor {
 	}
 	
 	public void onHallCall(int floorNumber, int directionRequested){
-		String directionRequestedStr;
-		if(directionRequested == HALLCALL_DIRECTION_UP){
-			directionRequestedStr = "UP";
-		} else if(directionRequested == HALLCALL_DIRECTION_DOWN){
-			directionRequestedStr = "DOWN";
-		} else {
-			throw new IllegalDirectionException("directionRequested is invalid. A valid direction is either HALLCALL_DIRECTION_UP or HALLCALL_DIRECTION_DOWN");
-		}
+		String directionRequestedStr = UIUtils.getDirectionString(directionRequested);
 		String message = "User on floor " + floorNumber + " pressed the " + directionRequestedStr + " button";
 		
 		System.out.println("ElevatorMonitor - " + message);
