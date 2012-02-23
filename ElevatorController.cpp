@@ -33,6 +33,7 @@ void ElevatorController::run() {
 void ElevatorController::addView(ElevatorControllerView* ecv) {
 	this->views.push_back(ecv);
 	ecv->setController(this);
+	
 }
 
 void ElevatorController::waitForGDRequest() {

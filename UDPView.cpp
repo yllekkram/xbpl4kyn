@@ -34,6 +34,12 @@ void UDPView::initUDP(char* address, char* port) {
 	this->server.sin_port = htons(atoi(port));					/* Server Port */
 }
 
+void UDPView::setController(ElevatorController* ec) {
+	ElevatorControllerView::setController(ec);
+	
+	this->registerWithViewer();
+}
+
 void UDPView::registerWithViewer() {
 	char message[2];
 	message[0] = this->getEC()->getID();

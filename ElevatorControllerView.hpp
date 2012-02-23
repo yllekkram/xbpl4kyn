@@ -10,7 +10,7 @@ class ElevatorControllerView {
 	public:		
 		virtual void receiveStatus(ElevatorControllerStatus* status) = 0;
 		
-		void setController(ElevatorController* ec) {
+		virtual void setController(ElevatorController* ec) {
 			this->ec = ec;
 		}
 		
