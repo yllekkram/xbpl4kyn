@@ -7,6 +7,7 @@
 #include <netinet/in.h>
 
 #include "ElevatorCommon.hpp"
+#include "ElevatorController.hpp"
 #include "UDPView.hpp"
 
 UDPView::UDPView(char* guiAddress, char* guiPort) {
@@ -31,6 +32,14 @@ void UDPView::initUDP(char* address, char* port) {
 	this->server.sin_family = AF_INET;									/* Internet/IP */
 	this->server.sin_addr.s_addr = inet_addr(address);	/* IP Address */
 	this->server.sin_port = htons(atoi(port));					/* Server Port */
+}
+
+void UDPView::registerWithViewer() {
+	char message[2];
+	message[0] = this->getEC()->getID();
+	message[1] = GUI_REGISTER_MESSAGE;
+	
+	this->sendMessage(message);
 }
 
 void UDPView::sendMessage(char* message, unsigned int len) {

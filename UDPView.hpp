@@ -15,6 +15,8 @@ class UDPView : public ElevatorControllerView {
 		void sendMessage(char* message, unsigned int len=0);
 		void receiveMessage(unsigned int len=0);
 		
+		void registerWithViewer();
+		
 	private:
 		int sock;
 		struct sockaddr_in server;

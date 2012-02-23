@@ -52,8 +52,8 @@ UDPTestServer: ElevatorCommon.opp UDPTestServer.opp
 UDPTestServer.opp: ElevatorCommon.hpp UDPTestServer.cpp
 	$(CPP) $(CPPFLAGS) -c -o $@ UDPTestServer.cpp
 	
-testUDP: ElevatorCommon.opp UDPView.opp testUDP.opp
-	$(CPPLD) $(CPPLDFLAGS) -o $@ ElevatorCommon.opp UDPView.opp testUDP.opp
+testUDP: ElevatorCommon.opp ElevatorCommon.opp UDPView.opp testUDP.opp
+	$(CPPLD) $(CPPLDFLAGS) -o $@ ElevatorCommon.opp ElevatorController.opp UDPView.opp testUDP.opp
 	
-testUDP.opp: ElevatorCommon.hpp UDPView.hpp testUDP.cpp
+testUDP.opp: ElevatorCommon.hpp ElevatorController.hpp UDPView.hpp testUDP.cpp
 	$(CPP) $(CPPFLAGS) -c -o $@ testUDP.cpp

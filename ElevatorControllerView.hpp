@@ -14,6 +14,12 @@ class ElevatorControllerView {
 			this->ec = ec;
 		}
 		
+		ElevatorController* getEC() const {
+			return this->ec;
+		}
+		
+	private:
+		
 		ElevatorController* ec;
 };
 
