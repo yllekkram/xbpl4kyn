@@ -3,3 +3,4 @@
 *.opp
 *.exe
 *.gch
+.DS_Store
