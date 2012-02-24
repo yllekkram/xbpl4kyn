@@ -63,3 +63,6 @@ testElevatorController: ElevatorCommon.hpp ElevatorCommon.opp ElevatorController
 	
 testElevatorController.opp: ElevatorCommon.hpp ElevatorController.hpp UDPView.hpp testElevatorController.cpp
 	$(CPP) $(CPPFLAGS) -c -o $@ testElevatorController.cpp
+	
+FloorRunHeap.opp: FloorRunHeap.hpp FloorRunHeap.cpp
+	$(CPP) $(CPPFLAGS) -c -o $@ FloorRunHeap.cpp
