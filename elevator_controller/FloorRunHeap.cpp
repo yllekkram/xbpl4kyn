@@ -1,35 +1,56 @@
-#include <algorithm>
-
 #include "FloorRunHeap.hpp"
 
-FloorRunHeap::FloorRunHeap(char direction)
+UpwardFloorRunHeap::UpwardFloorRunHeap(char direction)
 	: direction(direction), floorRequestHeap(), hallCallHeap()
 {}
 
-char FloorRunHeap::checkTop() const {
+UpwardFloorRunHeap::~UpwardFloorRunHeap() {}
+
+char UpwardFloorRunHeap::peek() const {
+  int frSize = floorRequestHeap.getSize();
+  int hcSize = hallCallHeap.getSize();
+  
+  if (frSize == 0 && hcSize == 0) {
+    throw EmptyHeapException();
+  }
+  else if (frSize == 0) {
+    return hallCallHeap.peek();
+  }
+  else if (hcSize == 0) {
+    return floorRequestHeap.peek();
+  }
+  
+  char frTop = floorRequestHeap.peek();
+	char hcTop = hallCallHeap.peek();
+	
+	return (frTop < hcTop) ? frTop : hcTop;
+}
+
+char UpwardFloorRunHeap::pop() {
+  int frSize = floorRequestHeap.getSize();
+  int hcSize = hallCallHeap.getSize();
+  
+  if (frSize == 0 && hcSize == 0) {
+    throw EmptyHeapException();
+  }
+  else if (frSize == 0) {
+    return hallCallHeap.pop();
+  }
+  else if (hcSize == 0) {
+    return floorRequestHeap.pop();
+  }
+  
 	char frTop = floorRequestHeap.peek();
 	char hcTop = hallCallHeap.peek();
 	
-	return (frTop > hcTop) ? frTop : hcTop;
+	return (frTop < hcTop) ? floorRequestHeap.pop() : hallCallHeap.pop();
 }
 
-char FloorRunHeap::removeTop() {
-	char frTop = floorRequestHeap.peek();
-	char hcTop = hallCallHeap.peek();
-	
-	if (frTop > hcTop) {
-		return floorRequestHeap.pop();
-	}
-	else {
-		return hallCallHeap.pop();
-	}
-}
-
-void FloorRunHeap::addFloorRequest(char dest) {
+void UpwardFloorRunHeap::pushFloorRequest(char dest) {
 	floorRequestHeap.push(dest);
 }
 
-void FloorRunHeap::addHallCall(char dest) {
+void UpwardFloorRunHeap::pushHallCall(char dest) {
 	hallCallHeap.push(dest);
 }
 

@@ -4,3 +4,4 @@
 *.exe
 *.gch
 .DS_Store
+*.a

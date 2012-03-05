@@ -12,6 +12,8 @@
 #define MAX_GD_REQUEST_SIZE 2
 #define STATUS_REQUEST 1
 #define HALL_CALL_REQUEST 2
+#define HALL_CALL_DIRECTION_UP 1
+#define HALL_CALL_DIRECTION_DOWN 2
 
 // Types for messages sent from the ElevatorController to the GroupDispatcher
 #define REGISTER_MESSAGE 0

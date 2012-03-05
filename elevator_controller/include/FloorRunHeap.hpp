@@ -1,50 +1,102 @@
 #ifndef FLOOR_RUN_HEAP_HPP
 #define FLOOR_RUN_HEAP_HPP
 
+#include <algorithm>
 #include <functional>
 #include <vector>
 
+class EmptyHeapException : std::exception {};
+
 template <class T>
-class Heap {
+class MaxHeap {
 	public:
-		Heap() : data() {}
-	
+		MaxHeap()
+			: data() {}
+		MaxHeap<T>(const MaxHeap<T>& rhs);
+		~MaxHeap(){}
+
 		void push(T item) {
-			data.push_back(item);
-			push_heap(data.begin(), data.end());
+			this->data.push_back(item);
+			push_heap(this->data.begin(), this->data.end());
 		}
 
 		T pop() {
-			pop_heap(data.begin(), data.end());
-			T result = data.back();
-			data.pop_back();
-			return result;
+			T temp = this->peek();
+
+			pop_heap(this->data.begin(), this->data.end());
+			this->data.pop_back();
+
+			return temp;
 		}
 
 		T peek() const {
-			return data.at(0);
+			if (this->getSize() == 0)
+				throw EmptyHeapException();
+
+			return this->data.front();
 		}
+
+		int getSize() const {
+			return this->data.size();
+		}
+
 	private:
 		std::vector<T> data;
 };
 
-class FloorRunHeap {
+template <class T>
+class MinHeap {
 	public:
-		FloorRunHeap(char direction);
-		~FloorRunHeap();
-	
-		char checkTop() const;
-		char removeTop();
+		MinHeap() : data(), comp() {}
+		~MinHeap() {}
 		
-		void addFloorRequest(char dest);
-		void addHallCall(char dest);
+		void push(T item) {
+			this->data.push_back(item);
+			push_heap(this->data.begin(), this->data.end(), comp);
+		}
+		
+		T pop() {
+			T temp = this->peek();
+			
+			pop_heap(this->data.begin(),this->data.end(), comp);
+			this->data.pop_back();
+			
+			return temp;
+		}
+		
+		T peek() const {
+			if (this->getSize() == 0)
+				throw EmptyHeapException();
+			
+			return this->data.front();
+		}
+		
+		int getSize() const {
+			return this->data.size();
+		}
+		
+	private:
+		std::vector<T> data;
+		std::greater<T> comp;
+};
+
+class UpwardFloorRunHeap {
+	public:
+		UpwardFloorRunHeap(char direction);
+		~UpwardFloorRunHeap();
+	
+		char peek() const;
+		char pop();
+		
+		void pushFloorRequest(char dest);
+		void pushHallCall(char dest);
 		
 		char* getHallCalls() const;
 	
 	private:
 		char direction;
-		Heap<char> floorRequestHeap;
-		Heap<char> hallCallHeap;
+		MinHeap<char> floorRequestHeap;
+		MinHeap<char> hallCallHeap;
 };
 
 #endif
