@@ -1,8 +1,11 @@
 CXX					= g++
 CXXFLAGS		=
+CXXINC			= -Iinclude
 CXXLD				= $(CXX)
 CXXLDFLAGS	=
 RM					= rm
+
+vpath %.hpp include:test/include
 
 EXE			= ElevatorTestServer UDPTestServer testTCP testUDP testElevatorController
 SRCS		= $(wildcard *.cpp)
@@ -15,7 +18,7 @@ OBJS		= ${SRCS:.cpp=.opp}
 
 # define a suffix rule for .cpp -> .opp
 .cpp.opp:
-	$(CXX) $(CXXFLAGS) -o $@ -c $<
+	$(CXX) $(CXXINC) -o $@ -c $< $(CXXFLAGS) 
 
 all: $(EXE)
 
