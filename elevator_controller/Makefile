@@ -1,11 +1,11 @@
-CPP					= g++
-CPPFLAGS		=
-CPPLD				= $(CPP)
-CPPLDFLAGS	=
+CXX					= g++
+CXXFLAGS		=
+CXXLD				= $(CXX)
+CXXLDFLAGS	=
 RM					= rm
 
 EXE			= ElevatorTestServer UDPTestServer testTCP testUDP testElevatorController
-SRCS		= ElevatorTestServer.cpp testTCP.cpp testUDP.cpp testElevatorController.cpp ElevatorCommon.cpp ElevatorController.cpp UDPView.cpp UDPTestServer.cpp FloorRunHeap.cpp
+SRCS		= $(wildcard *.cpp)
 OBJS		= ${SRCS:.cpp=.opp}
 
 # clear out all the suffixes
@@ -14,55 +14,36 @@ OBJS		= ${SRCS:.cpp=.opp}
 .SUFFIXES: .opp .cpp
 
 # define a suffix rule for .cpp -> .opp
-# .cpp.opp:
-# 	$(CPP) $(CPPFLAGS) -c $<
+.cpp.opp:
+	$(CXX) $(CXXFLAGS) -o $@ -c $<
 
 all: $(EXE)
 
 clean:
 	-$(RM) -f $(EXE) $(OBJS) $(wildcard *.gch)
 
-ElevatorTestServer.opp: ElevatorCommon.hpp ElevatorTestServer.cpp
-	$(CPP) $(CPPFLAGS) -c -o $@ ElevatorTestServer.cpp
-
-testTCP.opp: ElevatorCommon.hpp testTCP.cpp
-	$(CPP) $(CPPFLAGS) -c -o $@ testTCP.cpp
-
-ElevatorCommon.opp: ElevatorCommon.hpp ElevatorCommon.cpp
-	$(CPP) $(CPPFLAGS) -c -o $@ ElevatorCommon.cpp
-
 ElevatorTestServer: ElevatorCommon.opp ElevatorTestServer.opp
-	$(CPPLD) $(CPPLDFLAGS) -o $@ ElevatorTestServer.opp ElevatorCommon.opp
+	$(CXXLD) $(CXXLDFLAGS) -o $@ $^
 
-testTCP: ElevatorCommon.hpp ElevatorCommon.opp ElevatorController.hpp ElevatorController.opp testTCP.opp
-	$(CPPLD) $(CPPLDFLAGS) -o $@ ElevatorController.opp ElevatorCommon.opp testTCP.opp
-
-ElevatorController.opp: ElevatorCommon.hpp ElevatorController.cpp
-	$(CPP) $(CPPFLAGS) -c -o $@ ElevatorController.cpp
-
-ElevatorControllerView.opp: ElevatorControllerView.hpp ElevatorControllerView.cpp
-	$(CPP) $(CPPFLAGS) -c -o $@ ElevatorControllerView.cpp
-	
-UDPView.opp: ElevatorControllerView.hpp UDPView.hpp UDPView.cpp
-	$(CPP) $(CPPFLAGS) -c -o $@ UDPView.cpp
+testTCP: ElevatorCommon.opp ElevatorController.hpp ElevatorController.opp testTCP.opp
+	$(CXXLD) $(CXXLDFLAGS) -o $@ $^
 	
 UDPTestServer: ElevatorCommon.opp UDPTestServer.opp
-	$(CPPLD) $(CPPLDFLAGS) -o $@ ElevatorCommon.opp UDPTestServer.opp
+	$(CXXLD) $(CXXLDFLAGS) -o $@ $^
 	
-UDPTestServer.opp: ElevatorCommon.hpp UDPTestServer.cpp
-	$(CPP) $(CPPFLAGS) -c -o $@ UDPTestServer.cpp
-	
-testUDP: ElevatorCommon.opp ElevatorCommon.opp UDPView.opp testUDP.opp
-	$(CPPLD) $(CPPLDFLAGS) -o $@ ElevatorCommon.opp ElevatorController.opp UDPView.opp testUDP.opp
-	
-testUDP.opp: ElevatorCommon.hpp ElevatorController.hpp UDPView.hpp testUDP.cpp
-	$(CPP) $(CPPFLAGS) -c -o $@ testUDP.cpp
+testUDP: ElevatorCommon.opp ElevatorController.opp UDPView.opp testUDP.opp
+	$(CXXLD) $(CXXLDFLAGS) -o $@ $^
 	
 testElevatorController: ElevatorCommon.hpp ElevatorCommon.opp ElevatorController.hpp ElevatorController.opp UDPView.opp testElevatorController.opp
-	$(CPPLD) $(CPPLDFLAGS) -o $@ ElevatorCommon.hpp ElevatorCommon.opp ElevatorController.hpp ElevatorController.opp UDPView.opp testElevatorController.opp
-	
-testElevatorController.opp: ElevatorCommon.hpp ElevatorController.hpp UDPView.hpp testElevatorController.cpp
-	$(CPP) $(CPPFLAGS) -c -o $@ testElevatorController.cpp
-	
-FloorRunHeap.opp: FloorRunHeap.hpp FloorRunHeap.cpp
-	$(CPP) $(CPPFLAGS) -c -o $@ FloorRunHeap.cpp
+	$(CXXLD) $(CXXLDFLAGS) -o $@ $^
+
+ElevatorCommon.opp: ElevatorCommon.hpp
+ElevatorController.opp: ElevatorCommon.hpp
+ElevatorControllerView.opp: ElevatorControllerView.hpp
+ElevatorTestServer.opp: ElevatorCommon.hpp
+FloorRunHeap.opp: FloorRunHeap.hpp
+UDPTestServer.opp: ElevatorCommon.hpp
+UDPView.opp: ElevatorControllerView.hpp UDPView.hpp
+testElevatorController.opp: ElevatorCommon.hpp ElevatorController.hpp UDPView.hpp
+testTCP.opp: ElevatorCommon.hpp
+testUDP.opp: ElevatorCommon.hpp ElevatorController.hpp UDPView.hpp
