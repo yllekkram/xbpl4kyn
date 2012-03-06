@@ -5,3 +5,9 @@
 *.gch
 .DS_Store
 *.a
+ElevatorTestServer
+UDPTestServer
+elevator_controller/test/test
+testElevatorController
+testTCP
+testUDP
