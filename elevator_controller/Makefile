@@ -5,7 +5,7 @@ CPPLDFLAGS	=
 RM					= rm
 
 EXE			= ElevatorTestServer UDPTestServer testTCP testUDP testElevatorController main
-SRCS		= ElevatorTestServer.cpp testTCP.cpp testUDP.cpp testElevatorController.cpp ElevatorCommon.cpp ElevatorController.cpp UDPView.cpp UDPTestServer.cpp FloorRunHeap.cpp ElevatorSimulator.cpp main.cpp
+SRCS		= $(wildcard *.cpp)
 OBJS		= ${SRCS:.cpp=.opp}
 
 # clear out all the suffixes
@@ -69,6 +69,12 @@ FloorRunHeap.opp: FloorRunHeap.hpp FloorRunHeap.cpp
 
 ElevatorSimulator.opp: ElevatorSimulator.hpp ElevatorSimulator.cpp
 	$(CPP) $(CPPFLAGS) -c -o $@ ElevatorSimulator.cpp
+
+ElevatorSimulatorTest.opp: ElevatorSimulatorTest.cpp
+	$(CPP) $(CPPFLAGS) -c -o $@ ElevatorSimulatorTest.cpp
+
+ElevatorSimulatorTest: ElevatorSimulator.opp ElevatorSimulatorTest.opp
+	$(CPPLD) $(CPPLDFLAGS) -o $@ $^
 
 main.opp: main.cpp
 	$(CPP) $(CPPFLAGS) -c -o $@ main.cpp
