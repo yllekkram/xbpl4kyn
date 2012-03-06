@@ -46,8 +46,7 @@ struct PopulatedMinHeapFixture : public MinHeapFixture {
 };
 
 struct UpwardFloorRunHeapFixture {
-  UpwardFloorRunHeapFixture()
-    : heap(HALL_CALL_DIRECTION_UP) {}
+  UpwardFloorRunHeapFixture() : heap() {}
     
   UpwardFloorRunHeap heap;
 };
@@ -56,12 +55,12 @@ struct EmptyUpwardFloorRunHeapFixture : public UpwardFloorRunHeapFixture {
   EmptyUpwardFloorRunHeapFixture() : UpwardFloorRunHeapFixture() {}
 };
 
-struct PopulatedUpwardFloorRunHeapFixture : public UpwardFloorRunHeapFixture {
-  PopulatedUpwardFloorRunHeapFixture()
-    : UpwardFloorRunHeapFixture()
-  {
-    for (int i = 5; i < 17; i++) {
-      (i % 2 == 0) ? heap.pushFloorRequest(i) : heap.pushHallCall(i);
-    }
-  }
+struct DownwardFloorRunHeapFixture {
+  DownwardFloorRunHeapFixture() : heap() {}
+    
+  DownwardFloorRunHeap heap;
+};
+
+struct EmptyDownwardFloorRunHeapFixture : public DownwardFloorRunHeapFixture {
+  EmptyDownwardFloorRunHeapFixture() : DownwardFloorRunHeapFixture() {}
 };

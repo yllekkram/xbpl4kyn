@@ -83,7 +83,7 @@ SUITE(MinHeap) {
 	}
 }
 
-SUITE(FloorRunHeap) {
+SUITE(UpwardFloorRunHeap) {
   TEST_FIXTURE(EmptyUpwardFloorRunHeapFixture, PeekWhenBothEmpty) {
     CHECK_THROW(heap.peek(), EmptyHeapException);    
   }
@@ -142,5 +142,67 @@ SUITE(FloorRunHeap) {
     heap.pushHallCall(7);
     
     CHECK_EQUAL(3, (int)heap.pop());
+  }
+}
+
+SUITE(DownwardFloorRunHeap) {
+  TEST_FIXTURE(EmptyDownwardFloorRunHeapFixture, PeekWhenBothEmpty) {
+    CHECK_THROW(heap.peek(), EmptyHeapException);    
+  }
+  
+  TEST_FIXTURE(EmptyDownwardFloorRunHeapFixture, PeekWhenHallCallsEmpty) {
+    heap.pushFloorRequest(5);
+    
+    CHECK_EQUAL(5, heap.peek());
+  }
+  
+  TEST_FIXTURE(EmptyDownwardFloorRunHeapFixture, PeekWhenFloorRequestsEmpty) {
+    heap.pushHallCall(4);
+    
+    CHECK_EQUAL(4, heap.peek());
+  }
+  
+  TEST_FIXTURE(EmptyDownwardFloorRunHeapFixture, PeekWhenFloorRequestGreater) {
+    heap.pushFloorRequest(8);
+    heap.pushHallCall(5);
+    
+    CHECK_EQUAL(8, (int)heap.peek());
+  }
+  
+  TEST_FIXTURE(EmptyDownwardFloorRunHeapFixture, PeekWhenHallCallGreater) {
+    heap.pushFloorRequest(4);
+    heap.pushHallCall(7);
+    
+    CHECK_EQUAL(7, (int)heap.peek());
+  }
+  
+  TEST_FIXTURE(EmptyDownwardFloorRunHeapFixture, PopWhenEmpty) {
+    CHECK_THROW(heap.pop(), EmptyHeapException);
+  }
+  
+  TEST_FIXTURE(EmptyDownwardFloorRunHeapFixture, PopWhenHallCallsEmpty) {
+    heap.pushFloorRequest(5);
+    
+    CHECK_EQUAL(5, (int)heap.pop());
+  }
+  
+  TEST_FIXTURE(EmptyDownwardFloorRunHeapFixture, PopWhenFloorRequestsEmpty) {
+    heap.pushHallCall(3);
+    
+    CHECK_EQUAL(3, (int)heap.pop());
+  }
+  
+  TEST_FIXTURE(EmptyDownwardFloorRunHeapFixture, PopWhenFloorRequestGreater) {
+    heap.pushFloorRequest(6);
+    heap.pushHallCall(2);
+    
+    CHECK_EQUAL(6, (int)heap.pop());
+  }
+  
+  TEST_FIXTURE(EmptyDownwardFloorRunHeapFixture, PopWhenHallCallGreater) {
+    heap.pushFloorRequest(3);
+    heap.pushHallCall(7);
+    
+    CHECK_EQUAL(7, (int)heap.pop());
   }
 }
