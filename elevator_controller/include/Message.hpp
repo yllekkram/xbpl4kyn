@@ -4,6 +4,7 @@
 class Message {
 	public:
 		Message();
+    Message(unsigned int len);
 		Message(const char* buffer, unsigned int len);
 		~Message();
 
@@ -31,6 +32,20 @@ class StatusMessage : public Message {
 	private:
 			char id, position, destination, speed, numHallCalls;
 			char* hallCalls;
+};
+
+class HallCallAssignmentMessage : public Message {
+  public:
+    HallCallAssignmentMessage(char floor, char direction);
+    HallCallAssignmentMessage(const char* buffer);
+    ~HallCallAssignmentMessage();
+    
+    char getFloor()     const { return this->floor; };
+    char getDirection() const { return this->direction; };
+    
+  private:
+    char floor;
+    char direction;
 };
 
 #endif

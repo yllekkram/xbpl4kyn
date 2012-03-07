@@ -51,17 +51,58 @@ SUITE(StatusMessage) {
 	TEST(ConstructorWithBufferGiven) {
 		char buffer[] = {STATUS_RESPONSE, 4, 3, 2, 10, 3, 'a', 'b', 'c'};
 
-		StatusMessage* message = new StatusMessage(buffer, 9);
+		StatusMessage message(buffer, 9);
 
-		CHECK_EQUAL(9U, message->getLen());
-		CHECK_EQUAL(4, message->getId());
-		CHECK_EQUAL(3, message->getPosition());
-		CHECK_EQUAL(2, message->getDestination());
-		CHECK_EQUAL(10, message->getSpeed());
-		CHECK_EQUAL(NUM_CALLS, message->getNumHallCalls());
-		CHECK_ARRAY_EQUAL(CALLS, message->getHallCalls(), NUM_CALLS);
-
-		delete message;
+		CHECK_EQUAL(9U, message.getLen());
+		CHECK_EQUAL(4, message.getId());
+		CHECK_EQUAL(3, message.getPosition());
+		CHECK_EQUAL(2, message.getDestination());
+		CHECK_EQUAL(10, message.getSpeed());
+		CHECK_EQUAL(NUM_CALLS, message.getNumHallCalls());
+		CHECK_ARRAY_EQUAL(CALLS, message.getHallCalls(), NUM_CALLS);
 	}
+  
+  TEST(ConstructorWithInvalidBufferGiven) {
+    char buffer[] = {0, 0, 0, 0, 0, 0};
+    buffer[0] = STATUS_RESPONSE + 1;
+    
+    CHECK_THROW(StatusMessage(buffer, 6), std::exception);
+  }
+  
+  TEST(ConstructWithShortBufferGiven) {
+    char buffer[] = {STATUS_RESPONSE, 0};
+    
+    CHECK_THROW(StatusMessage(buffer, 5), std::exception);
+  }
 
+}
+
+SUITE(HallCallAssignmentMessage) {
+  TEST(ConstructorWithValuesGiven) {
+    HallCallAssignmentMessage message(
+      7, /* Destination */
+      HALL_CALL_DIRECTION_UP
+    );
+    
+    CHECK_EQUAL(3U, message.getLen());
+    CHECK_EQUAL(7, message.getFloor());
+    CHECK_EQUAL(HALL_CALL_DIRECTION_UP, message.getDirection());
+  }
+  
+  TEST(ConstructorWithBufferGiven) {
+    char buffer[] = {HALL_CALL_REQUEST, 7, HALL_CALL_DIRECTION_UP};
+    
+    HallCallAssignmentMessage message(buffer);
+    
+    CHECK_EQUAL(3U, message.getLen());
+    CHECK_EQUAL(7, message.getFloor());
+    CHECK_EQUAL(HALL_CALL_DIRECTION_UP, message.getDirection());
+  }
+
+  TEST(ConstructorWithInvalidBufferGiven) {
+    char buffer[3]; //s = {0, 0, 0};
+    buffer[0] = HALL_CALL_REQUEST + 1;
+    
+    CHECK_THROW(HallCallAssignmentMessage message(buffer), std::exception);
+  }
 }

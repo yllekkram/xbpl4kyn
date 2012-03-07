@@ -4,7 +4,11 @@
 #include "Message.hpp"
 
 Message::Message()
-	: buffer(NULL), len(-1)
+  : buffer(NULL), len(-1)
+{}
+
+Message::Message(unsigned int len)
+	: buffer(new char[len]), len(len)
 {}
 
 Message::Message(const char* buffer, unsigned int len) 
@@ -84,3 +88,24 @@ char* StatusMessage::getHallCalls()	const {
 
 	return newCopy;
 }
+
+HallCallAssignmentMessage::HallCallAssignmentMessage(char floor, char direction)
+  : Message(3), floor(floor), direction(direction)
+{
+  this->buffer[0] = HALL_CALL_REQUEST;
+  this->buffer[1] = floor;
+  this->buffer[2] = direction;
+}
+
+HallCallAssignmentMessage::HallCallAssignmentMessage(const char* buffer)
+  : Message(buffer, 3)
+{
+  if (buffer[0] != HALL_CALL_REQUEST)
+    throw std::exception();
+  
+  this->floor = this->buffer[1];
+  this->direction = this->buffer[2];
+}
+
+HallCallAssignmentMessage::~HallCallAssignmentMessage()
+{}
