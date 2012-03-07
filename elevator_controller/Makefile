@@ -7,7 +7,7 @@ RM					= rm
 
 vpath %.hpp include:test/include
 
-EXE			= ElevatorTestServer UDPTestServer testTCP testUDP testElevatorController
+EXE			= ElevatorTestServer UDPTestServer testTCP testUDP testElevatorController main ElevatorSimulatorTest
 SRCS		= $(wildcard *.cpp)
 OBJS		= ${SRCS:.cpp=.opp}
 
@@ -22,11 +22,17 @@ OBJS		= ${SRCS:.cpp=.opp}
 
 all: $(EXE)
 
+main: main.opp
+	$(CPPLD) $(CPPLDFLAGS) -o $@ main.opp
+
 tests: test/test.opp test/testElevatorController.opp test/testHeap.opp test/testMessage.opp Message.opp FloorRunHeap.opp ElevatorCommon.opp
 	$(CXX) $(CXXINC) -o test/test $^ test/lib/libUnitTest++.a $(CXXFLAGS)
 
 clean:
 	-$(RM) -f $(EXE) $(OBJS) $(wildcard *.gch) $(wildcard test/*.opp) test/test
+
+ElevatorSimulatorTest: ElevatorSimulator.opp ElevatorSimulatorTest.opp
+	$(CPPLD) $(CPPLDFLAGS) -o $@ $^
 
 ElevatorTestServer: ElevatorCommon.opp ElevatorTestServer.opp
 	$(CXXLD) $(CXXLDFLAGS) -o $@ $^
@@ -59,3 +65,8 @@ test.opp: UnitTest++.h
 testElevatorController.opp: ElevatorController.hpp ElevatorController.cpp
 testHeap.opp: FloorRunHeap.hpp
 testMessage.opp: Message.hpp MessageFixtures.hpp
+
+ElevatorSimulator.opp: ElevatorSimulator.hpp
+
+ElevatorSimulatorTest.opp: ElevatorSimulator.hpp
+
