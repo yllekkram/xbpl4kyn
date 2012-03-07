@@ -8,10 +8,11 @@
 
 int main(int argc, char* argv[]) {
 	ElevatorSimulator es;
-	es.setFinalDestination(10);
-	while(!es.calculateValues())
+	es.setFinalDestination(2);
+	while(true)
 	{
-		sleep(1);
+		es.calculateValues();
+		usleep(1000000);
 	}
 	exit(0);
 }
