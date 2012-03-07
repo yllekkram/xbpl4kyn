@@ -15,13 +15,13 @@ ElevatorController::ElevatorController() {
 	this->id = ElevatorController::getNextID();
 	
 	/* Create the TCP socket */
-	if ((sock = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0) {
+	if ((this->sock = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0) {
 		Die("Failed to create socket");
 	}
 }
 
 ElevatorController::~ElevatorController() {
-	close(sock);
+	close(this->sock);
 }
 
 void ElevatorController::run() {
@@ -55,6 +55,33 @@ void ElevatorController::waitForGDRequest() {
 	}
 }
 
+void ElevatorController::sendStatus() {
+	std::vector<char>* hallCalls = FloorRequestHeap.getHallCalls();
+
+	int len =		1	/* Message Type */
+						+ 1	/* ID */
+						+ 1 /* Position */
+						+ 1 /* Destination */
+						+ 1 /* Speed */
+						+ 1 /* Number of Call Registrations */
+						+ hallCalls.size();
+
+	char* message = new char(len);
+
+	char[0] = STATUS_RESPOSE;
+	char[1] = this->id;
+	char[2] = 5;
+	char[3] = 6;
+	char[4] = 7;
+	char[5] = hallCalls.size();
+	copy(hallCalls.begin(), hallCalls.end(), char[6]);
+
+	this->sendMessage(message, len);
+
+	delete message;
+	delete hallCalls;
+}
+
 void ElevatorController::connectToGD(char* gdAddress, int port) {
 	/* Construct the server sockaddr_in structure */
 	memset(&echoserver, 0, sizeof(echoserver));
@@ -63,7 +90,7 @@ void ElevatorController::connectToGD(char* gdAddress, int port) {
 	echoserver.sin_port = htons(port);
 
 	/* Establish connection */
-	if (connect(sock,
+	if (connect(this->sock,
 				(struct sockaddr *) &(echoserver),
 			sizeof(echoserver)) < 0) {
 		Die("Failed to connect with server");
@@ -73,7 +100,7 @@ void ElevatorController::connectToGD(char* gdAddress, int port) {
 }
 
 void ElevatorController::sendRegistration() {
-	char message[4] = {this->id,REGISTER_MESSAGE,0,'\n'};
+	char message[4] = {REGISTER_MESSAGE,this->id,0,'\n'};
 
 	sendMessage(message, 4);
 	
@@ -85,7 +112,7 @@ void ElevatorController::sendMessage(char * message, unsigned int len) {
 		len = strlen(message);
 	}
 	/* Send the word to the server */
-	if (send(sock, message, len, 0) != len) {
+	if (send(this->sock, message, len, 0) != len) {
 		Die("Mismatch in number of sent bytes");
 	}
 }

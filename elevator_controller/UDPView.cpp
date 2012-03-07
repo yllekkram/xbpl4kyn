@@ -42,8 +42,8 @@ void UDPView::setController(ElevatorController* ec) {
 
 void UDPView::registerWithViewer() {
 	char message[2];
-	message[0] = this->getEC()->getID();
-	message[1] = GUI_REGISTER_MESSAGE;
+	message[0] = GUI_REGISTER_MESSAGE;
+	message[1] = this->getEC()->getID();
 	
 	this->sendMessage(message);
 }

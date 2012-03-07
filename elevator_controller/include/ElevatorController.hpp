@@ -12,10 +12,13 @@ class ElevatorController {
 		ElevatorController();
 		~ElevatorController();
 
-		void run();
-		void addView(ElevatorControllerView* ecv);
-		void waitForGDRequest();
+		
 		void connectToGD(char* gdAddress, int port);
+		void addView(ElevatorControllerView* ecv);
+    void run();
+    
+		void waitForGDRequest();
+    void sendStatus();
 		
 		char getID() const { return this->id; }
 		
@@ -33,9 +36,7 @@ class ElevatorController {
 		std::vector<ElevatorControllerView*> views;
 				
 		static char getNextID() {
-			char temp = nextID;
-			nextID++;
-			return temp;
+			return nextID++;
 		}
 		
 		void sendRegistration();
