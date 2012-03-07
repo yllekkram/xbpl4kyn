@@ -1,5 +1,5 @@
 #include "ElevatorCommon.hpp"
-#include "FloorRunHeap.hpp"
+#include "Heap.hpp"
 
 struct MaxHeapFixture {
 	MaxHeapFixture() : heap() {}

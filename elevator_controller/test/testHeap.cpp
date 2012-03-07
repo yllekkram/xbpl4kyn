@@ -1,6 +1,6 @@
 #include "UnitTest++.h"
 
-#include "FloorRunHeap.hpp"
+#include "Heap.hpp"
 #include "fixtures/HeapFixtures.hpp"
 
 SUITE(MaxHeap) {

@@ -23,16 +23,16 @@ OBJS		= ${SRCS:.cpp=.opp}
 all: $(EXE)
 
 main: main.opp
-	$(CPPLD) $(CPPLDFLAGS) -o $@ main.opp
+	$(CXXLD) $(CXXLDFLAGS) -o $@ $^
 
-tests: test/test.opp test/testElevatorController.opp test/testHeap.opp test/testMessage.opp Message.opp FloorRunHeap.opp ElevatorCommon.opp
+tests: test/test.opp test/testElevatorController.opp test/testHeap.opp test/testMessage.opp Message.opp Heap.opp ElevatorCommon.opp
 	$(CXX) $(CXXINC) -o test/test $^ test/lib/libUnitTest++.a $(CXXFLAGS)
 
 clean:
 	-$(RM) -f $(EXE) $(OBJS) $(wildcard *.gch) $(wildcard test/*.opp) test/test
 
 ElevatorSimulatorTest: ElevatorSimulator.opp ElevatorSimulatorTest.opp
-	$(CPPLD) $(CPPLDFLAGS) -o $@ $^
+	$(CXXLD) $(CXXLDFLAGS) -o $@ $^
 
 ElevatorTestServer: ElevatorCommon.opp ElevatorTestServer.opp
 	$(CXXLD) $(CXXLDFLAGS) -o $@ $^
@@ -50,10 +50,10 @@ testElevatorController: ElevatorCommon.hpp ElevatorCommon.opp ElevatorController
 	$(CXXLD) $(CXXLDFLAGS) -o $@ $^
 
 ElevatorCommon.opp: ElevatorCommon.hpp
-ElevatorController.opp: ElevatorCommon.hpp FloorRunHeap.hpp Message.hpp
+ElevatorController.opp: ElevatorCommon.hpp Heap.hpp Message.hpp
 ElevatorControllerView.opp: ElevatorControllerView.hpp
 ElevatorTestServer.opp: ElevatorCommon.hpp
-FloorRunHeap.opp: FloorRunHeap.hpp
+Heap.opp: Heap.hpp
 Message.opp: Message.hpp ElevatorCommon.hpp
 UDPTestServer.opp: ElevatorCommon.hpp
 UDPView.opp: ElevatorControllerView.hpp UDPView.hpp
@@ -63,7 +63,7 @@ testUDP.opp: ElevatorCommon.hpp ElevatorController.hpp Message.hpp UDPView.hpp
 
 test.opp: UnitTest++.h
 testElevatorController.opp: ElevatorController.hpp ElevatorController.cpp
-testHeap.opp: FloorRunHeap.hpp
+testHeap.opp: Heap.hpp
 testMessage.opp: Message.hpp MessageFixtures.hpp
 
 ElevatorSimulator.opp: ElevatorSimulator.hpp

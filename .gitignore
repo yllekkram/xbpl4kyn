@@ -11,3 +11,5 @@ elevator_controller/test/test
 testElevatorController
 testTCP
 testUDP
+main
+ElevatorSimulatorTest

@@ -1,5 +1,5 @@
-#ifndef FLOOR_RUN_HEAP_HPP
-#define FLOOR_RUN_HEAP_HPP
+#ifndef HEAP_HPP
+#define HEAP_HPP
 
 #include <algorithm>
 #include <functional>

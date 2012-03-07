@@ -1,5 +1,5 @@
 #include "ElevatorCommon.hpp"
-#include "FloorRunHeap.hpp"
+#include "Heap.hpp"
 
 UpwardFloorRunHeap::UpwardFloorRunHeap()
 	: FloorRunHeap(HALL_CALL_DIRECTION_UP)
