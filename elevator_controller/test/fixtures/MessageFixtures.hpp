@@ -17,5 +17,5 @@ struct StatusMessageFixture {
 		)
 	{}
 
-	StatusMessage message;
+	StatusResponseMessage message;
 };

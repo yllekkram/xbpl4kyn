@@ -32,7 +32,7 @@ unsigned int Message::getLen() const {
 	return this->len;
 }
 
-StatusMessage::StatusMessage(char id, char position, char destination, char speed, char numHallCalls, const char* hallCalls)
+StatusResponseMessage::StatusResponseMessage(char id, char position, char destination, char speed, char numHallCalls, const char* hallCalls)
 	: Message(), id(id), position(position), destination(destination), speed(speed), numHallCalls(numHallCalls), hallCalls(new char[numHallCalls])
 {
 	std::copy(hallCalls, hallCalls + numHallCalls, this->hallCalls);
@@ -59,7 +59,7 @@ StatusMessage::StatusMessage(char id, char position, char destination, char spee
 						this->buffer + 6);
 }
 
-StatusMessage::StatusMessage(const char* buffer, unsigned int len)
+StatusResponseMessage::StatusResponseMessage(const char* buffer, unsigned int len)
 	: Message(buffer, len)
 {
 	// A status message must be at least 6 bytes long
@@ -78,11 +78,11 @@ StatusMessage::StatusMessage(const char* buffer, unsigned int len)
 						this->hallCalls);
 }
 
-StatusMessage::~StatusMessage() {
+StatusResponseMessage::~StatusResponseMessage() {
 	delete this->hallCalls;
 }
 
-char* StatusMessage::getHallCalls()	const {
+char* StatusResponseMessage::getHallCalls()	const {
 	char* newCopy = new char[this->getNumHallCalls()];
 	std::copy(this->hallCalls, this->hallCalls + this->getNumHallCalls(), newCopy);
 

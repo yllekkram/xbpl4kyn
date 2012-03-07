@@ -27,9 +27,9 @@ SUITE(Message) {
 	}
 }
 
-SUITE(StatusMessage) {
+SUITE(StatusResponseMessage) {
 	TEST(ConstructorWithValuesGiven) {
-		StatusMessage message(
+		StatusResponseMessage message(
 			/* Any numerical literals below are arbitrary */
 			4,	/* ID */
 			3, 	/* Position */
@@ -51,7 +51,7 @@ SUITE(StatusMessage) {
 	TEST(ConstructorWithBufferGiven) {
 		char buffer[] = {STATUS_RESPONSE, 4, 3, 2, 10, 3, 'a', 'b', 'c'};
 
-		StatusMessage message(buffer, 9);
+		StatusResponseMessage message(buffer, 9);
 
 		CHECK_EQUAL(9U, message.getLen());
 		CHECK_EQUAL(4, message.getId());
@@ -66,13 +66,13 @@ SUITE(StatusMessage) {
     char buffer[] = {0, 0, 0, 0, 0, 0};
     buffer[0] = STATUS_RESPONSE + 1;
     
-    CHECK_THROW(StatusMessage(buffer, 6), std::exception);
+    CHECK_THROW(StatusResponseMessage(buffer, 6), std::exception);
   }
   
   TEST(ConstructWithShortBufferGiven) {
     char buffer[] = {STATUS_RESPONSE, 0};
     
-    CHECK_THROW(StatusMessage(buffer, 5), std::exception);
+    CHECK_THROW(StatusResponseMessage(buffer, 5), std::exception);
   }
 
 }
