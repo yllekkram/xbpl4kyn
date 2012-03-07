@@ -90,7 +90,7 @@ SUITE(HallCallAssignmentMessage) {
   }
   
   TEST(ConstructorWithBufferGiven) {
-    char buffer[] = {HALL_CALL_REQUEST, 7, HALL_CALL_DIRECTION_UP};
+    char buffer[] = {HALL_CALL_ASSIGNMENT, 7, HALL_CALL_DIRECTION_UP};
     
     HallCallAssignmentMessage message(buffer);
     
@@ -101,7 +101,7 @@ SUITE(HallCallAssignmentMessage) {
 
   TEST(ConstructorWithInvalidBufferGiven) {
     char buffer[3]; //s = {0, 0, 0};
-    buffer[0] = HALL_CALL_REQUEST + 1;
+    buffer[0] = HALL_CALL_ASSIGNMENT + 1;
     
     CHECK_THROW(HallCallAssignmentMessage message(buffer), std::exception);
   }

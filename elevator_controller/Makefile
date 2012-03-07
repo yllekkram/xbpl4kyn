@@ -64,7 +64,7 @@ testUDP.opp: ElevatorCommon.hpp ElevatorController.hpp Message.hpp UDPView.hpp
 test.opp: UnitTest++.h
 testElevatorController.opp: ElevatorController.hpp ElevatorController.cpp
 testHeap.opp: Heap.hpp
-testMessage.opp: Message.hpp MessageFixtures.hpp
+testMessage.opp: Message.hpp
 
 ElevatorSimulator.opp: ElevatorSimulator.hpp
 

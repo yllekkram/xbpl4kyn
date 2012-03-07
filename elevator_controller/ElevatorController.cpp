@@ -46,7 +46,7 @@ void ElevatorController::waitForGDRequest() {
       message = new StatusRequestMessage();
 			std::cout << "Status Request" << std::endl;
 			break;
-		case HALL_CALL_REQUEST:
+		case HALL_CALL_ASSIGNMENT:
       message = new HallCallAssignmentMessage(request);
 			std::cout << "Hall Call Assigned: Floor" << (int) request[1];
 			std::cout << std::endl;
@@ -123,7 +123,9 @@ void ElevatorController::sendMessage(const char * message, unsigned int len) {
 }
 
 void ElevatorController::receiveAck() {
-	this->receiveTCP(2);
+	char* message = this->receiveTCP(2);
+	if (message[0] != REGISTRATION_ACK)
+		Die("Registration not acknowledged");
 }
 
 char* ElevatorController::receiveTCP(unsigned int length) {

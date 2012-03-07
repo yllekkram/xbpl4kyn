@@ -92,7 +92,7 @@ char* StatusResponseMessage::getHallCalls()	const {
 HallCallAssignmentMessage::HallCallAssignmentMessage(char floor, char direction)
   : Message(3), floor(floor), direction(direction)
 {
-  this->buffer[0] = HALL_CALL_REQUEST;
+  this->buffer[0] = HALL_CALL_ASSIGNMENT;
   this->buffer[1] = floor;
   this->buffer[2] = direction;
 }
@@ -100,7 +100,7 @@ HallCallAssignmentMessage::HallCallAssignmentMessage(char floor, char direction)
 HallCallAssignmentMessage::HallCallAssignmentMessage(const char* buffer)
   : Message(buffer, 3)
 {
-  if (buffer[0] != HALL_CALL_REQUEST)
+  if (buffer[0] != HALL_CALL_ASSIGNMENT)
     throw std::exception();
   
   this->floor = this->buffer[1];
