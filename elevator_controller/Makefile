@@ -22,7 +22,7 @@ OBJS		= ${SRCS:.cpp=.opp}
 
 all: $(EXE)
 
-tests: test/test.opp test/testElevatorController.opp test/testHeap.opp FloorRunHeap.opp
+tests: test/test.opp test/testElevatorController.opp test/testHeap.opp test/testMessage.opp Message.opp FloorRunHeap.opp
 	$(CXX) $(CXXINC) -o test/test $^ test/lib/libUnitTest++.a $(CXXFLAGS)
 
 clean:
@@ -48,6 +48,7 @@ ElevatorController.opp: ElevatorCommon.hpp
 ElevatorControllerView.opp: ElevatorControllerView.hpp
 ElevatorTestServer.opp: ElevatorCommon.hpp
 FloorRunHeap.opp: FloorRunHeap.hpp
+Message.opp: Message.hpp
 UDPTestServer.opp: ElevatorCommon.hpp
 UDPView.opp: ElevatorControllerView.hpp UDPView.hpp
 testElevatorController.opp: ElevatorCommon.hpp ElevatorController.hpp UDPView.hpp
@@ -57,3 +58,4 @@ testUDP.opp: ElevatorCommon.hpp ElevatorController.hpp UDPView.hpp
 test.opp: UnitTest++.h
 testElevatorController.opp: ElevatorController.hpp ElevatorController.cpp
 testHeap.opp: FloorRunHeap.hpp
+testMessage.opp: Message.hpp
