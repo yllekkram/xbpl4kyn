@@ -6,6 +6,7 @@
 #include <sys/socket.h>
 
 #include "ElevatorControllerView.hpp"
+#include "Message.hpp"
 
 class ElevatorController {
 	public:
@@ -42,7 +43,7 @@ class ElevatorController {
 		void sendRegistration();
 		void receiveAck();
 		
-		void sendMessage(char * message, unsigned int len=0);
+		void sendMessage(Message message);
 		char* receiveTCP(unsigned int length);
 };
 

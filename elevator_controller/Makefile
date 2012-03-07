@@ -1,5 +1,5 @@
 CXX					= g++
-CXXFLAGS		=
+CXXFLAGS		= -g -fno-inline
 CXXINC			= -Iinclude -Itest/include
 CXXLD				= $(CXX)
 CXXLDFLAGS	=
