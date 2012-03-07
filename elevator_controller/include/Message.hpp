@@ -26,7 +26,7 @@ class StatusMessage : public Message {
 		char getDestination() 	const { return this->destination; }
 		char getSpeed() 				const { return this->speed; }
 		char getNumHallCalls()	const { return this->numHallCalls; }
-		char* getHallCalls() const;
+		char* getHallCalls() 		const;
 
 	private:
 			char id, position, destination, speed, numHallCalls;

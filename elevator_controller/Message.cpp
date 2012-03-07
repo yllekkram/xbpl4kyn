@@ -50,9 +50,9 @@ StatusMessage::StatusMessage(char id, char position, char destination, char spee
 	this->buffer[3] = this->destination;
 	this->buffer[4] = this->speed;
 	this->buffer[5] = this->numHallCalls;
-	for (int i = 0; i < this->numHallCalls; i++) {
-		this->buffer[6+i] = this->hallCalls[i];
-	}
+	std::copy(hallCalls,
+						hallCalls + numHallCalls,
+						this->buffer + 6);
 }
 
 StatusMessage::StatusMessage(const char* buffer, unsigned int len)
@@ -68,20 +68,19 @@ StatusMessage::StatusMessage(const char* buffer, unsigned int len)
 	this->speed 				= this->buffer[4];
 	this->numHallCalls 	= this->buffer[5];
 
-
 	this->hallCalls = new char[numHallCalls];
-	for (int i = 0; i < this->numHallCalls; i++) {
-		this->hallCalls[i] = this->buffer[6+i];
-	}
+	std::copy(this->buffer + 6,
+						this->buffer + 6 + this->numHallCalls,
+						this->hallCalls);
 }
 
 StatusMessage::~StatusMessage() {
 	delete this->hallCalls;
 }
 
-char* StatusMessage::getHallCalls() 		const {
-	char* newCopy = new char[this->len];
-	std::copy(newCopy, newCopy + this->len, this->hallCalls);
+char* StatusMessage::getHallCalls()	const {
+	char* newCopy = new char[this->getNumHallCalls()];
+	std::copy(this->hallCalls, this->hallCalls + this->getNumHallCalls(), newCopy);
 
 	return newCopy;
 }
