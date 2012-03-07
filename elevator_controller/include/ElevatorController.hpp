@@ -43,7 +43,8 @@ class ElevatorController {
 		void sendRegistration();
 		void receiveAck();
 		
-		void sendMessage(Message message);
+		void sendMessage(const Message& message);
+		void sendMessage(const char* message, unsigned int len);
 		char* receiveTCP(unsigned int length);
 };
 

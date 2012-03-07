@@ -1,5 +1,5 @@
 CXX					= g++
-CXXFLAGS		= -g -fno-inline
+CXXFLAGS		= -Wall
 CXXINC			= -Iinclude -Itest/include
 CXXLD				= $(CXX)
 CXXLDFLAGS	=
@@ -31,29 +31,29 @@ clean:
 ElevatorTestServer: ElevatorCommon.opp ElevatorTestServer.opp
 	$(CXXLD) $(CXXLDFLAGS) -o $@ $^
 
-testTCP: ElevatorCommon.opp ElevatorController.hpp ElevatorController.opp testTCP.opp
+testTCP: ElevatorCommon.opp ElevatorController.hpp ElevatorController.opp Message.opp testTCP.opp
 	$(CXXLD) $(CXXLDFLAGS) -o $@ $^
 	
 UDPTestServer: ElevatorCommon.opp UDPTestServer.opp
 	$(CXXLD) $(CXXLDFLAGS) -o $@ $^
 	
-testUDP: ElevatorCommon.opp ElevatorController.opp UDPView.opp testUDP.opp
+testUDP: ElevatorCommon.opp ElevatorController.opp Message.opp UDPView.opp testUDP.opp
 	$(CXXLD) $(CXXLDFLAGS) -o $@ $^
 	
-testElevatorController: ElevatorCommon.hpp ElevatorCommon.opp ElevatorController.hpp ElevatorController.opp UDPView.opp testElevatorController.opp
+testElevatorController: ElevatorCommon.hpp ElevatorCommon.opp ElevatorController.hpp ElevatorController.opp Message.opp UDPView.opp testElevatorController.opp
 	$(CXXLD) $(CXXLDFLAGS) -o $@ $^
 
 ElevatorCommon.opp: ElevatorCommon.hpp
-ElevatorController.opp: ElevatorCommon.hpp
+ElevatorController.opp: ElevatorCommon.hpp FloorRunHeap.hpp Message.hpp
 ElevatorControllerView.opp: ElevatorControllerView.hpp
 ElevatorTestServer.opp: ElevatorCommon.hpp
 FloorRunHeap.opp: FloorRunHeap.hpp
 Message.opp: Message.hpp
 UDPTestServer.opp: ElevatorCommon.hpp
 UDPView.opp: ElevatorControllerView.hpp UDPView.hpp
-testElevatorController.opp: ElevatorCommon.hpp ElevatorController.hpp UDPView.hpp
+testElevatorController.opp: ElevatorCommon.hpp ElevatorController.hpp Message.hpp UDPView.hpp
 testTCP.opp: ElevatorCommon.hpp
-testUDP.opp: ElevatorCommon.hpp ElevatorController.hpp UDPView.hpp
+testUDP.opp: ElevatorCommon.hpp ElevatorController.hpp Message.hpp UDPView.hpp
 
 test.opp: UnitTest++.h
 testElevatorController.opp: ElevatorController.hpp ElevatorController.cpp

@@ -40,8 +40,6 @@ void ElevatorController::waitForGDRequest() {
 	char* request = receiveTCP(MAX_GD_REQUEST_SIZE);
 	char requestType = request[0];
 	
-	sendMessage("received request\n");
-	
 	switch (requestType) {
 		case STATUS_REQUEST:
 			std::cout << "Status Request" << std::endl;
@@ -56,7 +54,7 @@ void ElevatorController::waitForGDRequest() {
 }
 
 void ElevatorController::sendStatus() {
-	std::vector<char>* hallCalls = FloorRequestHeap.getHallCalls();
+	std::vector<char>* hallCalls = new std::vector<char>(); // = FloorRequestHeap.getHallCalls();
 
 	int len =		1	/* Message Type */
 						+ 1	/* ID */
@@ -64,19 +62,19 @@ void ElevatorController::sendStatus() {
 						+ 1 /* Destination */
 						+ 1 /* Speed */
 						+ 1 /* Number of Call Registrations */
-						+ hallCalls.size();
+						+ hallCalls->size();
 
 	char* message = new char(len);
 
-	char[0] = STATUS_RESPOSE;
-	char[1] = this->id;
-	char[2] = 5;
-	char[3] = 6;
-	char[4] = 7;
-	char[5] = hallCalls.size();
-	copy(hallCalls.begin(), hallCalls.end(), char[6]);
+	message[0] = STATUS_RESPONSE;
+	message[1] = this->id;
+	message[2] = 5;
+	message[3] = 6;
+	message[4] = 7;
+	message[5] = hallCalls->size();
+	copy(hallCalls->begin(), hallCalls->end(), message + 6);
 
-	this->sendMessage(message, len);
+	this->sendMessage(Message(message, len));
 
 	delete message;
 	delete hallCalls;
@@ -102,12 +100,16 @@ void ElevatorController::connectToGD(char* gdAddress, int port) {
 void ElevatorController::sendRegistration() {
 	char message[4] = {REGISTER_MESSAGE,this->id,0,'\n'};
 
-	sendMessage(message, 4);
+	sendMessage(Message(message, 4));
 	
 	receiveAck();
 }
 
-void ElevatorController::sendMessage(char * message, unsigned int len) {
+void ElevatorController::sendMessage(const Message& message) {
+	this->sendMessage(message.getBuffer(), message.getLen());
+}
+
+void ElevatorController::sendMessage(const char * message, unsigned int len) {
 	if (len == 0) {
 		len = strlen(message);
 	}
@@ -122,8 +124,8 @@ void ElevatorController::receiveAck() {
 }
 
 char* ElevatorController::receiveTCP(unsigned int length) {
-	char buffer[BUFFSIZE];
-	int received = 0;
+	char* buffer = new char[BUFFSIZE];
+	unsigned int received = 0;
 
 	/* Receive the word back from the server */
 	std::cout << "Received: ";
@@ -136,4 +138,5 @@ char* ElevatorController::receiveTCP(unsigned int length) {
 		buffer[bytes] = '\0';
 	}
 	std::cout << buffer;
+	return buffer;
 }
