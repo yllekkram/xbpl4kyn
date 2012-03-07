@@ -48,4 +48,10 @@ class HallCallAssignmentMessage : public Message {
     char direction;
 };
 
+class StatusRequestMessage : public Message {
+  public:
+    explicit StatusRequestMessage();
+    ~StatusRequestMessage();
+};
+
 #endif

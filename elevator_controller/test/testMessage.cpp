@@ -106,3 +106,11 @@ SUITE(HallCallAssignmentMessage) {
     CHECK_THROW(HallCallAssignmentMessage message(buffer), std::exception);
   }
 }
+
+SUITE(StatusRequestMessage) {
+  TEST(Constructor) {
+    StatusRequestMessage message;
+    
+    CHECK_EQUAL(1U, message.getLen());
+  }
+}

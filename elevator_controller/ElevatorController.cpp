@@ -39,12 +39,15 @@ void ElevatorController::addView(ElevatorControllerView* ecv) {
 void ElevatorController::waitForGDRequest() {
 	char* request = receiveTCP(MAX_GD_REQUEST_SIZE);
 	char requestType = request[0];
+  Message* message = NULL;
 	
 	switch (requestType) {
 		case STATUS_REQUEST:
+      message = new StatusRequestMessage();
 			std::cout << "Status Request" << std::endl;
 			break;
 		case HALL_CALL_REQUEST:
+      message = new HallCallAssignmentMessage(request);
 			std::cout << "Hall Call Assigned: Floor" << (int) request[1];
 			std::cout << std::endl;
 			break;

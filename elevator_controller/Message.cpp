@@ -109,3 +109,12 @@ HallCallAssignmentMessage::HallCallAssignmentMessage(const char* buffer)
 
 HallCallAssignmentMessage::~HallCallAssignmentMessage()
 {}
+
+StatusRequestMessage::StatusRequestMessage()
+  : Message(1)
+{
+  this->buffer[0] = STATUS_REQUEST;
+}
+
+StatusRequestMessage::~StatusRequestMessage()
+{}
