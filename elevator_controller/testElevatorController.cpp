@@ -18,7 +18,7 @@ int main(int argc, char* argv[]) {
 	ec->connectToGD(argv[1], atoi(argv[2]));
 	ec->addView(uv);
 
-	uv->receiveMessage(24);
+	uv->receiveMessage(1);
 	
 	delete ec;
 	

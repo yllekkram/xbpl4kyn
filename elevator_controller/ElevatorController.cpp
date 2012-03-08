@@ -73,13 +73,14 @@ void ElevatorController::connectToGD(char* gdAddress, int port) {
 	echoserver.sin_addr.s_addr = inet_addr(gdAddress);
 	echoserver.sin_port = htons(port);
 
+  std::cout << "Connecting to GroupDispatcher...";
 	/* Establish connection */
 	if (connect(this->sock,
 				(struct sockaddr *) &(echoserver),
 			sizeof(echoserver)) < 0) {
 		Die("Failed to connect with server");
 	}
-	
+  std::cout << "done." << std::endl;
 	this->sendRegistration();
 }
 
@@ -89,7 +90,9 @@ void receiveHallCall(HallCallAssignmentMessage& message) {
 }
 
 void ElevatorController::sendRegistration() {
+  std::cout << "Sending registration...";
 	sendMessage(RegisterWithGDMessage(this->id));
+  std::cout << "done." << std::endl;
 	
 	receiveAck();
 }
@@ -109,7 +112,9 @@ void ElevatorController::sendMessage(const char * message, int len) {
 }
 
 void ElevatorController::receiveAck() {
+  std::cout << "Waitng for ack...";
 	char* message = this->receiveTCP(2);
+  std::cout << "done." << std::endl;
 	if (message[0] != REGISTRATION_ACK)
 		Die("Registration not acknowledged");
 }
