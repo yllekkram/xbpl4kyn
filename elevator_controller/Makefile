@@ -5,12 +5,29 @@ CXXLD				= $(CXX)
 CXXLDFLAGS	=
 RM					= rm
 
+vpath %.hpp include:test/include
+
+EXE			= ElevatorTestServer UDPTestServer testTCP testUDP testElevatorController main ElevatorSimulatorTest
+SRCS		= $(wildcard *.cpp)
+OBJS		= ${SRCS:.cpp=.opp}
+
+# clear out all the suffixes
+.SUFFIXES:
+# list only those that we use
+.SUFFIXES: .opp .cpp
+
+# define a suffix rule for .cpp -> .opp
+.cpp.opp:
+	$(CXX) $(CXXINC) -o $@ -c $< $(CXXFLAGS) 
+
+all: $(EXE)
+
 ###### Xenomai Config ######
 ### Note: to override the search path for the xeno-config script, use "make XENO=..."
 
 ###### USER SPACE BUILD (no change required normally) ######
 ifeq ($(KERNELRELEASE),)
-ifneq ($(APPLICATIONS),)
+ifneq ($(EXE),)
 
 ### Default Xenomai installation path
 XENO ?= /usr/xenomai
@@ -34,24 +51,6 @@ CXXLDFLAGS+=-Xlinker -rpath -Xlinker $(shell $(XENOCONFIG) --libdir)
 endif
 endif
 ###### End Xenomai Config ######
-
-
-vpath %.hpp include:test/include
-
-EXE			= ElevatorTestServer UDPTestServer testTCP testUDP testElevatorController main ElevatorSimulatorTest
-SRCS		= $(wildcard *.cpp)
-OBJS		= ${SRCS:.cpp=.opp}
-
-# clear out all the suffixes
-.SUFFIXES:
-# list only those that we use
-.SUFFIXES: .opp .cpp
-
-# define a suffix rule for .cpp -> .opp
-.cpp.opp:
-	$(CXX) $(CXXINC) -o $@ -c $< $(CXXFLAGS) 
-
-all: $(EXE)
 
 main: main.opp
 	$(CXXLD) $(CXXLDFLAGS) -o $@ $^
