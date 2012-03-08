@@ -7,9 +7,10 @@ RM					= rm
 
 vpath %.hpp include:test/include
 
-EXE			= ElevatorTestServer UDPTestServer testTCP testUDP testElevatorController main ElevatorSimulatorTest
-SRCS		= $(wildcard *.cpp)
-OBJS		= ${SRCS:.cpp=.opp}
+EXE				= ElevatorTestServer UDPTestServer testTCP testUDP testElevatorController ElevatorSimulatorTest
+XENOEXE		= main
+SRCS			= $(wildcard *.cpp)
+OBJS			= ${SRCS:.cpp=.opp}
 
 # clear out all the suffixes
 .SUFFIXES:
@@ -27,7 +28,7 @@ all:: $(EXE)
 
 ###### USER SPACE BUILD (no change required normally) ######
 ifeq ($(KERNELRELEASE),)
-ifneq ($(EXE),)
+ifneq ($(XENOEXE),)
 
 ### Default Xenomai installation path
 XENO ?= /usr/xenomai
@@ -41,21 +42,21 @@ all::
 	@echo
 endif
 
-CXXFLAGS+=$(shell $(XENOCONFIG) --xeno-cflags) $(MY_CFLAGS)
+XENOCXXFLAGS+=$(shell $(XENOCONFIG) --xeno-cflags) $(MY_CFLAGS)
 
-CXXLDFLAGS=$(shell $(XENOCONFIG) --xeno-ldflags) $(MY_LDFLAGS) -lnative
+XENOCXXLDFLAGS=$(shell $(XENOCONFIG) --xeno-ldflags) $(MY_LDFLAGS) -lnative
 
 # This includes the library path of given Xenomai into the binary to make live
 # easier for beginners if Xenomai's libs are not in any default search path.
-CXXLDFLAGS+=-Xlinker -rpath -Xlinker $(shell $(XENOCONFIG) --libdir)
+XENOCXXLDFLAGS+=-Xlinker -rpath -Xlinker $(shell $(XENOCONFIG) --libdir)
 endif
 endif
 ###### End Xenomai Config ######
 
 main: main.opp Heap.opp ElevatorSimulator.opp
-	$(CXXLD) $(CXXLDFLAGS) -o $@ $^
+	$(CXXLD) $(XENOCXXLDFLAGS) -o $@ $^
 
-tests: test/test.opp test/testElevatorController.opp test/testHeap.opp test/testMessage.opp Message.opp Heap.opp ElevatorCommon.opp test/testElevatorSimulator.opp ElevatorSimulator.opp
+tests: test/test.opp test/testElevatorController.opp test/testHeap.opp test/testMessage.opp Message.opp Heap.opp ElevatorCommon.opp
 	$(CXX) $(CXXINC) -o test/test $^ test/lib/libUnitTest++.a $(CXXFLAGS)
 
 clean:
@@ -82,6 +83,8 @@ testElevatorController: ElevatorCommon.opp ElevatorController.opp Message.opp UD
 ElevatorCommon.opp: ElevatorCommon.hpp
 ElevatorController.opp: ElevatorCommon.hpp Heap.hpp Message.hpp
 ElevatorControllerView.opp: ElevatorControllerView.hpp
+ElevatorSimulator.opp: ElevatorSimulator.hpp
+ElevatorSimulatorTest.opp: ElevatorSimulator.hpp
 ElevatorTestServer.opp: ElevatorCommon.hpp
 Heap.opp: Heap.hpp
 Message.opp: Message.hpp ElevatorCommon.hpp
@@ -95,9 +98,3 @@ test.opp: UnitTest++.h
 testElevatorController.opp: ElevatorController.hpp ElevatorController.cpp
 testHeap.opp: Heap.hpp
 testMessage.opp: Message.hpp
-
-ElevatorSimulator.opp: ElevatorSimulator.hpp
-
-ElevatorSimulatorTest.opp: ElevatorSimulator.hpp
-testElevatorSimulator.opp: ElevatorSimulator.hpp
-
