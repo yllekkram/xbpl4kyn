@@ -7,8 +7,7 @@ RM					= rm
 
 vpath %.hpp include:test/include
 
-EXE				= ElevatorTestServer UDPTestServer testTCP testUDP testElevatorController ElevatorSimulatorTest
-XENOEXE		= main
+EXE				= ElevatorTestServer UDPTestServer testTCP testUDP testElevatorController ElevatorSimulatorTest main
 SRCS			= $(wildcard *.cpp)
 OBJS			= ${SRCS:.cpp=.opp}
 
@@ -42,19 +41,19 @@ all::
 	@echo
 endif
 
-XENOCXXFLAGS+=$(shell $(XENOCONFIG) --xeno-cflags) $(MY_CFLAGS)
+CXXFLAGS+=$(shell $(XENOCONFIG) --xeno-cflags) $(MY_CFLAGS)
 
-XENOCXXLDFLAGS=$(shell $(XENOCONFIG) --xeno-ldflags) $(MY_LDFLAGS) -lnative
+CXXLDFLAGS=$(shell $(XENOCONFIG) --xeno-ldflags) $(MY_LDFLAGS) -lnative
 
 # This includes the library path of given Xenomai into the binary to make live
 # easier for beginners if Xenomai's libs are not in any default search path.
-XENOCXXLDFLAGS+=-Xlinker -rpath -Xlinker $(shell $(XENOCONFIG) --libdir)
+CXXLDFLAGS+=-Xlinker -rpath -Xlinker $(shell $(XENOCONFIG) --libdir)
 endif
 endif
 ###### End Xenomai Config ######
 
 main: main.opp Heap.opp ElevatorSimulator.opp
-	$(CXXLD) $(XENOCXXLDFLAGS) -o $@ $^
+	$(CXXLD) $(CXXLDFLAGS) -o $@ $^
 
 tests: test/test.opp test/testElevatorController.opp test/testHeap.opp test/testMessage.opp Message.opp Heap.opp ElevatorCommon.opp
 	$(CXX) $(CXXINC) -o test/test $^ test/lib/libUnitTest++.a $(CXXFLAGS)

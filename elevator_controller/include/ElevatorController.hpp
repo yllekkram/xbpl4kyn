@@ -53,6 +53,8 @@ class ElevatorController {
 class ElevatorControllerStatus {
 	public:
 		char speed;
+    char destination;
+    char position;
 };
 
 #endif
