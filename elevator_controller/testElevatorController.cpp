@@ -16,10 +16,10 @@ int main(int argc, char* argv[]) {
 	UDPView* uv = new UDPView(argv[3], argv[4]);
 
 	ec->connectToGD(argv[1], atoi(argv[2]));
-	ec->addView(uv);
-
-	uv->receiveMessage(1);
-	
+  try {
+    ec->addView(uv);
+  }
+  catch (std::exception) {}
 	delete ec;
 	
 	std::cout << std::endl;

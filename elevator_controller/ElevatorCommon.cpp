@@ -6,5 +6,5 @@
 
 void Die(std::string mess) {
 	perror(mess.c_str());
-	exit(1);
+	throw std::exception();
 }

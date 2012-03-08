@@ -26,6 +26,7 @@ class UDPView : public ElevatorControllerView {
 	
 		void initUDP(char* address, char* port);
     void sendMessage(const Message& message);
+    void receiveAck();
 };
 
 #endif

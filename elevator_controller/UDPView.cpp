@@ -45,6 +45,7 @@ void UDPView::setController(ElevatorController* ec) {
 
 void UDPView::registerWithViewer() {
 	this->sendMessage(GUIRegistrationMessage(this->getEC()->getID()));
+  this->receiveAck();
 }
 
 void UDPView::sendMessage(const Message& message) {
@@ -63,6 +64,10 @@ void UDPView::sendMessage(char* message, int len) {
 		Die("Mismatch in number of bytes sent");
 	}
   std::cout << "done." << std::endl;
+}
+
+void UDPView::receiveAck() {
+  this->receiveMessage(1);
 }
 
 void UDPView::receiveMessage(unsigned int len) {
