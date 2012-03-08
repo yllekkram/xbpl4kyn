@@ -15,7 +15,7 @@ class UDPView : public ElevatorControllerView {
 		
 		void receiveStatus(ElevatorControllerStatus* status);
 		
-		void sendMessage(char* message, unsigned int len=0);
+		void sendMessage(char* message, int len=0);
 		void receiveMessage(unsigned int len=0);
 		
 		void registerWithViewer();

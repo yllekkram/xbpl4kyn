@@ -13,7 +13,7 @@ int main(int argc, char* argv[]) {
 	struct sockaddr_in echoserver;
 	struct sockaddr_in echoclient;
 	char buffer[BUFFSIZE];
-	unsigned int echolen, clientlen, serverlen;
+	unsigned int clientlen, serverlen;
 	int received = 0;
 	
 	if (argc != 2) {

@@ -43,7 +43,7 @@ void ElevatorController::waitForGDRequest() {
 	
 	switch (requestType) {
 		case STATUS_REQUEST:
-      message = new StatusRequestMessage();
+      this->sendStatus();
 			std::cout << "Status Request" << std::endl;
 			break;
 		case HALL_CALL_ASSIGNMENT:
@@ -59,27 +59,10 @@ void ElevatorController::waitForGDRequest() {
 void ElevatorController::sendStatus() {
 	std::vector<char>* hallCalls = new std::vector<char>(); // = FloorRequestHeap.getHallCalls();
 
-	int len =		1	/* Message Type */
-						+ 1	/* ID */
-						+ 1 /* Position */
-						+ 1 /* Destination */
-						+ 1 /* Speed */
-						+ 1 /* Number of Call Registrations */
-						+ hallCalls->size();
+	this->sendMessage(StatusResponseMessage(this->id, 
+                                          5, 6, 7, hallCalls->size(), 
+                                          (char*) &hallCalls[0]));
 
-	char* message = new char(len);
-
-	message[0] = STATUS_RESPONSE;
-	message[1] = this->id;
-	message[2] = 5;
-	message[3] = 6;
-	message[4] = 7;
-	message[5] = hallCalls->size();
-	copy(hallCalls->begin(), hallCalls->end(), message + 6);
-
-	this->sendMessage(Message(message, len));
-
-	delete message;
 	delete hallCalls;
 }
 
@@ -100,6 +83,11 @@ void ElevatorController::connectToGD(char* gdAddress, int port) {
 	this->sendRegistration();
 }
 
+void receiveHallCall(HallCallAssignmentMessage& message) {
+  std::cout << "Received hall call for floor " << (int) message.getFloor();
+  std::cout << " in " << ((message.getDirection() == HALL_CALL_DIRECTION_DOWN) ? "downward" : "upward") << " direction" << std::endl;
+}
+
 void ElevatorController::sendRegistration() {
 	sendMessage(RegisterWithGDMessage(this->id));
 	
@@ -110,7 +98,7 @@ void ElevatorController::sendMessage(const Message& message) {
 	this->sendMessage(message.getBuffer(), message.getLen());
 }
 
-void ElevatorController::sendMessage(const char * message, unsigned int len) {
+void ElevatorController::sendMessage(const char * message, int len) {
 	if (len == 0) {
 		len = strlen(message);
 	}
