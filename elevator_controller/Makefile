@@ -52,7 +52,7 @@ endif
 endif
 ###### End Xenomai Config ######
 
-main: main.opp
+main: main.opp Heap.opp ElevatorSimulator.opp
 	$(CXXLD) $(CXXLDFLAGS) -o $@ $^
 
 tests: test/test.opp test/testElevatorController.opp test/testHeap.opp test/testMessage.opp Message.opp Heap.opp ElevatorCommon.opp test/testElevatorSimulator.opp ElevatorSimulator.opp
