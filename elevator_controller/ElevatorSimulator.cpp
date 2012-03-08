@@ -10,10 +10,24 @@
 
 #include "ElevatorSimulator.hpp"
 
+
+
+// Uninitialized members
+//
+// float doorClosedTime
+// float travelTime
+// float doorOpenedTime
+// float doorOpenedAndReadyTime
+// float doorClosedTime
+
+
 ElevatorSimulator::ElevatorSimulator()
-:currentPosition(0), currentSpeed(0), currentFloor(0), finalDestination(0), midLocation(0), task(false),
- midTime(0), DoorOpening(false), DoorOpen(false), DoorClosing(false), accTime(0), decTime(0), midSpeed(0),
- maxDistTime(0), distAcc(0), distDec(0), distMaxSpeed(0), numState(0), directionUP(true)
+	: tp(new struct timeb), tpe(new struct timeb), currentPosition(0),
+	currentSpeed(0), currentFloor(0), finalDestination(0),
+	midLocation(0), task(false), directionUP(true),
+	DoorOpening(false), DoorOpen(false), DoorClosing(false),
+	numState(0), accTime(0), decTime(0), maxDistTime(0), distAcc(0),
+	distDec(0), distMaxSpeed(0), midTime(0), midSpeed(0)
 {
 	tp = new struct timeb;					//structure for saving start time
 	tpe = new struct timeb;					//structure for saving current time
