@@ -44,7 +44,7 @@ void UDPView::setController(ElevatorController* ec) {
 }
 
 void UDPView::registerWithViewer() {
-	this->sendMessage(GUIRegistrationMessage());
+	this->sendMessage(GUIRegistrationMessage(this->getEC()->getID()));
 }
 
 void UDPView::sendMessage(const Message& message) {

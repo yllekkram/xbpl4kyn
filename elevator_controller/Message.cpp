@@ -210,3 +210,7 @@ NewDirectionMessage::NewDirectionMessage(const char* buffer, unsigned int len)
 {
   this->direction = this->buffer[2];
 }
+
+GUIRegistrationMessage::GUIRegistrationMessage(char ecID)
+  : ElevatorControllerMessage(GUI_REGISTER_MESSAGE, ecID)
+{}
