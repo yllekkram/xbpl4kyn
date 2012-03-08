@@ -16,17 +16,27 @@ class Message {
 		unsigned int len;
 };
 
-class ElevatorControllerMessage : public Message {
+class TypedMessage : public Message {
   public:
-    ElevatorControllerMessage(char type, char ecID, unsigned int len=2);
-    ElevatorControllerMessage(const char* buffer, unsigned int len);
-    ~ElevatorControllerMessage();
+    TypedMessage(char type, unsigned int len=1);
+    TypedMessage(const char* buffer, unsigned int len);
+    ~TypedMessage() {}
     
     char getType() const { return this->type; }
-    char getECID() const { return this->ecID; }
     
   private:
     char type;
+};
+
+class ElevatorControllerMessage : public TypedMessage {
+  public:
+    ElevatorControllerMessage(char type, char ecID, unsigned int len=2);
+    ElevatorControllerMessage(const char* buffer, unsigned int len);
+    ~ElevatorControllerMessage() {}
+    
+    char getECID() const { return this->ecID; }
+    
+  private:
     char ecID;
 };
 
@@ -47,11 +57,11 @@ class StatusResponseMessage : public ElevatorControllerMessage {
 			char* hallCalls;
 };
 
-class HallCallAssignmentMessage : public Message {
+class HallCallAssignmentMessage : public TypedMessage {
   public:
     HallCallAssignmentMessage(char floor, char direction);
     HallCallAssignmentMessage(const char* buffer);
-    ~HallCallAssignmentMessage();
+    ~HallCallAssignmentMessage() {};
     
     char getFloor()     const { return this->floor; };
     char getDirection() const { return this->direction; };
@@ -61,22 +71,22 @@ class HallCallAssignmentMessage : public Message {
     char direction;
 };
 
-class StatusRequestMessage : public Message {
+class StatusRequestMessage : public TypedMessage {
   public:
     StatusRequestMessage();
-    ~StatusRequestMessage();
+    ~StatusRequestMessage() {}
 };
 
 class RegisterWithGDMessage : public ElevatorControllerMessage {
   public:
     RegisterWithGDMessage(char ecID);
-    ~RegisterWithGDMessage();
+    ~RegisterWithGDMessage() {}
 };
 
-class RegistrationAckMessage : public Message {
+class RegistrationAckMessage : public TypedMessage {
   public:
     RegistrationAckMessage();
-    ~RegistrationAckMessage();
+    ~RegistrationAckMessage() {}
 };
 
 class ErrorMessage : public ElevatorControllerMessage {
@@ -93,6 +103,69 @@ class ErrorMessage : public ElevatorControllerMessage {
     char errorCode;
     char detailsLength;
     char* details;
+};
+
+class GUIRegistrationAckMessage : public TypedMessage {
+  public:
+    GUIRegistrationAckMessage();
+    ~GUIRegistrationAckMessage() {}    
+};
+
+class FloorSelectionMessage : public TypedMessage {
+  public:
+    FloorSelectionMessage(char floor);
+    FloorSelectionMessage(const char* buffer, unsigned int len);
+    ~FloorSelectionMessage() {}
+    
+    char getFloor() const { return this->floor; }
+  
+  private:
+    char floor;
+};
+
+class OpenDoorRequestMessage : public TypedMessage {
+  public:
+    OpenDoorRequestMessage();
+    ~OpenDoorRequestMessage() {}
+};
+
+class CloseDoorRequestMessage : public TypedMessage {
+  public:
+    CloseDoorRequestMessage();
+    ~CloseDoorRequestMessage() {}
+};
+
+class EmergencyStopMessage : public TypedMessage {
+  public:
+    EmergencyStopMessage();
+    ~EmergencyStopMessage() {}
+};
+
+class GUIRegistrationMessage : public ElevatorControllerMessage {
+  public:
+    GUIRegistrationMessage(char ecID);
+    GUIRegistrationMessage(const char* buffer, unsigned int len);
+    ~GUIRegistrationMessage() {}
+};
+
+class FloorReachedMessage : public ElevatorControllerMessage {
+  public:
+    FloorReachedMessage(char ecID, char floor);
+    FloorReachedMessage(const char* buffer, unsigned int len);
+    ~FloorReachedMessage() {}
+  
+  private:
+    char floor;
+};
+
+class NewDirectionMessage : public ElevatorControllerMessage {
+  public:
+    NewDirectionMessage(char ecID, char direction);
+    NewDirectionMessage(const char* buffer, unsigned int len);
+    ~NewDirectionMessage() {}
+    
+  private:
+    char direction;
 };
 
 #endif
