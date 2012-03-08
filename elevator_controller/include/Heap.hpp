@@ -90,6 +90,10 @@ class FloorRunHeap {
     virtual void pushFloorRequest(char dest) = 0;
     virtual void pushHallCall(char dest) = 0;
     
+    virtual int getSize() const {
+      return floorRequestHeap->getSize() + hallCallHeap->getSize();
+    }
+    
     virtual std::vector<char>* getHallCalls() const {
       return this->hallCallHeap->getVector();
     }
