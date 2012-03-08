@@ -11,7 +11,7 @@ template <class T>
 class Heap {
   public:
     Heap() : data(new std::vector<T>()) {}
-    ~Heap() { delete this->data; }
+    virtual ~Heap() { delete this->data; }
     
     virtual void push(T item) = 0;
     virtual T pop() = 0;
@@ -39,7 +39,7 @@ class MaxHeap : public Heap<T> {
 	public:
 		MaxHeap() : Heap<T>() {}
 		MaxHeap<T>(const MaxHeap<T>& rhs);
-		~MaxHeap(){}
+		virtual ~MaxHeap(){}
 
 		void push(T item) {
 			this->data->push_back(item);
@@ -60,7 +60,7 @@ template <class T>
 class MinHeap : public Heap<T> {
 	public:
 		MinHeap() : Heap<T>(), comp() {}
-		~MinHeap() {}
+		virtual ~MinHeap() {}
 		
 		void push(T item) {
 			this->data->push_back(item);
@@ -83,6 +83,7 @@ class MinHeap : public Heap<T> {
 class FloorRunHeap {
   public:
     FloorRunHeap(char direction) : direction(direction) {}
+    virtual ~FloorRunHeap() {}
     
     virtual char peek() const = 0;
     virtual char pop() = 0;
@@ -102,10 +103,10 @@ class FloorRunHeap {
 class UpwardFloorRunHeap : public FloorRunHeap {
 	public:
 		UpwardFloorRunHeap();
-		~UpwardFloorRunHeap();
+		virtual ~UpwardFloorRunHeap();
 	
 		virtual char peek() const;
-		char pop();
+		virtual char pop();
 		
 		void pushFloorRequest(char dest);
 		void pushHallCall(char dest);
@@ -114,10 +115,10 @@ class UpwardFloorRunHeap : public FloorRunHeap {
 class DownwardFloorRunHeap : public FloorRunHeap {
 	public:
 		DownwardFloorRunHeap();
-		~DownwardFloorRunHeap();
+		virtual ~DownwardFloorRunHeap();
 	
-		char peek() const;
-		char pop();
+		virtual char peek() const;
+		virtual char pop();
 		
 		void pushFloorRequest(char dest);
 		void pushHallCall(char dest);

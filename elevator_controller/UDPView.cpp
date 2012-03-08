@@ -48,7 +48,7 @@ void UDPView::registerWithViewer() {
 	this->sendMessage(message);
 }
 
-void UDPView::sendMessage(char* message, unsigned int len) {
+void UDPView::sendMessage(char* message, int len) {
 	if (len == 0) {
 		len = strlen(message);
 	}

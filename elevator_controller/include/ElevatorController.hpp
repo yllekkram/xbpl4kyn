@@ -40,11 +40,13 @@ class ElevatorController {
 			return nextID++;
 		}
 		
+    void receiveHallCall(HallCallAssignmentMessage message);
+    
 		void sendRegistration();
 		void receiveAck();
 		
 		void sendMessage(const Message& message);
-		void sendMessage(const char* message, unsigned int len);
+		void sendMessage(const char* message, int len);
 		char* receiveTCP(unsigned int length);
 };
 

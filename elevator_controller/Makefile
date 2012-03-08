@@ -20,7 +20,7 @@ OBJS		= ${SRCS:.cpp=.opp}
 .cpp.opp:
 	$(CXX) $(CXXINC) -o $@ -c $< $(CXXFLAGS) 
 
-all: $(EXE)
+all:: $(EXE)
 
 ###### Xenomai Config ######
 ### Note: to override the search path for the xeno-config script, use "make XENO=..."

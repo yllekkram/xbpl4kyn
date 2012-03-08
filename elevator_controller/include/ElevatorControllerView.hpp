@@ -8,6 +8,7 @@ class ElevatorControllerStatus;
 
 class ElevatorControllerView {
 	public:		
+    virtual ~ElevatorControllerView() {}
 		virtual void receiveStatus(ElevatorControllerStatus* status) = 0;
 		
 		virtual void setController(ElevatorController* ec) {

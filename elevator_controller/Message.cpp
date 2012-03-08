@@ -32,25 +32,32 @@ unsigned int Message::getLen() const {
 	return this->len;
 }
 
-ElevatorControllerMessage::ElevatorControllerMessage(char type, char ecID, unsigned int len)
-  : Message(len), type(type), ecID(ecID)
+TypedMessage::TypedMessage(char type, unsigned int len)
+  : Message(len), type(type)
 {
   this->buffer[0] = type;
+}
+
+TypedMessage::TypedMessage(const char* buffer, unsigned int len)
+  : Message(buffer, len)
+{
+  this->type = buffer[0];
+}
+
+ElevatorControllerMessage::ElevatorControllerMessage(char type, char ecID, unsigned int len)
+  : TypedMessage(type, len), ecID(ecID)
+{
   this->buffer[1] = ecID;
 }
 
 ElevatorControllerMessage::ElevatorControllerMessage(const char* buffer, unsigned int len)
-  :Message(buffer, len)
+  :TypedMessage(buffer, len)
 {
   if (len < 2)
     throw std::exception();
     
-  this->type = buffer[0];
   this->ecID = buffer[1];
 }
-
-ElevatorControllerMessage::~ElevatorControllerMessage()
-{}
 
 StatusResponseMessage::StatusResponseMessage(char ecID, char position, char destination, char speed, char numHallCalls, const char* hallCalls)
 	: ElevatorControllerMessage(STATUS_RESPONSE, ecID), position(position), destination(destination), speed(speed), numHallCalls(numHallCalls), hallCalls(new char[numHallCalls])
@@ -107,15 +114,14 @@ char* StatusResponseMessage::getHallCalls()	const {
 }
 
 HallCallAssignmentMessage::HallCallAssignmentMessage(char floor, char direction)
-  : Message(3), floor(floor), direction(direction)
+  : TypedMessage(HALL_CALL_ASSIGNMENT, 3), floor(floor), direction(direction)
 {
-  this->buffer[0] = HALL_CALL_ASSIGNMENT;
   this->buffer[1] = floor;
   this->buffer[2] = direction;
 }
 
 HallCallAssignmentMessage::HallCallAssignmentMessage(const char* buffer)
-  : Message(buffer, 3)
+  : TypedMessage(buffer, 3)
 {
   if (buffer[0] != HALL_CALL_ASSIGNMENT)
     throw std::exception();
@@ -124,32 +130,16 @@ HallCallAssignmentMessage::HallCallAssignmentMessage(const char* buffer)
   this->direction = this->buffer[2];
 }
 
-HallCallAssignmentMessage::~HallCallAssignmentMessage()
-{}
-
 StatusRequestMessage::StatusRequestMessage()
-  : Message(1)
-{
-  this->buffer[0] = STATUS_REQUEST;
-}
-
-StatusRequestMessage::~StatusRequestMessage()
+  : TypedMessage(STATUS_REQUEST)
 {}
 
 RegisterWithGDMessage::RegisterWithGDMessage(char ecID)
   : ElevatorControllerMessage(REGISTER_MESSAGE, ecID)
 {}
 
-RegisterWithGDMessage::~RegisterWithGDMessage()
-{}
-
 RegistrationAckMessage::RegistrationAckMessage()
-  : Message(1)
-{
-  this->buffer[0] = REGISTRATION_ACK;
-}
-
-RegistrationAckMessage::~RegistrationAckMessage()
+  : TypedMessage(REGISTRATION_ACK)
 {}
 
 ErrorMessage::ErrorMessage(char ecID, char errorCode, char detailsLength, char* details)
@@ -180,8 +170,9 @@ ErrorMessage::ErrorMessage(const char* buffer, unsigned int len)
   this->detailsLength = this->buffer[3];
 }
 
-ErrorMessage::~ErrorMessage()
-{}
+ErrorMessage::~ErrorMessage() {
+  delete this->details;
+}
 
 char ErrorMessage::getErrorCode() const {
   return this->errorCode;
@@ -195,4 +186,26 @@ char* ErrorMessage::getDetails() const {
   char* newCopy = new char[this->detailsLength];
   std::copy(this->details, this->details + this->detailsLength, newCopy);
   return newCopy;
+}
+
+GUIRegistrationAckMessage::GUIRegistrationAckMessage()
+  : TypedMessage(GUI_REGISTRATION_ACK)
+{}
+
+FloorSelectionMessage::FloorSelectionMessage(char floor)
+  : TypedMessage(FLOOR_SELECTION_MESSAGE, 2), floor(floor)
+{
+  this->buffer[1] = floor;
+}
+
+NewDirectionMessage::NewDirectionMessage(char ecID, char direction)
+  : ElevatorControllerMessage(ecID, 3), direction(direction)
+{
+  this->buffer[2] = direction;
+}
+
+NewDirectionMessage::NewDirectionMessage(const char* buffer, unsigned int len)
+  : ElevatorControllerMessage(buffer, len)
+{
+  this->direction = this->buffer[2];
 }
