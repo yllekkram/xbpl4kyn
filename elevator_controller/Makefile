@@ -5,6 +5,37 @@ CXXLD				= $(CXX)
 CXXLDFLAGS	=
 RM					= rm
 
+###### Xenomai Config ######
+### Note: to override the search path for the xeno-config script, use "make XENO=..."
+
+###### USER SPACE BUILD (no change required normally) ######
+ifeq ($(KERNELRELEASE),)
+ifneq ($(APPLICATIONS),)
+
+### Default Xenomai installation path
+XENO ?= /usr/xenomai
+
+XENOCONFIG=$(shell PATH=$(XENO):$(XENO)/bin:$(PATH) which xeno-config 2>/dev/null)
+
+### Sanity check
+ifeq ($(XENOCONFIG),)
+all::
+	@echo ">>> Invoke make like this: \"make XENO=/path/to/xeno-config\" <<<"
+	@echo
+endif
+
+CXXFLAGS+=$(shell $(XENOCONFIG) --xeno-cflags) $(MY_CFLAGS)
+
+CXXLDFLAGS=$(shell $(XENOCONFIG) --xeno-ldflags) $(MY_LDFLAGS) -lnative
+
+# This includes the library path of given Xenomai into the binary to make live
+# easier for beginners if Xenomai's libs are not in any default search path.
+CXXLDFLAGS+=-Xlinker -rpath -Xlinker $(shell $(XENOCONFIG) --libdir)
+endif
+endif
+###### End Xenomai Config ######
+
+
 vpath %.hpp include:test/include
 
 EXE			= ElevatorTestServer UDPTestServer testTCP testUDP testElevatorController main ElevatorSimulatorTest
@@ -37,7 +68,7 @@ ElevatorSimulatorTest: ElevatorSimulator.opp ElevatorSimulatorTest.opp
 ElevatorTestServer: ElevatorCommon.opp ElevatorTestServer.opp
 	$(CXXLD) $(CXXLDFLAGS) -o $@ $^
 
-testTCP: ElevatorCommon.opp ElevatorController.hpp ElevatorController.opp Message.opp testTCP.opp
+testTCP: ElevatorCommon.opp ElevatorController.opp Message.opp testTCP.opp
 	$(CXXLD) $(CXXLDFLAGS) -o $@ $^
 	
 UDPTestServer: ElevatorCommon.opp UDPTestServer.opp
@@ -46,7 +77,7 @@ UDPTestServer: ElevatorCommon.opp UDPTestServer.opp
 testUDP: ElevatorCommon.opp ElevatorController.opp Message.opp UDPView.opp testUDP.opp
 	$(CXXLD) $(CXXLDFLAGS) -o $@ $^
 	
-testElevatorController: ElevatorCommon.hpp ElevatorCommon.opp ElevatorController.hpp ElevatorController.opp Message.opp UDPView.opp testElevatorController.opp
+testElevatorController: ElevatorCommon.opp ElevatorController.opp Message.opp UDPView.opp testElevatorController.opp
 	$(CXXLD) $(CXXLDFLAGS) -o $@ $^
 
 ElevatorCommon.opp: ElevatorCommon.hpp
