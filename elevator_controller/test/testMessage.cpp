@@ -82,7 +82,7 @@ SUITE(HallCallAssignmentMessage) {
       HALL_CALL_DIRECTION_UP
     );
     
-    CHECK_EQUAL(3U, message.getLen());
+    CHECK_EQUAL(4U, message.getLen());
     CHECK_EQUAL(7, message.getFloor());
     CHECK_EQUAL(HALL_CALL_DIRECTION_UP, message.getDirection());
   }
@@ -109,7 +109,7 @@ SUITE(StatusRequestMessage) {
   TEST(Constructor) {
     StatusRequestMessage message;
     
-    CHECK_EQUAL(1U, message.getLen());
+    CHECK_EQUAL(2U, message.getLen());
     CHECK_EQUAL(STATUS_REQUEST, message.getBuffer()[0]);
   }
 }
@@ -118,7 +118,7 @@ SUITE(RegisterWithGDMessage) {
   TEST(Constructor) {
     RegisterWithGDMessage message(5);
     
-    CHECK_EQUAL(2U, message.getLen());
+    CHECK_EQUAL(3U, message.getLen());
     CHECK_EQUAL(REGISTER_MESSAGE, message.getBuffer()[0]);
   }
 }
@@ -127,7 +127,7 @@ SUITE(RegistrationAckMessage) {
   TEST(Constructor) {
     RegistrationAckMessage message;
     
-    CHECK_EQUAL(1U, message.getLen());
+    CHECK_EQUAL(2U, message.getLen());
     CHECK_EQUAL(REGISTRATION_ACK, message.getBuffer()[0]);
   }
 }

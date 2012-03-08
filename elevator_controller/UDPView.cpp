@@ -3,6 +3,7 @@
 #include <arpa/inet.h>
 #include <cstdlib>
 #include <cstring>
+#include <iostream>
 #include <unistd.h>
 #include <netinet/in.h>
 
@@ -23,9 +24,11 @@ void UDPView::receiveStatus(ElevatorControllerStatus* status) {
 }
 
 void UDPView::initUDP(char* address, char* port) {
+  std::cout << "Initialising UDP...";
 	if ((this->sock = socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP)) < 0) {
 		Die("Failed to create socket");
 	}
+  std::cout << "done." << std::endl;
 	
 	/* Construct the server sockaddr_in structure */
 	memset(&(this->server), 0, sizeof(this->server));		/* Clear struct */
@@ -41,11 +44,11 @@ void UDPView::setController(ElevatorController* ec) {
 }
 
 void UDPView::registerWithViewer() {
-	char message[2];
-	message[0] = GUI_REGISTER_MESSAGE;
-	message[1] = this->getEC()->getID();
-	
-	this->sendMessage(message);
+	this->sendMessage(GUIRegistrationMessage());
+}
+
+void UDPView::sendMessage(const Message& message) {
+  this->sendMessage(message.getBuffer(), message.getLen());
 }
 
 void UDPView::sendMessage(char* message, int len) {
@@ -53,11 +56,13 @@ void UDPView::sendMessage(char* message, int len) {
 		len = strlen(message);
 	}
 	
+  std::cout << "Sending udp packet...";
 	if (sendto(this->sock, message, len, 0,
 							(struct sockaddr *) &(this->server),
 							sizeof(this->server)) != len) {
 		Die("Mismatch in number of bytes sent");
 	}
+  std::cout << "done." << std::endl;
 }
 
 void UDPView::receiveMessage(unsigned int len) {
@@ -66,11 +71,13 @@ void UDPView::receiveMessage(unsigned int len) {
 	unsigned int clientlen = sizeof(client);
 	int received = 0;
 	
+  std::cout << "Receiving UDP message...";
 	if ((received = recvfrom(this->sock, buffer, BUFFSIZE, 0,
 														(struct sockaddr *) &client,
 														&clientlen)) != len) {
 		Die("Mismatch in number of received bytes");
 	}
+  std::cout << "done." << std::endl;
 	
 	/* Check that the client and server are using the same socket */
 	if (this->server.sin_addr.s_addr != client.sin_addr.s_addr) {

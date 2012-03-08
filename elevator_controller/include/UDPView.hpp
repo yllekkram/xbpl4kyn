@@ -25,6 +25,7 @@ class UDPView : public ElevatorControllerView {
 		struct sockaddr_in server;
 	
 		void initUDP(char* address, char* port);
+    void sendMessage(const Message& message);
 };
 
 #endif
