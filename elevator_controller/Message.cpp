@@ -33,9 +33,10 @@ unsigned int Message::getLen() const {
 }
 
 TypedMessage::TypedMessage(char type, unsigned int len)
-  : Message(len), type(type)
+  : Message(len+1), type(type)
 {
   this->buffer[0] = type;
+  this->buffer[len++] = "\n";
 }
 
 TypedMessage::TypedMessage(const char* buffer, unsigned int len)
