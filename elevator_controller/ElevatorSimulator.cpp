@@ -155,3 +155,4 @@ bool ElevatorSimulator::getIsDirectionUp(){return directionUP;}
 bool ElevatorSimulator::getIsDoorOpening(){return DoorOpening;}
 bool ElevatorSimulator::getIsDoorOpen(){return DoorOpen;}
 bool ElevatorSimulator::getIsDoorClosing(){return DoorClosing;}
+void ElevatorSimulator::print(){std::cout << "currentSpeed " << currentSpeed << " currentFloor " << currentFloor << " task " << task << " directionUP " << directionUP << " DoorOpening " << DoorOpening << " DoorOpen " << DoorOpen << " DoorClosing " << DoorClosing << std::endl;}

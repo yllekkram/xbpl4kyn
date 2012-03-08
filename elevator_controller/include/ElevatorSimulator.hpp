@@ -21,6 +21,7 @@ class ElevatorSimulator {
 		bool getIsDoorOpening();
 		bool getIsDoorOpen();
 		bool getIsDoorClosing();
+		void print();
 
 		
 	private:
