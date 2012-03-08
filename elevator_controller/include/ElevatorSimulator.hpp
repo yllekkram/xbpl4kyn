@@ -1,4 +1,4 @@
-#define MAX_SPEED		5			//maximum speed of elevator
+#define MAX_SPEED		4			//maximum speed of elevator
 #define ACCELERATION	2		//acceleration of elevator
 #define DECELATRAION	-2		//Deceleration of elevator
 #define FLOOR_HEIGHT	10			//height of floor

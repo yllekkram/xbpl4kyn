@@ -56,7 +56,7 @@ all: $(EXE)
 main: main.opp
 	$(CXXLD) $(CXXLDFLAGS) -o $@ $^
 
-tests: Message.opp Heap.opp ElevatorCommon.opp test/testElevatorController.opp test/testHeap.opp test/testMessage.opp test/test.opp
+tests: test/test.opp test/testElevatorController.opp test/testHeap.opp test/testMessage.opp Message.opp Heap.opp ElevatorCommon.opp test/testElevatorSimulator.opp ElevatorSimulator.opp
 	$(CXX) $(CXXINC) -o test/test $^ test/lib/libUnitTest++.a $(CXXFLAGS)
 
 clean:
@@ -100,4 +100,5 @@ testMessage.opp: Message.hpp
 ElevatorSimulator.opp: ElevatorSimulator.hpp
 
 ElevatorSimulatorTest.opp: ElevatorSimulator.hpp
+testElevatorSimulator.opp: ElevatorSimulator.hpp
 
