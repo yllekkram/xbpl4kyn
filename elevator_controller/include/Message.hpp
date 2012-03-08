@@ -16,13 +16,26 @@ class Message {
 		unsigned int len;
 };
 
-class StatusResponseMessage : public Message {
+class ElevatorControllerMessage : public Message {
+  public:
+    ElevatorControllerMessage(char type, char ecID, unsigned int len=2);
+    ElevatorControllerMessage(const char* buffer, unsigned int len);
+    ~ElevatorControllerMessage();
+    
+    char getType() const { return this->type; }
+    char getECID() const { return this->ecID; }
+    
+  private:
+    char type;
+    char ecID;
+};
+
+class StatusResponseMessage : public ElevatorControllerMessage {
 	public:
-		StatusResponseMessage(char id, char position, char destination, char speed, char numHallCalls, const char* hallCalls);
+		StatusResponseMessage(char ecID, char position, char destination, char speed, char numHallCalls, const char* hallCalls);
 		StatusResponseMessage(const char* buffer, unsigned int len);
 		~StatusResponseMessage();
 
-		char getId() 						const	{ return this->id; }
 		char getPosition() 			const	{ return this->position; }
 		char getDestination() 	const { return this->destination; }
 		char getSpeed() 				const { return this->speed; }
@@ -50,8 +63,36 @@ class HallCallAssignmentMessage : public Message {
 
 class StatusRequestMessage : public Message {
   public:
-    explicit StatusRequestMessage();
+    StatusRequestMessage();
     ~StatusRequestMessage();
+};
+
+class RegisterWithGDMessage : public ElevatorControllerMessage {
+  public:
+    RegisterWithGDMessage(char ecID);
+    ~RegisterWithGDMessage();
+};
+
+class RegistrationAckMessage : public Message {
+  public:
+    RegistrationAckMessage();
+    ~RegistrationAckMessage();
+};
+
+class ErrorMessage : public ElevatorControllerMessage {
+  public:
+    ErrorMessage(char ecID, char errorCode=0, char detailsLength=0, char* details=NULL);
+    ErrorMessage(const char* buffer, unsigned int len);
+    ~ErrorMessage();
+  
+    char getErrorCode() const;
+    char getDetailLength() const;
+    char* getDetails() const;
+    
+  private:
+    char errorCode;
+    char detailsLength;
+    char* details;
 };
 
 #endif

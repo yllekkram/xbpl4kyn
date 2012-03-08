@@ -19,10 +19,9 @@
 #define HALL_CALL_DIRECTION_DOWN 2
 
 // Types for messages sent from the ElevatorController to the GroupDispatcher
-#define REGISTER_MESSAGE 0
-
-#define STATUS_RESPONSE 1
-#define ERROR_RESPONSE 2
+#define REGISTER_MESSAGE 4
+#define STATUS_RESPONSE 5
+#define ERROR_RESPONSE 6
 
 // Types for EC to GUI
 #define GUI_REGISTER_MESSAGE 0

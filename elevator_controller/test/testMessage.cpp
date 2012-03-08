@@ -40,7 +40,6 @@ SUITE(StatusResponseMessage) {
 		);
 
 		CHECK_EQUAL(9U, message.getLen());
-		CHECK_EQUAL(4, message.getId());
 		CHECK_EQUAL(3, message.getPosition());
 		CHECK_EQUAL(2, message.getDestination());
 		CHECK_EQUAL(10, message.getSpeed());
@@ -54,7 +53,6 @@ SUITE(StatusResponseMessage) {
 		StatusResponseMessage message(buffer, 9);
 
 		CHECK_EQUAL(9U, message.getLen());
-		CHECK_EQUAL(4, message.getId());
 		CHECK_EQUAL(3, message.getPosition());
 		CHECK_EQUAL(2, message.getDestination());
 		CHECK_EQUAL(10, message.getSpeed());
@@ -112,5 +110,24 @@ SUITE(StatusRequestMessage) {
     StatusRequestMessage message;
     
     CHECK_EQUAL(1U, message.getLen());
+    CHECK_EQUAL(STATUS_REQUEST, message.getBuffer()[0]);
+  }
+}
+
+SUITE(RegisterWithGDMessage) {
+  TEST(Constructor) {
+    RegisterWithGDMessage message(5);
+    
+    CHECK_EQUAL(2U, message.getLen());
+    CHECK_EQUAL(REGISTER_MESSAGE, message.getBuffer()[0]);
+  }
+}
+
+SUITE(RegistrationAckMessage) {
+  TEST(Constructor) {
+    RegistrationAckMessage message;
+    
+    CHECK_EQUAL(1U, message.getLen());
+    CHECK_EQUAL(REGISTRATION_ACK, message.getBuffer()[0]);
   }
 }

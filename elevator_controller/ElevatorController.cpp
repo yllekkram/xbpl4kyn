@@ -101,9 +101,7 @@ void ElevatorController::connectToGD(char* gdAddress, int port) {
 }
 
 void ElevatorController::sendRegistration() {
-	char message[4] = {REGISTER_MESSAGE,this->id,0,'\n'};
-
-	sendMessage(Message(message, 4));
+	sendMessage(RegisterWithGDMessage(this->id));
 	
 	receiveAck();
 }
