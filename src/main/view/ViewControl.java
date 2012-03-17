@@ -1,12 +1,17 @@
 package main.view;
 
 
+import javax.swing.SwingUtilities;
+
 import main.Main;
 import main.groupDispatcher.control.GroupDispatcher;
 import main.util.Constants;
 import main.view.connection.UDPConnectionManager;
+import main.view.connection.message.messageOutgoing.CloseDoorRequestMessage;
 import main.view.connection.message.messageOutgoing.FloorSelectionMessage;
 import main.view.connection.message.messageOutgoing.HallCallRequestMessage;
+import main.view.connection.message.messageOutgoing.OpenDoorRequestMessage;
+import main.view.connection.message.messageOutgoing.StopRequestMessage;
 import main.view.util.UIUtils;
 
 
@@ -51,32 +56,43 @@ public class ViewControl {
 
 	public void onElevatorError(int elevatorId){
 		//disable the elevator panel
-		ElevatorPanel elevatorPanel = ElevatorControlWindow.getInstance().getElevatorPanel(elevatorId);
+		final ElevatorPanel elevatorPanel = ElevatorControlWindow.getInstance().getElevatorPanel(elevatorId);
 		if(elevatorPanel == null){
 			Main.onError(new IllegalStateException("GUI - Could not find the elevator panel"));
 		}
-		elevatorPanel.setEnabled(false);
+		SwingUtilities.invokeLater(new Runnable(){
+			public void run(){
+				elevatorPanel.getParent().remove(elevatorPanel);	
+			}
+		});
 	}
 	
-	public void onHallCallServiced(int floor, int direction){
+	public void onHallCallServiced(int floor, final int direction){
 		//enable the button
-		FloorPanel floorPanel = ElevatorControlWindow.getInstance().getFloorPanel(floor);
+		final FloorPanel floorPanel = ElevatorControlWindow.getInstance().getFloorPanel(floor);
 		if(floorPanel == null){
 			Main.onError(new IllegalStateException("GUI - Could not find the floor panel"));
 		}
-		floorPanel.enableButton(direction);
+		SwingUtilities.invokeLater(new Runnable(){
+			public void run(){
+				floorPanel.enableButton(direction);
+			}
+		});
 	}
 	
 	public void onStopRequest(int carNumber){
 		System.out.println("ViewControl - User clicked on stopButton in elevator " + carNumber);
+		UDPConnectionManager.getInstance().sendDataToElevator(carNumber, new StopRequestMessage().serialize());
 	}
 	
 	public void onOpenDoorRequest(int carNumber){
 		System.out.println("ViewControl - User clicked on openDoorButton in elevator " + carNumber);
+		UDPConnectionManager.getInstance().sendDataToElevator(carNumber, new OpenDoorRequestMessage().serialize());
 	}
 	
 	public void onCloseDoorRequest(int carNumber){
 		System.out.println("ViewControl - User clicked on closeDoorButton in elevator " + carNumber);
+		UDPConnectionManager.getInstance().sendDataToElevator(carNumber, new CloseDoorRequestMessage().serialize());
 	}
 	
 	public void onFloorReached(int elevatorId, int floor){

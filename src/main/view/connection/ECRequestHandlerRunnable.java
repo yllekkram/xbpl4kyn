@@ -11,7 +11,7 @@ import main.view.connection.message.messageIncoming.DirectionChangeMessage;
 import main.view.connection.message.messageIncoming.FloorReachedMessage;
 import main.view.connection.message.messageIncoming.RegistrationRequestMessage;
 import main.view.connection.message.messageIncoming.ViewMessageIncoming;
-import main.view.connection.message.messageOutgoing.RegistrationAcknowledgementMessage;
+import main.view.connection.message.messageOutgoing.RegistrationAcknowledgmentMessage;
 
 
 public class ECRequestHandlerRunnable implements Runnable{
@@ -35,7 +35,7 @@ public class ECRequestHandlerRunnable implements Runnable{
 			//add the elevator to the list of elevators
 			int elevatorId = ((RegistrationRequestMessage) message).getElevatorControllerId();
 			ViewControl.getInstance().onElevatorRegister(elevatorId, inPacket.getAddress().getHostAddress(), inPacket.getPort());
-			UDPConnectionManager.getInstance().sendDataToElevator(elevatorId, new RegistrationAcknowledgementMessage().serialize());
+			UDPConnectionManager.getInstance().sendDataToElevator(elevatorId, new RegistrationAcknowledgmentMessage().serialize());
 		}else if( message instanceof DirectionChangeMessage){
 			DirectionChangeMessage message2 = (DirectionChangeMessage) message;
 			ViewControl.getInstance().onElevatorDirectionChange( message2.getElevatorControllerId(), message2.getNewDirection() );

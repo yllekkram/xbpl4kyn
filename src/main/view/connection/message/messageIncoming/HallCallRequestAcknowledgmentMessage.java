@@ -1,9 +1,9 @@
 package main.view.connection.message.messageIncoming;
 
 
-public class HallCallRequestAcknowledgementMessage extends ViewMessageIncoming{
+public class HallCallRequestAcknowledgmentMessage extends ViewMessageIncoming{
 	
-	public HallCallRequestAcknowledgementMessage(byte[] data){
+	public HallCallRequestAcknowledgmentMessage(byte[] data){
 		this.deserialize(data);
 	}
 

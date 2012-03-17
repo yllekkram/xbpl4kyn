@@ -19,8 +19,8 @@ import main.groupDispatcher.connection.UpdaterRunnable;
 import main.groupDispatcher.connection.messageIncoming.ECStatusMessage;
 import main.groupDispatcher.connection.messageIncoming.HallCallRequestMessage;
 import main.groupDispatcher.connection.messageOutgoing.HallCallAssignmentMessage;
-import main.groupDispatcher.connection.messageOutgoing.HallCallRequestAcknowledgementMessage;
-import main.groupDispatcher.connection.messageOutgoing.RegistrationAcknowledgementMessage;
+import main.groupDispatcher.connection.messageOutgoing.HallCallRequestAcknowledgmentMessage;
+import main.groupDispatcher.connection.messageOutgoing.RegistrationAcknowledgmentMessage;
 import main.groupDispatcher.connection.messageOutgoing.RemoveElevatorMessage;
 import main.model.Destination;
 import main.model.ElevatorData;
@@ -42,6 +42,10 @@ public class GroupDispatcher implements Observer{
 			instance = new GroupDispatcher();
 		}
 		return instance;
+	}
+	
+	public synchronized static void clearInstance(){
+		instance = null;
 	}
 	
 	private GroupDispatcher(){
@@ -78,16 +82,16 @@ public class GroupDispatcher implements Observer{
 	}
 	
 	public void onConnectionCreated(TCPClientSocketWrapper clientSocket){
-		System.out.println("GroupDispatcher recevied a connection request from an ElevatorController,  sending acknowledgement..");
+		System.out.println("GroupDispatcher recevied a connection request from an ElevatorController,  sending acknowledgment..");
 		
-		//respond with an acknowledgement message
-		TCPConnectionManager.getInstance().sendData(clientSocket.getClientId(), new RegistrationAcknowledgementMessage().serialize());
+		//respond with an acknowledgment message
+		TCPConnectionManager.getInstance().sendData(clientSocket.getClientId(), new RegistrationAcknowledgmentMessage().serialize());
 		
 		//store elevator models
 		ElevatorData elevatorControllerData = new ElevatorData();
 		elevatorCars.put(Integer.valueOf(clientSocket.getClientId()), elevatorControllerData); //thread-safe
 		
-		//store elevator updater runnables
+		//store elevator updater runnable
 		UpdaterRunnable runnable = new UpdaterRunnable(clientSocket.getClientId());
 		updaterRunnables.put(Integer.valueOf(clientSocket.getClientId()), runnable); //thread-safe
 	}
@@ -101,13 +105,15 @@ public class GroupDispatcher implements Observer{
 	}
 	
 	public void onHallCall(int floor, int direction){
+		
+		
 		int selectedElevator = GroupDispatcher.getInstance().getDispatchStrategy().dispatch(floor, direction);
 		if(selectedElevator == -1){
 			System.out.println("No elevators connected. Hall call discarded.");
 			return;
 		}
 		TCPConnectionManager.getInstance().sendData(selectedElevator, new HallCallAssignmentMessage(floor, direction).serialize());
-		UDPConnectionManager.getInstance().sendData(Constants.GD_TO_GUI_UDP_PORT, new HallCallRequestAcknowledgementMessage().serialize());
+		UDPConnectionManager.getInstance().sendData(Constants.GD_TO_GUI_UDP_PORT, new HallCallRequestAcknowledgmentMessage().serialize());
 	}
 	
 	public DispatchStrategy getDispatchStrategy(){

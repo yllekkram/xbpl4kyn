@@ -3,7 +3,7 @@ package main.view.connection.message;
 
 import main.view.connection.message.messageIncoming.DirectionChangeMessage;
 import main.view.connection.message.messageIncoming.FloorReachedMessage;
-import main.view.connection.message.messageIncoming.HallCallRequestAcknowledgementMessage;
+import main.view.connection.message.messageIncoming.HallCallRequestAcknowledgmentMessage;
 import main.view.connection.message.messageIncoming.HallCallServicedMessage;
 import main.view.connection.message.messageIncoming.RegistrationRequestMessage;
 import main.view.connection.message.messageIncoming.RemoveElevatorMessage;
@@ -35,8 +35,8 @@ public class ViewMessageParser {
 		case ViewMessage.FLOOR_REACHED:
 			message = new FloorReachedMessage(data);
 			break;
-		case ViewMessage.HALLCALL_REQUEST_ACHNOWLEDGEMENT:
-			message = new HallCallRequestAcknowledgementMessage(data);
+		case ViewMessage.HALLCALL_REQUEST_ACHNOWLEDGMENT:
+			message = new HallCallRequestAcknowledgmentMessage(data);
 			break;
 		case ViewMessage.HALLCALL_SERVICED:
 			message = new HallCallServicedMessage(data);
