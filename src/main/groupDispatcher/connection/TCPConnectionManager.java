@@ -6,6 +6,7 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
+import java.util.Arrays;
 import java.util.Observable;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -49,7 +50,7 @@ public class TCPConnectionManager extends Observable{
 			Main.onError(e);
 		}
 		GroupDispatcherMessageIncoming message = GroupDispatcherMessageParser.getInstance().parseMessage(inData);
-
+		System.out.println("Client said: " + Arrays.toString(inData));
 		if(message instanceof RegistrationRequestMessage){
 			int clientId = ((RegistrationRequestMessage) message).getElevatorControllerId();
 			System.out.println("onConnectionCreated(" + clientId + ")");

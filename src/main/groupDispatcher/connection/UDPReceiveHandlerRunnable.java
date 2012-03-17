@@ -2,6 +2,7 @@ package main.groupDispatcher.connection;
 
 
 import java.net.DatagramPacket;
+import java.util.Arrays;
 
 import main.groupDispatcher.connection.message.GroupDispatcherMessageParser;
 import main.groupDispatcher.connection.messageIncoming.GroupDispatcherMessageIncoming;
@@ -19,7 +20,7 @@ public class UDPReceiveHandlerRunnable implements Runnable{
 
 	
 	public void run() {
-		System.out.println("Group dispatcher - message received from GUI");
+		System.out.println("Group dispatcher - message received from GUI:" + Arrays.toString(inPacket.getData()));
 		
 		//parse the received message and act appropriately
 		GroupDispatcherMessageIncoming message = GroupDispatcherMessageParser.getInstance().parseMessage(inPacket.getData());

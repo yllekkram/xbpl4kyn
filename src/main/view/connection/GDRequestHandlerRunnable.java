@@ -2,6 +2,7 @@ package main.view.connection;
 
 
 import java.net.DatagramPacket;
+import java.util.Arrays;
 
 import main.view.ViewControl;
 import main.view.connection.message.ViewMessageParser;
@@ -20,7 +21,7 @@ public class GDRequestHandlerRunnable implements Runnable{
 
 	
 	public void run() {
-		System.out.println("GUI - message received from GD\n");
+		System.out.println("GUI - message received from GD: " + Arrays.toString(inPacket.getData()));
 		
 		//parse the message
 		ViewMessageIncoming message = ViewMessageParser.getInstance().parseMessage(inPacket.getData());

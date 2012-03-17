@@ -2,6 +2,7 @@ package main.view.connection;
 
 
 import java.net.DatagramPacket;
+import java.util.Arrays;
 
 
 import main.view.ViewControl;
@@ -24,7 +25,7 @@ public class ECRequestHandlerRunnable implements Runnable{
 
 	
 	public void run() {
-		System.out.print("GUI - message received from EC\n");
+		System.out.print("GUI - message received from EC: " + Arrays.toString(inPacket.getData()));
 		
 		//parse the message
 		ViewMessageIncoming message = ViewMessageParser.getInstance().parseMessage(inPacket.getData());

@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.net.Socket;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
+import java.util.Arrays;
 
 import main.Main;
 import main.groupDispatcher.connection.message.GroupDispatcherMessageParser;
@@ -30,7 +31,7 @@ public class UpdaterRunnable implements Runnable{
 			TCPConnectionManager.getInstance().sendData(clientSocket, new StatusRequestMessage().serialize());
 			byte[] line = TCPConnectionManager.getInstance().receiveData(clientSocket, Constants.STATUS_UPDATE_REQUEST_TIMEOUT);
 			if(line != null){
-				System.out.println("Client said: " + new String(line));
+				System.out.println("Client said: " + Arrays.toString(line));
 				GroupDispatcherMessageIncoming message = GroupDispatcherMessageParser.getInstance().parseMessage(line);
 				if(message instanceof ECStatusMessage){
 					ECStatusMessage status = (ECStatusMessage) message;
