@@ -47,8 +47,8 @@ public class UpdaterRunnable implements Runnable{
 			System.out.println("Received a SocketException in UpdaterRunnable. The elevator will be removed.");
 			GroupDispatcher.getInstance().removeElevator(clientId);
 		} catch (SocketTimeoutException e) {
+			System.out.println("Received a SocketTimeoutException in UpdaterRunnable. The elevator will be removed.");
 			GroupDispatcher.getInstance().removeElevator(clientId);
-			e.printStackTrace();
 		} catch (IOException e) { 
 			Main.onError(e); 
 		}

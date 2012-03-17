@@ -14,6 +14,7 @@ import main.Main;
 import main.groupDispatcher.connection.message.GroupDispatcherMessageParser;
 import main.groupDispatcher.connection.messageIncoming.GroupDispatcherMessageIncoming;
 import main.groupDispatcher.connection.messageIncoming.RegistrationRequestMessage;
+import main.util.Constants;
 
 
 
@@ -91,11 +92,13 @@ public class TCPConnectionManager extends Observable{
 	public byte[] receiveData(Socket socket, int timeout) throws IOException, SocketTimeoutException{
 		socket.setSoTimeout(timeout);
 		BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-		String line = in.readLine();
-		if(line != null){
-			return line.getBytes();
+		byte[] data = new byte[Constants.MAX_MESSAGE_LENGTH];
+		byte currentB = (byte) in.read();
+		for(int currentIndex = 0; currentIndex < data.length && currentB != (byte) 255; currentIndex++){
+			data[currentIndex] = currentB;
+			currentB = (byte) in.read();
 		}
-		return null;
+		return data;
 	}
 	
 	public void waitForNewConnection(){

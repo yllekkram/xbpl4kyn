@@ -18,4 +18,6 @@ public class Constants {
 	public static final int DIRECTION_UP = 1;
 	public static final int DIRECTION_DOWN = 2;
 	public static final int DIRECTION_BOTH = 3;
+	
+	public static final byte MESSAGE_DELIMITER = (byte) 255;
 }
