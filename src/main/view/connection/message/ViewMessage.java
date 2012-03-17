@@ -6,12 +6,12 @@ public abstract class ViewMessage {
 	public static final int HALLCALL_REQUEST = 7;
 
 	//From GD
-	public static final int HALLCALL_REQUEST_ACHNOWLEDGEMENT = 8;
+	public static final int HALLCALL_REQUEST_ACHNOWLEDGMENT = 8;
 	public static final int HALLCALL_SERVICED = 9;
 	public static final int REMOVE_ELEVATOR = 18;
 	
 	//To EC
-	public static final int REGISTRATION_ACKNOWLEDGEMENT = 10; 
+	public static final int REGISTRATION_ACKNOWLEDGMENT = 10; 
 	public static final int FLOOR_SELECTION = 11;
 	public static final int OPEN_DOOR_REQUEST = 12;
 	public static final int CLOSE_DOOR_REQUEST = 13;
