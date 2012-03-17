@@ -7,7 +7,8 @@ RM					= rm
 
 vpath %.hpp include:test/include
 
-EXE				= ElevatorTestServer UDPTestServer testTCP testUDP testElevatorController ElevatorSimulatorTest main
+EXE			= ElevatorTestServer UDPTestServer testTCP testUDP testElevatorController ElevatorSimulatorTest
+XENOEXE			= main
 SRCS			= $(wildcard *.cpp)
 OBJS			= ${SRCS:.cpp=.opp}
 
@@ -51,6 +52,8 @@ CXXLDFLAGS+=-Xlinker -rpath -Xlinker $(shell $(XENOCONFIG) --libdir)
 endif
 endif
 ###### End Xenomai Config ######
+
+xeno:: $(XENOEXE)
 
 main: main.opp Heap.opp ElevatorSimulator.opp
 	$(CXXLD) $(CXXLDFLAGS) -o $@ $^

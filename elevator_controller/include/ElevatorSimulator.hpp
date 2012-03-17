@@ -16,7 +16,7 @@ class ElevatorSimulator {
 		void setFinalDestination(int floorNum);
 		float getCurrentSpeed();
 		int getCurrentFloor();
-		bool getIsCurrentTask();
+		bool getIsTaskActive();
 		bool getIsDirectionUp();
 		bool getIsDoorOpening();
 		bool getIsDoorOpen();
