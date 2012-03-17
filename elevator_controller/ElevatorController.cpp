@@ -41,6 +41,10 @@ void ElevatorController::waitForGDRequest() {
 	char requestType = request[0];
   Message* message = NULL;
 	
+	std::cout << "Message: ";
+	printBuffer(request, MAX_GD_REQUEST_SIZE);
+	std::cout << std::endl;
+
 	switch (requestType) {
 		case STATUS_REQUEST:
       this->sendStatus();
@@ -97,6 +101,14 @@ void ElevatorController::sendRegistration() {
 	receiveAck();
 }
 
+void ElevatorController::receiveAck() {
+  std::cout << "Waitng for ack...";
+	char* message = this->receiveTCP(2);
+  std::cout << "done." << std::endl;
+	if (message[0] != REGISTRATION_ACK)
+		Die("Registration not acknowledged");
+}
+
 void ElevatorController::sendMessage(const Message& message) {
 	this->sendMessage(message.getBuffer(), message.getLen());
 }
@@ -111,14 +123,6 @@ void ElevatorController::sendMessage(const char * message, int len) {
 	}
 }
 
-void ElevatorController::receiveAck() {
-  std::cout << "Waitng for ack...";
-	char* message = this->receiveTCP(2);
-  std::cout << "done." << std::endl;
-	if (message[0] != REGISTRATION_ACK)
-		Die("Registration not acknowledged");
-}
-
 char* ElevatorController::receiveTCP(unsigned int length) {
 	char* buffer = new char[BUFFSIZE];
 	unsigned int received = 0;
@@ -131,8 +135,18 @@ char* ElevatorController::receiveTCP(unsigned int length) {
 			Die("Failed to receive bytes from server");
 		}
 		received += bytes;
-		buffer[bytes] = '\0';
 	}
-	std::cout << buffer;
 	return buffer;
+}
+
+void ElevatorController::openDoor() {
+	std::cout << "EC opening door" << std::endl;
+}
+
+void ElevatorController::closeDoor() {
+	std::cout << "EC closing door" << std::endl;
+}
+
+void ElevatorController::emergencyStop() {
+	std::cout << "EC emergency stop" << std::endl;
 }

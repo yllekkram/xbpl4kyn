@@ -5,9 +5,10 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.net.SocketTimeoutException;
+import java.util.Arrays;
 import java.util.Observable;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeoutException;
 
 import main.Main;
 import main.groupDispatcher.connection.message.GroupDispatcherMessageParser;
@@ -47,10 +48,9 @@ public class TCPConnectionManager extends Observable{
 			inData = receiveData(socket, 0);
 		} catch (IOException e) {
 			Main.onError(e);
-		} catch (TimeoutException e) {
-			Main.onError(e);
 		}
 		GroupDispatcherMessageIncoming message = GroupDispatcherMessageParser.getInstance().parseMessage(inData);
+		System.out.println("Client said: " + Arrays.toString(inData));
 		if(message instanceof RegistrationRequestMessage){
 			int clientId = ((RegistrationRequestMessage) message).getElevatorControllerId();
 			System.out.println("onConnectionCreated(" + clientId + ")");
@@ -88,7 +88,7 @@ public class TCPConnectionManager extends Observable{
 		
 	}
 	
-	public byte[] receiveData(Socket socket, int timeout) throws IOException, TimeoutException{
+	public byte[] receiveData(Socket socket, int timeout) throws IOException, SocketTimeoutException{
 		socket.setSoTimeout(timeout);
 		BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 		String line = in.readLine();

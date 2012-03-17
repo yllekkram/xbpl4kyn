@@ -22,6 +22,8 @@ int main(int argc, char* argv[]) {
   catch (std::exception) {}
 	delete ec;
 	
+	uv->run();
+
 	std::cout << std::endl;
 
 	exit(0);
