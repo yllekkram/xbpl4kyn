@@ -9,6 +9,7 @@
 
 #include "ElevatorCommon.hpp"
 #include "ElevatorController.hpp"
+#include "Exception.hpp"
 #include "UDPView.hpp"
 
 /* Global Data Declaration */
@@ -53,7 +54,12 @@ void UDPView::registerWithViewer() {
 
 void UDPView::run() {
 	while (true) {
-		waitForMessage();
+		try {
+			waitForMessage();
+		}
+		catch (Exception e) {
+			std::cout << e.what() << std::endl;
+		}
 	}
 }
 

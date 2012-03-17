@@ -4,10 +4,11 @@
 #include <string>
 
 #include "ElevatorCommon.hpp"
+#include "Exception.hpp"
 
 void Die(std::string mess) {
 	perror(mess.c_str());
-	throw std::exception();
+	throw Exception(mess.c_str());
 }
 
 std::ostream& printBuffer(char* buffer, unsigned int len, std::ostream& out) {
