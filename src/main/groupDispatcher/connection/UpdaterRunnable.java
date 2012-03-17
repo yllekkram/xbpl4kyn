@@ -4,7 +4,7 @@ package main.groupDispatcher.connection;
 import java.io.IOException;
 import java.net.Socket;
 import java.net.SocketException;
-import java.util.concurrent.TimeoutException;
+import java.net.SocketTimeoutException;
 
 import main.Main;
 import main.groupDispatcher.connection.message.GroupDispatcherMessageParser;
@@ -45,11 +45,11 @@ public class UpdaterRunnable implements Runnable{
 		} catch (SocketException e){
 			System.out.println("Received a SocketException in UpdaterRunnable. The elevator will be removed.");
 			GroupDispatcher.getInstance().removeElevator(clientId);
-		} catch (IOException e) { 
-			Main.onError(e); 
-		} catch (TimeoutException e) {
+		} catch (SocketTimeoutException e) {
 			GroupDispatcher.getInstance().removeElevator(clientId);
 			e.printStackTrace();
+		} catch (IOException e) { 
+			Main.onError(e); 
 		}
 	}
 }
