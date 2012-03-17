@@ -164,7 +164,7 @@ void ElevatorSimulator::setFinalDestination(int floorNum)
 
 float ElevatorSimulator::getCurrentSpeed(){return currentSpeed;}
 int ElevatorSimulator::getCurrentFloor(){return currentFloor;}
-bool ElevatorSimulator::getIsCurrentTask(){return task;}
+bool ElevatorSimulator::getIsTaskActive(){return task;}
 bool ElevatorSimulator::getIsDirectionUp(){return directionUP;}
 bool ElevatorSimulator::getIsDoorOpening(){return DoorOpening;}
 bool ElevatorSimulator::getIsDoorOpen(){return DoorOpen;}

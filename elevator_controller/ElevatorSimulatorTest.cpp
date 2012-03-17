@@ -28,10 +28,10 @@ int main(int argc, char* argv[]) {
 		assertTrue(es.getCurrentFloor() >= initialFloor);
 		if(es.getCurrentSpeed()>0)
 		{
-			assertTrue(es.getIsCurrentTask());
+			assertTrue(es.getIsTaskActive());
 		}
 
-		if(es.getIsCurrentTask() && es.getCurrentFloor() == destination)
+		if(es.getIsTaskActive() && es.getCurrentFloor() == destination)
 		{
 			if(es.getIsDoorOpening())
 			{
@@ -45,7 +45,7 @@ int main(int argc, char* argv[]) {
 			}
 		}
 
-		if(!es.getIsCurrentTask())
+		if(!es.getIsTaskActive())
 		{
 			assertTrue(!es.getIsDoorOpening() && !es.getIsDoorClosing() && !es.getIsDoorOpen() && es.getCurrentSpeed() == 0);
 			break;
@@ -76,7 +76,7 @@ int main(int argc, char* argv[]) {
 			initialFloor = es.getCurrentFloor();
 		}
 
-		if(es.getCurrentSpeed()==0 && es.getCurrentFloor()==destination && !es.getIsCurrentTask())
+		if(es.getCurrentSpeed()==0 && es.getCurrentFloor()==destination && !es.getIsTaskActive())
 		{
 			break;
 		}
@@ -105,7 +105,7 @@ int main(int argc, char* argv[]) {
 			assignTarget = true;
 		}
 
-		if(es.getCurrentSpeed()==0 && es.getCurrentFloor()==destination && !es.getIsCurrentTask())
+		if(es.getCurrentSpeed()==0 && es.getCurrentFloor()==destination && !es.getIsTaskActive())
 		{
 			break;
 		}
@@ -135,7 +135,7 @@ int main(int argc, char* argv[]) {
 			assignTarget = true;
 		}
 
-		if(es.getCurrentSpeed()==0 && es.getCurrentFloor()==destination && !es.getIsCurrentTask())
+		if(es.getCurrentSpeed()==0 && es.getCurrentFloor()==destination && !es.getIsTaskActive())
 		{
 			break;
 		}
