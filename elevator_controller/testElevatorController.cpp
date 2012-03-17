@@ -20,10 +20,10 @@ int main(int argc, char* argv[]) {
     ec->addView(uv);
   }
   catch (std::exception) {}
-	delete ec;
 	
-	uv->run();
+	ec->run();
 
+	delete ec;
 	std::cout << std::endl;
 
 	exit(0);
