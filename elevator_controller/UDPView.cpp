@@ -126,11 +126,9 @@ char* UDPView::receiveMessage(unsigned int len) {
 	int received = 0;
 	
   std::cout << "Receiving UDP message...";
-	if ((received = recvfrom(this->sock, buffer, BUFFSIZE, 0,
+	received = recvfrom(this->sock, buffer, BUFFSIZE, 0,
 														(struct sockaddr *) &client,
-														&clientlen)) != len) {
-		Die("Mismatch in number of received bytes");
-	}
+														&clientlen);
   std::cout << "done." << std::endl;
 	
 	/* Check that the client and server are using the same socket */

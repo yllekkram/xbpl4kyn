@@ -13,7 +13,7 @@ void Die(std::string mess) {
 
 std::ostream& printBuffer(char* buffer, unsigned int len, std::ostream& out) {
 	out << "[ ";
-	for (int i = 0; i < len; i++) {
+	for (unsigned int i = 0; i < len; i++) {
 		out << (int)buffer[i] << " ";
 	}
 	out << "]";
