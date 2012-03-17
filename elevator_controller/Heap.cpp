@@ -109,8 +109,22 @@ char DownwardFloorRunHeap::pop() {
   
 	char frTop = floorRequestHeap->peek();
 	char hcTop = hallCallHeap->peek();
+
+	char temp = (frTop > hcTop) ? frTop : hcTop;
+
+	while (floorRequestHeap->getSize() > 0
+			&& floorRequestHeap->peek() == temp)
+	{
+		floorRequestHeap->pop();
+	}
+
+	while (hallCallHeap->getSize() > 0
+			&& hallCallHeap->peek() == temp)
+	{
+		hallCallHeap->pop();
+	}
 	
-	return (frTop > hcTop) ? floorRequestHeap->pop() : hallCallHeap->pop();
+	return temp;
 }
 
 void DownwardFloorRunHeap::pushFloorRequest(char dest) {
