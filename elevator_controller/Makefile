@@ -7,7 +7,8 @@ RM					= rm
 
 vpath %.hpp include:test/include
 
-EXE				= ElevatorTestServer UDPTestServer testTCP testUDP testElevatorController ElevatorSimulatorTest main
+EXE				= ElevatorTestServer UDPTestServer testTCP testUDP testElevatorController ElevatorSimulatorTest
+XENOEXE		= main
 SRCS			= $(wildcard *.cpp)
 OBJS			= ${SRCS:.cpp=.opp}
 
@@ -36,11 +37,11 @@ XENOCONFIG=$(shell PATH=$(XENO):$(XENO)/bin:$(PATH) which xeno-config 2>/dev/nul
 
 ### Sanity check
 ifeq ($(XENOCONFIG),)
-all::
+xeno::
 	@echo ">>> Invoke make like this: \"make XENO=/path/to/xeno-config\" <<<"
 	@echo
-endif
-
+else
+xeno::$(XENOEXE)
 CXXFLAGS+=$(shell $(XENOCONFIG) --xeno-cflags) $(MY_CFLAGS)
 
 CXXLDFLAGS=$(shell $(XENOCONFIG) --xeno-ldflags) $(MY_LDFLAGS) -lnative
@@ -48,6 +49,7 @@ CXXLDFLAGS=$(shell $(XENOCONFIG) --xeno-ldflags) $(MY_LDFLAGS) -lnative
 # This includes the library path of given Xenomai into the binary to make live
 # easier for beginners if Xenomai's libs are not in any default search path.
 CXXLDFLAGS+=-Xlinker -rpath -Xlinker $(shell $(XENOCONFIG) --libdir)
+endif
 endif
 endif
 ###### End Xenomai Config ######
@@ -79,16 +81,16 @@ testUDP: ElevatorCommon.opp ElevatorController.opp Message.opp UDPView.opp testU
 testElevatorController: ElevatorCommon.opp ElevatorController.opp Message.opp UDPView.opp testElevatorController.opp
 	$(CXXLD) $(CXXLDFLAGS) -o $@ $^
 
-ElevatorCommon.opp: ElevatorCommon.hpp
+ElevatorCommon.opp: ElevatorCommon.hpp Exception.hpp
 ElevatorController.opp: ElevatorCommon.hpp Heap.hpp Message.hpp
 ElevatorControllerView.opp: ElevatorControllerView.hpp
 ElevatorSimulator.opp: ElevatorSimulator.hpp
 ElevatorSimulatorTest.opp: ElevatorSimulator.hpp
 ElevatorTestServer.opp: ElevatorCommon.hpp
 Heap.opp: Heap.hpp
-Message.opp: Message.hpp ElevatorCommon.hpp
+Message.opp: Message.hpp ElevatorCommon.hpp Exception.hpp
 UDPTestServer.opp: ElevatorCommon.hpp
-UDPView.opp: ElevatorControllerView.hpp UDPView.hpp
+UDPView.opp: ElevatorControllerView.hpp Exception.hpp UDPView.hpp
 testElevatorController.opp: ElevatorCommon.hpp ElevatorController.hpp Message.hpp UDPView.hpp
 testTCP.opp: ElevatorCommon.hpp
 testUDP.opp: ElevatorCommon.hpp ElevatorController.hpp Message.hpp UDPView.hpp

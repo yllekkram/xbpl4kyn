@@ -1,6 +1,7 @@
 #include <algorithm>
 
 #include "ElevatorCommon.hpp"
+#include "Exception.hpp"
 #include "Message.hpp"
 
 Message::Message()
@@ -55,7 +56,7 @@ ElevatorControllerMessage::ElevatorControllerMessage(const char* buffer, unsigne
   :TypedMessage(buffer, len)
 {
   if (len < 2)
-    throw std::exception();
+    throw MessageException();
     
   this->ecID = buffer[1];
 }
@@ -90,7 +91,7 @@ StatusResponseMessage::StatusResponseMessage(const char* buffer, unsigned int le
 {
 	// A status message must be at least 6 bytes long
 	if (len < 6 || buffer[0] != STATUS_RESPONSE)
-		throw std::exception();
+		throw MessageException();
 
 	this->position 			= this->buffer[2];
 	this->destination 	= this->buffer[3];
@@ -125,7 +126,7 @@ HallCallAssignmentMessage::HallCallAssignmentMessage(const char* buffer)
   : TypedMessage(buffer, 3)
 {
   if (buffer[0] != HALL_CALL_ASSIGNMENT)
-    throw std::exception();
+    throw MessageException();
   
   this->floor = this->buffer[1];
   this->direction = this->buffer[2];
@@ -165,7 +166,7 @@ ErrorMessage::ErrorMessage(const char* buffer, unsigned int len)
  : ElevatorControllerMessage(buffer, len)
 {
   if ((len < 4) || buffer[0] != ERROR_RESPONSE)
-    throw std::exception();
+    throw MessageException();
   
   this->errorCode = this->buffer[2];
   this->detailsLength = this->buffer[3];

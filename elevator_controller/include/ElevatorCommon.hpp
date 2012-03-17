@@ -1,6 +1,7 @@
 #ifndef ELEVATOR_COMMON_HPP
 #define ELEVATOR_COMMON_HPP
 
+#include <iostream>
 #include <string>
 
 // Common Values
@@ -24,11 +25,13 @@
 #define ERROR_RESPONSE 6
 
 // Types for GUI to EC
+#define MAX_GUI_REQUEST_SIZE 2
+
 #define GUI_REGISTRATION_ACK 10
 #define FLOOR_SELECTION_MESSAGE 11
 #define OPEN_DOOR_REQUEST 12
 #define CLOSE_DOOR_REQUEST 13
-#define EMPERGENGY_STOP_MESSAGE 14
+#define EMERGENGY_STOP_MESSAGE 14
 
 // Types for EC to GUI
 #define GUI_REGISTER_MESSAGE 15
@@ -37,5 +40,6 @@
 
 // Common functions
 void Die(std::string);
+std::ostream& printBuffer(char* buffer, unsigned int len, std::ostream& out=std::cout);
 
 #endif
