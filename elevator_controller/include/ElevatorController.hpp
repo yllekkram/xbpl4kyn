@@ -24,9 +24,9 @@ class ElevatorController {
 		char getID() const { return this->id; }
 		
 		void pushFloorButton(char floor);
-		void pushOpenDoor();
-		void pushCloseDoorButton();
-		void pushStopButton();
+		void openDoor();
+		void closeDoor();
+		void emergencyStop();
 
 	private:
 		static char nextID;

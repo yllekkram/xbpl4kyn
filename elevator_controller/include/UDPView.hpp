@@ -13,10 +13,14 @@ class UDPView : public ElevatorControllerView {
 		// Override superclass method
 		virtual void setController(ElevatorController* ec);
 		
+		void run();
+
+		void waitForMessage();
+
 		void receiveStatus(ElevatorControllerStatus* status);
 		
 		void sendMessage(char* message, int len=0);
-		void receiveMessage(unsigned int len=0);
+		char* receiveMessage(unsigned int len=0);
 		
 		void registerWithViewer();
 		

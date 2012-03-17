@@ -27,12 +27,12 @@ class ElevatorSimulator {
 	private:
 		struct timeb *tp;			//start time structure
 		struct timeb *tpe;			//current time structure
-		float currentSpeed;			//is the current speed of the elevator in m/s
 		float currentPosition;		//is the current height in meter
+		float currentSpeed;			//is the current speed of the elevator in m/s
 		float tempCurrentPosition;	//temp calue of current location at the start of a task (used for down ward calculations)
-		float midLocation;			//final destination is the final floor number
 		int currentFloor;			//is the current height in meter
 		int finalDestination;		//final destination is the final floor number
+		float midLocation;			//final destination is the final floor number
 		bool task;					//is there a task available
 		bool directionUP;			//is elevator traveling up
 		bool DoorOpening;			//is elevator door opening
