@@ -82,7 +82,7 @@ testElevatorController: ElevatorCommon.opp ElevatorController.opp Message.opp UD
 	$(CXXLD) $(CXXLDFLAGS) -o $@ $^
 
 ElevatorCommon.opp: ElevatorCommon.hpp Exception.hpp
-ElevatorController.opp: ElevatorCommon.hpp Heap.hpp Message.hpp
+ElevatorController.opp: ElevatorCommon.hpp Exception.hpp Heap.hpp Message.hpp
 ElevatorControllerView.opp: ElevatorControllerView.hpp
 ElevatorSimulator.opp: ElevatorSimulator.hpp
 ElevatorSimulatorTest.opp: ElevatorSimulator.hpp
@@ -91,7 +91,7 @@ Heap.opp: Heap.hpp
 Message.opp: Message.hpp ElevatorCommon.hpp Exception.hpp
 UDPTestServer.opp: ElevatorCommon.hpp
 UDPView.opp: ElevatorControllerView.hpp Exception.hpp UDPView.hpp
-testElevatorController.opp: ElevatorCommon.hpp ElevatorController.hpp Message.hpp UDPView.hpp
+testElevatorController.opp: ElevatorCommon.hpp ElevatorController.hpp Exception.hpp Message.hpp UDPView.hpp
 testTCP.opp: ElevatorCommon.hpp
 testUDP.opp: ElevatorCommon.hpp ElevatorController.hpp Message.hpp UDPView.hpp
 

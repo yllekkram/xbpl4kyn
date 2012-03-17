@@ -4,6 +4,7 @@
 
 #include "ElevatorCommon.hpp"
 #include "ElevatorController.hpp"
+#include "Exception.hpp"
 #include "UDPView.hpp"
 
 int main(int argc, char* argv[]) {
@@ -19,7 +20,7 @@ int main(int argc, char* argv[]) {
   try {
     ec->addView(uv);
   }
-  catch (std::exception) {}
+  catch (Exception e) {}
 	
 	ec->run();
 
