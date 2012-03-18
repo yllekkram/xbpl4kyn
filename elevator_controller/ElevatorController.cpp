@@ -118,6 +118,7 @@ void receiveHallCall(HallCallAssignmentMessage& message) {
 void ElevatorController::sendRegistration() {
   std::cout << "Sending EC->GD registration...";
 	sendMessage(RegisterWithGDMessage(this->id));
+
   std::cout << "done." << std::endl;
 	
 	receiveAck();

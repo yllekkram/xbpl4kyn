@@ -135,7 +135,11 @@ StatusRequestMessage::StatusRequestMessage()
 
 RegisterWithGDMessage::RegisterWithGDMessage(char ecID)
   : ElevatorControllerMessage(REGISTER_MESSAGE, ecID)
-{}
+{
+	std::cout << "GD Registration: ";
+	printBuffer(this->buffer, this->len);
+	std::cout << std::endl;
+}
 
 RegistrationAckMessage::RegistrationAckMessage()
   : TypedMessage(REGISTRATION_ACK)
