@@ -7,8 +7,8 @@ RM					= rm
 
 vpath %.hpp include:test/include
 
-EXE			= ElevatorTestServer UDPTestServer testTCP testUDP testElevatorController ElevatorSimulatorTest
-XENOEXE			= main
+EXE				= ElevatorTestServer UDPTestServer testTCP testUDP ElevatorSimulatorTest
+XENOEXE		= main testElevatorController
 SRCS			= $(wildcard *.cpp)
 OBJS			= ${SRCS:.cpp=.opp}
 
@@ -59,7 +59,7 @@ xeno:: $(XENOEXE)
 main: main.opp Heap.opp ElevatorSimulator.opp
 	$(CXXLD) $(CXXLDFLAGS) -o $@ $^
 
-tests: test/test.opp test/testElevatorController.opp test/testHeap.opp test/testMessage.opp Message.opp Heap.opp ElevatorCommon.opp
+tests: test/test.opp test/testHeap.opp test/testMessage.opp Message.opp Heap.opp ElevatorCommon.opp
 	$(CXX) $(CXXINC) -o test/test $^ test/lib/libUnitTest++.a $(CXXFLAGS)
 
 clean:
