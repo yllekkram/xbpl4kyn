@@ -1,6 +1,7 @@
 package main.groupDispatcher.connection.messageOutgoing;
 
 import main.groupDispatcher.connection.message.GroupDispatcherMessage;
+import main.util.Constants;
 
 
 public class HallCallAssignmentMessage extends GroupDispatcherMessageOutgoing{
@@ -14,6 +15,6 @@ public class HallCallAssignmentMessage extends GroupDispatcherMessageOutgoing{
 	}
 	
 	public byte[] serialize() {
-		return new byte[]{GroupDispatcherMessage.HALLCALL_ASSIGNMENT, (byte) this.floorNumber, (byte) this.direction};
+		return new byte[]{GroupDispatcherMessage.HALLCALL_ASSIGNMENT, (byte) this.floorNumber, (byte) this.direction, Constants.MESSAGE_DELIMITER};
 	}
 }
