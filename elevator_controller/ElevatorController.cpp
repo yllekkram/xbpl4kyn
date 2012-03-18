@@ -8,6 +8,7 @@
 
 #include "ElevatorCommon.hpp"
 #include "ElevatorController.hpp"
+#include "Exception.hpp"
 
 char ElevatorController::nextID = 1;
 
@@ -26,7 +27,13 @@ ElevatorController::~ElevatorController() {
 
 void ElevatorController::run() {
 	while (true) {
-		this->waitForGDRequest();
+		try {
+			this->waitForGDRequest();
+		}
+		catch (Exception e) {
+			std::cout << e.what() << std::endl;
+			exit(1);
+		}
 	}
 }
 
@@ -40,10 +47,6 @@ void ElevatorController::waitForGDRequest() {
 	char* request = receiveTCP(MAX_GD_REQUEST_SIZE);
 	char requestType = request[0];
   Message* message = NULL;
-	
-	std::cout << "Message: ";
-	printBuffer(request, MAX_GD_REQUEST_SIZE);
-	std::cout << std::endl;
 
 	switch (requestType) {
 		case STATUS_REQUEST:
@@ -94,7 +97,7 @@ void receiveHallCall(HallCallAssignmentMessage& message) {
 }
 
 void ElevatorController::sendRegistration() {
-  std::cout << "Sending registration...";
+  std::cout << "Sending EC->GD registration...";
 	sendMessage(RegisterWithGDMessage(this->id));
   std::cout << "done." << std::endl;
 	
@@ -102,11 +105,11 @@ void ElevatorController::sendRegistration() {
 }
 
 void ElevatorController::receiveAck() {
-  std::cout << "Waitng for ack...";
+  std::cout << "Waitng for EC->GD ack...";
 	char* message = this->receiveTCP(2);
   std::cout << "done." << std::endl;
 	if (message[0] != REGISTRATION_ACK)
-		Die("Registration not acknowledged");
+		Die("EC->GD Registration not acknowledged");
 }
 
 void ElevatorController::sendMessage(const Message& message) {
@@ -128,14 +131,18 @@ char* ElevatorController::receiveTCP(unsigned int length) {
 	unsigned int received = 0;
 
 	/* Receive the word back from the server */
-	std::cout << "Received: ";
 	while (received < length) {
 		int bytes = 0;
-		if ((bytes = recv(sock, buffer, BUFFSIZE-1, 0)) < 1) {
+		if ((bytes = recv(localSock, buffer, BUFFSIZE-1, 0)) < 1) {
 			Die("Failed to receive bytes from server");
 		}
 		received += bytes;
 	}
+
+	std::cout << "Received: ";
+	printBuffer(buffer, length);
+	std::cout << std::endl;
+
 	return buffer;
 }
 
