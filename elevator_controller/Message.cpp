@@ -9,10 +9,10 @@ Message::Message()
 {}
 
 Message::Message(unsigned int len)
-	: buffer(new char[len]), len(len)
+	: buffer(new char[BUFFSIZE]), len(len)
 {}
 
-Message::Message(const char* buffer, unsigned int len) 
+Message::Message(const char* buffer, unsigned int len)
 	: buffer(new char[len]), len(len)
 {
 	std::copy(buffer, buffer+len, this->buffer);
@@ -37,7 +37,7 @@ TypedMessage::TypedMessage(char type, unsigned int len)
   : Message(len+1), type(type)
 {
   this->buffer[0] = type;
-  this->buffer[len++] = '\n';
+  this->buffer[len++] = MESSAGE_TERMINATOR;
 }
 
 TypedMessage::TypedMessage(const char* buffer, unsigned int len)
@@ -67,16 +67,13 @@ StatusResponseMessage::StatusResponseMessage(char ecID, char position, char dest
 	std::copy(hallCalls, hallCalls + numHallCalls, this->hallCalls);
 
 	/* Calculate required buffer size */
-	this->len =		1	/* Message Type */
-							+ 1	/* ID */
-							+ 1 /* Position */
+	this->len +=	1 /* Position */
 							+ 1 /* Destination */
 							+ 1 /* Speed */
 							+ 1 /* Number of Call Registrations */
 							+ numHallCalls; /* Call Registrations */
 
 	/* Initialize the buffer */
-	this->buffer = new char[len];
 	this->buffer[2] = this->position;
 	this->buffer[3] = this->destination;
 	this->buffer[4] = this->speed;
