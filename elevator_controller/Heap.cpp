@@ -16,7 +16,7 @@ UpwardFloorRunHeap::~UpwardFloorRunHeap() {
 char UpwardFloorRunHeap::peek() const {
   int frSize = floorRequestHeap->getSize();
   int hcSize = hallCallHeap->getSize();
-  
+
   if (frSize == 0 && hcSize == 0) {
     throw EmptyHeapException();
   }
@@ -26,17 +26,17 @@ char UpwardFloorRunHeap::peek() const {
   else if (hcSize == 0) {
     return floorRequestHeap->peek();
   }
-  
+
   char frTop = floorRequestHeap->peek();
 	char hcTop = hallCallHeap->peek();
-	
+
 	return (frTop < hcTop) ? frTop : hcTop;
 }
 
 char UpwardFloorRunHeap::pop() {
   int frSize = floorRequestHeap->getSize();
   int hcSize = hallCallHeap->getSize();
-  
+
   if (frSize == 0 && hcSize == 0) {
     throw EmptyHeapException();
   }
@@ -46,11 +46,25 @@ char UpwardFloorRunHeap::pop() {
   else if (hcSize == 0) {
     return floorRequestHeap->pop();
   }
-  
+
 	char frTop = floorRequestHeap->peek();
 	char hcTop = hallCallHeap->peek();
-	
-	return (frTop < hcTop) ? floorRequestHeap->pop() : hallCallHeap->pop();
+	char temp = (frTop < hcTop) ? frTop : hcTop;
+
+	/* Remove duplicates from the top of the heap */
+	while (this->hallCallHeap->getSize() > 0
+			&& this->hallCallHeap->peek() == temp)
+	{
+		this->hallCallHeap->pop();
+	}
+
+	while (this->floorRequestHeap->getSize() > 0
+			&& this->floorRequestHeap->peek() == temp)
+	{
+		this->floorRequestHeap->pop();
+	}
+
+	return temp;
 }
 
 void UpwardFloorRunHeap::pushFloorRequest(char dest) {
