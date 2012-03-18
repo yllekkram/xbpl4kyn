@@ -1,9 +1,7 @@
 package main.groupDispatcher.connection;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.InputStream;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.util.Arrays;
@@ -78,25 +76,27 @@ public class TCPConnectionManager extends Observable{
 	}
 	
 	public void sendData(Socket socket, byte[] data){
-		PrintWriter out;
 		try {
-			out = new PrintWriter(socket.getOutputStream(), true);
-			String dataStr = new String(data);
-			out.println(dataStr);
+			socket.getOutputStream().write(data);
 		} catch (IOException e) {
-			Main.onError(e);
+			System.out.println("Failed to send the data: " + Arrays.toString(data));
+			e.printStackTrace();
 		}
-		
 	}
 	
 	public byte[] receiveData(Socket socket, int timeout) throws IOException, SocketTimeoutException{
 		socket.setSoTimeout(timeout);
-		BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+		InputStream in = socket.getInputStream();
+		
 		byte[] data = new byte[Constants.MAX_MESSAGE_LENGTH];
-		byte currentB = (byte) in.read();
-		for(int currentIndex = 0; currentIndex < data.length && currentB != Constants.MESSAGE_DELIMITER; currentIndex++){
-			data[currentIndex] = currentB;
-			currentB = (byte) in.read();
+		try {
+			byte currentB = (byte) in.read();
+			for(int currentIndex = 0; currentIndex < data.length && currentB != Constants.MESSAGE_DELIMITER; currentIndex++){
+				data[currentIndex] = currentB;
+				currentB = (byte) in.read();
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 		return data;
 	}
