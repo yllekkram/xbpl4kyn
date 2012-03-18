@@ -64,13 +64,32 @@ void ElevatorController::waitForGDRequest() {
 }
 
 void ElevatorController::sendStatus() {
-	std::vector<char>* hallCalls = new std::vector<char>(); // = FloorRequestHeap.getHallCalls();
+	// std::vector<char>* hallCalls = new std::vector<char>(); // = FloorRequestHeap.getHallCalls();
 
-	this->sendMessage(StatusResponseMessage(this->id, 
-                                          5, 6, 7, hallCalls->size(), 
-                                          (char*) &hallCalls[0]));
+	// this->sendMessage(StatusResponseMessage(this->id, 
+  //                                         5, 6, 7, hallCalls->size(), 
+  //                                         (char*) &hallCalls[0]));
+	char len = 1 	/* EC ID */
+						+1	/* Message Type */
+						+1	/* dest */
+						+1	/* pos */
+						+1	/* speed */
+						+1	/* num hall calls */
+						+0	/* Hall calls */
+						+1;	/* newline */
+	
+	char message[len];
+	message[0] = STATUS_RESPONSE;
+	message[1] = this->id;
+	message[2] = 5;
+	message[3] = 6;
+	message[4] = 7;
+	message[5] = 0;
+	message[6] = MESSAGE_TERMINATOR;
 
-	delete hallCalls;
+	this->sendMessage(message, len);
+
+	// delete hallCalls;
 }
 
 void ElevatorController::connectToGD(char* gdAddress, int port) {
@@ -133,9 +152,9 @@ char* ElevatorController::receiveTCP(unsigned int length) {
 	/* Receive the word back from the server */
 	while (received < length) {
 		int bytes = 0;
-		if ((bytes = recv(localSock, buffer, BUFFSIZE-1, 0)) < 1) {
-			Die("Failed to receive bytes from server");
-		}
+		std::cout << "Waiting for TCP...";
+		bytes = recv(this->sock, buffer, BUFFSIZE-1, 0);
+		std::cout << "got " << bytes << " bytes" << std::endl;
 		received += bytes;
 	}
 

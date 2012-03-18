@@ -17,10 +17,10 @@ int main(int argc, char* argv[]) {
 	UDPView* uv = new UDPView(argv[3], argv[4]);
 
 	ec->connectToGD(argv[1], atoi(argv[2]));
-  try {
-    ec->addView(uv);
-  }
-  catch (Exception e) {}
+  //try {
+  //  ec->addView(uv);
+  //}
+  //catch (Exception e) {}
 	
 	ec->run();
 
