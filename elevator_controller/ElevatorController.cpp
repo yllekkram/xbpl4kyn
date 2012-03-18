@@ -76,7 +76,7 @@ void ElevatorController::sendStatus() {
 						+1	/* speed */
 						+1	/* num hall calls */
 						+0	/* Hall calls */
-						+1;	/* newline */
+						+1;	/* Terminator */
 	
 	char message[len];
 	message[0] = STATUS_RESPONSE;
