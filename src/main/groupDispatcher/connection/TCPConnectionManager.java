@@ -94,7 +94,7 @@ public class TCPConnectionManager extends Observable{
 		BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 		byte[] data = new byte[Constants.MAX_MESSAGE_LENGTH];
 		byte currentB = (byte) in.read();
-		for(int currentIndex = 0; currentIndex < data.length && currentB != (byte) 255; currentIndex++){
+		for(int currentIndex = 0; currentIndex < data.length && currentB != Constants.MESSAGE_DELIMITER; currentIndex++){
 			data[currentIndex] = currentB;
 			currentB = (byte) in.read();
 		}
