@@ -39,7 +39,7 @@ SUITE(StatusResponseMessage) {
 			CALLS
 		);
 
-		CHECK_EQUAL(9U, message.getLen());
+		CHECK_EQUAL(10U, message.getLen());
 		CHECK_EQUAL(3, message.getPosition());
 		CHECK_EQUAL(2, message.getDestination());
 		CHECK_EQUAL(10, message.getSpeed());
