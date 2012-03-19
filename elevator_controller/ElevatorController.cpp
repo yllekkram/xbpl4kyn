@@ -104,7 +104,7 @@ void ElevatorController::connectToGD(char* gdAddress, int port) {
 	if (connect(this->sock,
 				(struct sockaddr *) &(echoserver),
 			sizeof(echoserver)) < 0) {
-		Die("Failed to connect with server");
+		//Die("Failed to connect with server");
 	}
   std::cout << "done." << std::endl;
 	this->sendRegistration();
