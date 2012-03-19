@@ -6,8 +6,9 @@
 
 // Common Values
 #define MAXPENDING 5 /* Max connection requests */
-#define BUFFSIZE 100
+#define BUFFSIZE 50
 #define MAX_FLOORS 25 /* Currently restricted by size of char */
+#define MESSAGE_TERMINATOR 255
 
 // Types for messages received from the GroupDispatcher
 #define MAX_GD_REQUEST_SIZE 3

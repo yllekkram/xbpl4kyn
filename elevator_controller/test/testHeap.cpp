@@ -143,6 +143,21 @@ SUITE(UpwardFloorRunHeap) {
     
     CHECK_EQUAL(3, (int)heap.pop());
   }
+
+	TEST_FIXTURE(EmptyUpwardFloorRunHeapFixture, PopWithDuplicatesOnTop) {
+		heap.pushHallCall(5);
+		heap.pushHallCall(7);
+		heap.pushHallCall(5);
+		heap.pushFloorRequest(5);
+		heap.pushFloorRequest(6);
+		heap.pushFloorRequest(5);
+
+		int initialSize = heap.getSize();
+
+		CHECK_EQUAL(5, heap.pop());
+		CHECK_EQUAL(initialSize - 4, heap.getSize());
+		CHECK_EQUAL(6, heap.peek());
+	}
 }
 
 SUITE(DownwardFloorRunHeap) {
@@ -205,4 +220,20 @@ SUITE(DownwardFloorRunHeap) {
     
     CHECK_EQUAL(7, (int)heap.pop());
   }
+
+	TEST_FIXTURE(EmptyDownwardFloorRunHeapFixture, PopWithDuplicatesOnTop) {
+		heap.pushHallCall(7);
+		heap.pushHallCall(7);
+		heap.pushHallCall(5);
+
+		heap.pushFloorRequest(4);
+		heap.pushFloorRequest(7);
+		heap.pushFloorRequest(7);
+
+		int initialSize = heap.getSize();
+		
+		CHECK_EQUAL(7, heap.pop());
+		CHECK_EQUAL(initialSize - 4, heap.getSize());
+		CHECK_EQUAL(5, heap.peek());
+	}
 }

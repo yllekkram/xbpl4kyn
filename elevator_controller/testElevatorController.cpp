@@ -4,6 +4,7 @@
 
 #include "ElevatorCommon.hpp"
 #include "ElevatorController.hpp"
+#include "Exception.hpp"
 #include "UDPView.hpp"
 
 int main(int argc, char* argv[]) {
@@ -16,14 +17,14 @@ int main(int argc, char* argv[]) {
 	UDPView* uv = new UDPView(argv[3], argv[4]);
 
 	ec->connectToGD(argv[1], atoi(argv[2]));
-  try {
-    ec->addView(uv);
-  }
-  catch (std::exception) {}
-	delete ec;
+  //try {
+  //  ec->addView(uv);
+  //}
+  //catch (Exception e) {}
 	
-	uv->run();
+	ec->run();
 
+	delete ec;
 	std::cout << std::endl;
 
 	exit(0);
