@@ -14,13 +14,12 @@
 
 /* Global Data Declaration */
 /* End Global Data Declaration */
-
-UDPView::UDPView(char* guiAddress, char* guiPort) {
-	initUDP(guiAddress, guiPort);
-}
-
 UDPView::~UDPView() {
 	close(this->sock);
+}
+
+void UDPView::init(char* guiAddress, char* guiPort) {
+	initUDP(guiAddress, guiPort);
 }
 
 void UDPView::receiveStatus(ElevatorControllerStatus* status) {
