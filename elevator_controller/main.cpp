@@ -27,9 +27,9 @@ int destination = 0;
 bool GDFailed = false;
 bool GDFailedEmptyHeap = false;
 
-UpwardFloorRunHeap *heapUp = new UpwardFloorRunHeap();
-DownwardFloorRunHeap *heapDown = new DownwardFloorRunHeap();
-ElevatorSimulator *elevatorSimulator = new ElevatorSimulator();
+UpwardFloorRunHeap heapUp;
+DownwardFloorRunHeap heapDown;
+ElevatorSimulator elevatorSimulator;
 
 
 void floorRun(void *arg)
@@ -42,34 +42,34 @@ void floorRun(void *arg)
 			rt_mutex_acquire(&mutex, TM_INFINITE);
 			rt_cond_wait(&freeCond, &mutex, TM_INFINITE);
 
-			int upHeapSize = heapUp -> getSize();
-			int downHeapSize = heapDown -> getSize();
+			int upHeapSize = heapUp.getSize();
+			int downHeapSize = heapDown.getSize();
 			if(upHeapSize==0 && downHeapSize==0){GDFailedEmptyHeap = true;}
 
-			if(!(elevatorSimulator -> getIsDirectionUp()))
+			if(downDirection)
 			{
 				if(downHeapSize > 0)
 				{
-					topItem = (int)(heapDown -> peek());
+					topItem = (int)(heapDown.peek());
 				}else if(upHeapSize > 0)
 				{
-					topItem = (int)(heapUp -> peek());
+					topItem = (int)(heapUp.peek());
 				}
 			}else
 			{
 				if(upHeapSize > 0)
 				{
-					topItem = (int)(heapUp -> peek());
+					topItem = (int)(heapUp.peek());
 				}else if(downHeapSize > 0)
 				{
-					topItem = (int)(heapDown -> peek());
+					topItem = (int)(heapDown.peek());
 				}
 			}
 		
 			if(topItem != destination)
 			{
 				printf("Floor Run. next Dest is %d\n.", topItem);
-				elevatorSimulator -> setFinalDestination(topItem);
+				elevatorSimulator.setFinalDestination(topItem);
 				destination = topItem;
 			}
 			rt_mutex_release(&mutex);
@@ -79,7 +79,7 @@ void floorRun(void *arg)
 
 bool releaseFreeCond()
 {
-	int heapSize = heapUp -> getSize() + heapDown -> getSize();
+	int heapSize = heapUp.getSize() + heapDown.getSize();
 	if(heapSize > 0)
 	{
 		GDFailedEmptyHeap = false;
@@ -98,16 +98,16 @@ void supervisorRun(void *arg)
 		rt_mutex_acquire(&mutex, TM_INFINITE);
 		if(GDFailed && GDFailedEmptyHeap)
 		{
-			if(!(elevatorSimulator -> getIsTaskActive()))
+			if(!taskAssigned)
 			{
-				if((!(elevatorSimulator -> getIsDirectionUp()) && destination!=0) || destination == MAX_FLOORS)
+				if((downDirection && destination!=0) || destination == MAX_FLOORS)
 				{
 					destination--;
-					elevatorSimulator -> setFinalDestination(destination);
+					elevatorSimulator.setFinalDestination(destination);
 				}else if(destination == 0 || destination != MAX_FLOORS)
 				{
 					destination++;
-					elevatorSimulator -> setFinalDestination(destination);
+					elevatorSimulator.setFinalDestination(destination);
 				}
 			}
 		}
@@ -121,26 +121,26 @@ void statusRun(void *arg)
 	while(true)
 	{
 		rt_task_sleep(75000000);
-		currentFloor = elevatorSimulator -> getCurrentFloor();
-		taskAssigned = elevatorSimulator -> getIsTaskActive();
-		if(taskAssigned && (elevatorSimulator -> getIsDirectionUp()))
+		currentFloor = elevatorSimulator.getCurrentFloor();
+		taskAssigned = elevatorSimulator.getIsTaskActive();
+		if(taskAssigned && (elevatorSimulator.getIsDirectionUp()))
 		{
 			upDirection = true;
 		}
-		downDirection = !(elevatorSimulator -> getIsDirectionUp());
-		currentPosition = elevatorSimulator -> geCurrentPosition();
-		currentSpeed = elevatorSimulator -> getCurrentSpeed();
+		downDirection = !(elevatorSimulator.getIsDirectionUp());
+		currentPosition = elevatorSimulator.geCurrentPosition();
+		currentSpeed = elevatorSimulator.getCurrentSpeed();
 
-		int upHeapSize = heapUp -> getSize();
-		int downHeapSize = heapDown -> getSize();
+		int upHeapSize = heapUp.getSize();
+		int downHeapSize = heapDown.getSize();
 		if(upHeapSize==0 && downHeapSize==0){GDFailedEmptyHeap = true;}
 		if(upDirection && (upHeapSize > 0))
 		{
-			int topItem = (int)(heapUp -> peek());
+			int topItem = (int)(heapUp.peek());
 			if(currentFloor == topItem && !taskAssigned)
 			{
 				printf("Task Completed %d\n", destination);
-				heapUp -> pop();
+				heapUp.pop();
 				releaseFreeCond();	
 			}else if(topItem < destination)
 			{
@@ -148,11 +148,11 @@ void statusRun(void *arg)
 			}
 		}else if(downDirection && (downHeapSize > 0))
 		{
-			int topItem = (int)(heapDown -> peek());
+			int topItem = (int)(heapDown.peek());
 			if(currentFloor == topItem && !taskAssigned)
 			{
 				printf("Task Completed %d\n", destination);
-				heapDown -> pop();
+				heapDown.pop();
 				releaseFreeCond();
 			}else if((int)topItem > destination)
 			{
@@ -165,35 +165,35 @@ void statusRun(void *arg)
 //this function is just for my testing purposes
 void randomRun(void *arg)
 {
-	heapUp -> pushHallCall(5);
+	heapUp.pushHallCall(5);
 	releaseFreeCond();
 	printf("Hall Call Up Floor : 5\n");
 	rt_task_sleep(5000000000 * 2);
 
-	heapUp -> pushHallCall(3);
+	heapUp.pushHallCall(3);
 	printf("Hall Call Up Floor : 3\n");
 	rt_task_sleep(5000000000 * 2);
 
-	heapUp -> pushFloorRequest(4);
+	heapUp.pushFloorRequest(4);
 	printf("Floor Request Up : 4\n");
 
-	heapUp -> pushFloorRequest(9);
+	heapUp.pushFloorRequest(9);
 	printf("Floor Request Up : 9\n");
 	rt_task_sleep(5000000000 * 2);
 
-	heapDown -> pushHallCall(6);
+	heapDown.pushHallCall(6);
 	printf("Hall Call Down Floor : 6\n");
 	rt_task_sleep(5000000000 * 2);
 
-	heapDown -> pushHallCall(2);
+	heapDown.pushHallCall(2);
 	printf("Hall Call Down Floor : 2\n");
 	rt_task_sleep(5000000000 * 2);
 
-	heapDown -> pushFloorRequest(3);
+	heapDown.pushFloorRequest(3);
 	printf("Floor Request Down : 3\n");
 	rt_task_sleep(5000000000 * 2);
 
-	heapDown -> pushFloorRequest(0);
+	heapDown.pushFloorRequest(0);
 	printf("Floor Request Down : 0\n");
 	rt_task_sleep(5000000000 * 2);
 }
@@ -204,8 +204,8 @@ void runValues(void *arg)
 	while(true)
 	{
 		usleep(1000000);
-		elevatorSimulator -> calculateValues();
-		elevatorSimulator -> print();
+		elevatorSimulator.calculateValues();
+		elevatorSimulator.print();
 	}
 }
 
@@ -219,11 +219,11 @@ void supervisorStartUp(void *arg)
 	printf("ElevatorDespatcher FIXED, good :)\n");
 	GDFailed = false;
 
-	heapUp -> pushHallCall(8);
+	heapUp.pushHallCall(8);
 	printf("Hall Call Up Floor : 3\n");
 	rt_task_sleep(5000000000 * 2);
 
-	heapUp -> pushFloorRequest(15);
+	heapUp.pushFloorRequest(15);
 	printf("Floor Request Up : 4\n");
 }
 
