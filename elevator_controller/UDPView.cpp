@@ -47,8 +47,11 @@ void UDPView::setController(ElevatorController* ec) {
 }
 
 void UDPView::registerWithViewer() {
+	printf("Register with viewer...");
 	this->sendMessage(GUIRegistrationMessage(this->getEC()->getID()));
+	printf("wait for ack...");
   this->receiveAck();
+	printf("done\n");
 }
 
 void UDPView::run() {
@@ -104,13 +107,11 @@ void UDPView::sendMessage(char* message, int len) {
 		len = strlen(message);
 	}
 	
-  std::cout << "Sending udp packet...";
 	if (sendto(this->sock, message, len, 0,
 							(struct sockaddr *) &(this->server),
 							sizeof(this->server)) != len) {
 		Die("Mismatch in number of bytes sent");
 	}
-  std::cout << "done." << std::endl;
 }
 
 void UDPView::receiveAck() {
