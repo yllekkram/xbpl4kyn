@@ -42,7 +42,7 @@ int main(int argc, char* argv[]) {
   }
   catch (Exception e) {}
 
-	rt_task_start(&udpThread, &runUDPThread, NULL);
+	rt_task_start(&udpThread, &runUDPThread, &uv);
 
 	rt_task_join(&udpThread);
 	
@@ -55,5 +55,6 @@ void catch_signal(int sig) {
 
 void runUDPThread(void* cookie) {
 	printf("UDP Thread\n");
-	uv.run();
+	UDPView* thisUV = (UDPView*)cookie;
+	thisUV->run();
 }
