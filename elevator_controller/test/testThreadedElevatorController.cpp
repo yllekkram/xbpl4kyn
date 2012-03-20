@@ -15,10 +15,12 @@
 
 /* Function Headers */
 void catch_signal(int);
+void runECThread(void*);
 void runUDPThread(void*);
 /* End Function Headers */
 
 /* Data Declaration */
+RT_TASK ecThread[NUM_ELEVATORS];
 RT_TASK udpThread[NUM_ELEVATORS];
 
 ElevatorController 	ec[NUM_ELEVATORS];
@@ -38,19 +40,24 @@ int main(int argc, char* argv[]) {
 
 	/* Start each elevator controller */
 	for (int i = 0; i < NUM_ELEVATORS; i++) {
+		rt_task_create(&ecThread[i], 	NULL, 0, 99, T_JOINABLE);
 		rt_task_create(&udpThread[i], NULL, 0, 99, T_JOINABLE);
+
 		uv[i].init(argv[3], argv[4]);
 		ec[i].connectToGD(argv[1], atoi(argv[2]));
+
 		try {
 			ec[i].addView(&uv[i]);
 		}
 		catch (Exception e) {}
 
-		rt_task_start(&udpThread[i], runUDPThread, &uv[i]);
+		rt_task_start(&ecThread[i],		runECThread, 	&ec[i]);
+		rt_task_start(&udpThread[i], 	runUDPThread, &uv[i]);
 	}
 
 	/* Wait for all elevator controllers to finish */
 	for (int i = 0; i < NUM_ELEVATORS; i++) {
+		rt_task_join(&ecThread[i]);
 		rt_task_join(&udpThread[i]);
 	}
 
@@ -59,8 +66,15 @@ int main(int argc, char* argv[]) {
 
 void catch_signal(int sig) {
 	for (int i = 0; i < NUM_ELEVATORS; i++) {
+		rt_task_delete(&ecThread[i]);
 		rt_task_delete(&udpThread[i]);
 	}
+}
+
+void runECThread(void* cookie) {
+	printf("EC Thread\n");
+	ElevatorController* thisEC = (ElevatorController*)cookie;
+	thisEC->run();
 }
 
 void runUDPThread(void* cookie) {
