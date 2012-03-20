@@ -31,23 +31,23 @@ public class UpdaterRunnable implements Runnable{
 			TCPConnectionManager.getInstance().sendData(clientSocket, new StatusRequestMessage().serialize());
 			byte[] line = TCPConnectionManager.getInstance().receiveData(clientSocket, Constants.STATUS_UPDATE_REQUEST_TIMEOUT);
 			if(line != null){
-				System.out.println("Client said: " + Arrays.toString(line));
+				System.out.println("Client" + clientId  + " said: " + Arrays.toString(line));
 				GroupDispatcherMessageIncoming message = GroupDispatcherMessageParser.getInstance().parseMessage(line);
 				if(message instanceof ECStatusMessage){
 					ECStatusMessage status = (ECStatusMessage) message;
 					GroupDispatcher.getInstance().updateECStatus( clientId, status );
 				}else{
-					System.out.println("UpdaterRunnable - Unexpected message type");
+					System.out.println("UpdaterRunnable - Unexpected message type from client " + clientId);
 				}
 				
 			}else{
 				System.out.println("UpdaterRunnable received null data from client " + clientId);
 			}
 		} catch (SocketException e){
-			System.out.println("Received a SocketException in UpdaterRunnable. The elevator will be removed.");
+			System.out.println("Received a SocketException in UpdaterRunnable for client " +  clientId + ". The elevator will be removed.");
 			GroupDispatcher.getInstance().removeElevator(clientId);
 		} catch (SocketTimeoutException e) {
-			System.out.println("Received a SocketTimeoutException in UpdaterRunnable. The elevator will be removed.");
+			System.out.println("Received a SocketTimeoutException in UpdaterRunnable for client " +  clientId + ". The elevator will be removed.");
 			GroupDispatcher.getInstance().removeElevator(clientId);
 		} catch (IOException e) { 
 			Main.onError(e); 
