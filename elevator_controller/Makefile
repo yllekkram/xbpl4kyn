@@ -7,8 +7,8 @@ RM					= rm
 
 vpath %.hpp include:test/include
 
-EXE			= ElevatorTestServer UDPTestServer testTCP testUDP testElevatorController ElevatorSimulatorTest
-XENOEXE			= main
+EXE				= ElevatorTestServer UDPTestServer testElevatorController testTCP testUDP ElevatorSimulatorTest
+XENOEXE		= main testThreadedElevatorController
 SRCS			= $(wildcard *.cpp)
 OBJS			= ${SRCS:.cpp=.opp}
 
@@ -44,7 +44,7 @@ else
 xeno::$(XENOEXE)
 CXXFLAGS+=$(shell $(XENOCONFIG) --xeno-cflags) $(MY_CFLAGS)
 
-CXXLDFLAGS=$(shell $(XENOCONFIG) --xeno-ldflags) $(MY_LDFLAGS) -lnative
+CXXLDFLAGS=$(shell $(XENOCONFIG) --xeno-ldflags) $(MY_LDFLAGS) -lnative -lrtdk
 
 # This includes the library path of given Xenomai into the binary to make live
 # easier for beginners if Xenomai's libs are not in any default search path.
@@ -59,7 +59,7 @@ xeno:: $(XENOEXE)
 main: main.opp Heap.opp ElevatorSimulator.opp
 	$(CXXLD) $(CXXLDFLAGS) -o $@ $^
 
-tests: test/test.opp test/testElevatorController.opp test/testHeap.opp test/testMessage.opp Message.opp Heap.opp ElevatorCommon.opp
+tests: test/test.opp test/testHeap.opp test/testMessage.opp Message.opp Heap.opp ElevatorCommon.opp
 	$(CXX) $(CXXINC) -o test/test $^ test/lib/libUnitTest++.a $(CXXFLAGS)
 
 clean:
@@ -72,6 +72,9 @@ ElevatorTestServer: ElevatorCommon.opp ElevatorTestServer.opp
 	$(CXXLD) $(CXXLDFLAGS) -o $@ $^
 
 testTCP: ElevatorCommon.opp ElevatorController.opp Message.opp testTCP.opp
+	$(CXXLD) $(CXXLDFLAGS) -o $@ $^
+
+testThreadedElevatorController:ElevatorCommon.opp ElevatorController.opp Message.opp UDPView.opp test/testThreadedElevatorController.opp
 	$(CXXLD) $(CXXLDFLAGS) -o $@ $^
 	
 UDPTestServer: ElevatorCommon.opp UDPTestServer.opp
@@ -94,6 +97,7 @@ Message.opp: Message.hpp ElevatorCommon.hpp Exception.hpp
 UDPTestServer.opp: ElevatorCommon.hpp
 UDPView.opp: ElevatorControllerView.hpp Exception.hpp UDPView.hpp
 testElevatorController.opp: ElevatorCommon.hpp ElevatorController.hpp Exception.hpp Message.hpp UDPView.hpp
+testThreadedElevatorController.opp: ElevatorController.hpp Exception.hpp UDPView.hpp
 testTCP.opp: ElevatorCommon.hpp
 testUDP.opp: ElevatorCommon.hpp ElevatorController.hpp Message.hpp UDPView.hpp
 

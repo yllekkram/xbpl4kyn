@@ -13,18 +13,18 @@ int main(int argc, char* argv[]) {
 		exit(1);
 	}
 
-	ElevatorController* ec = new ElevatorController();
-	UDPView* uv = new UDPView(argv[3], argv[4]);
+	ElevatorController ec;
+	UDPView uv;
+	uv.init(argv[3], argv[4]);
 
-	ec->connectToGD(argv[1], atoi(argv[2]));
-  //try {
-  //  ec->addView(uv);
-  //}
-  //catch (Exception e) {}
+	ec.connectToGD(argv[1], atoi(argv[2]));
+  try {
+    ec.addView(&uv);
+  }
+  catch (Exception e) {}
 	
-	ec->run();
+	uv.run();
 
-	delete ec;
 	std::cout << std::endl;
 
 	exit(0);
