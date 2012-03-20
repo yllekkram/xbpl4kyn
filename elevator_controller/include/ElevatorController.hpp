@@ -31,7 +31,7 @@ class ElevatorController {
 	private:
 		static char nextID;
 		
-		char id;
+		unsigned char id;
 		int sock;
 		struct sockaddr_in echoserver;
 		std::vector<ElevatorControllerView*> views;
@@ -40,7 +40,7 @@ class ElevatorController {
 			return nextID++;
 		}
 		
-    void receiveHallCall(HallCallAssignmentMessage message);
+    void receiveHallCall(HallCallAssignmentMessage& message);
     
 		void sendRegistration();
 		void receiveAck();
