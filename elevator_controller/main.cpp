@@ -13,63 +13,81 @@
 #include "ElevatorSimulator.hpp"
 #include "ElevatorCommon.hpp"
 
-#define ELEVATOR_SIZE 2
-
-RT_TASK floor_run, supervisor, supervisorStart, release_cond, value_run;
+RT_TASK floor_run, supervisor, supervisorStart, release_cond, value_run, status;
 RT_MUTEX mutex;
-RT_COND freeCond, reassignment;
-UpwardFloorRunHeap *heapUp = new UpwardFloorRunHeap();
-DownwardFloorRunHeap *heapDown = new DownwardFloorRunHeap();
-ElevatorSimulator *elevatorSimulator = new ElevatorSimulator();
+RT_COND freeCond;
+
+int currentFloor = 0;
+int taskAssigned = false;
+bool upDirection = false;
+bool downDirection = false;
+float currentPosition = 0;
+float currentSpeed = 0;
 int destination = 0;
 bool GDFailed = false;
+bool GDFailedEmptyHeap = false;
+
+UpwardFloorRunHeap heapUp;
+DownwardFloorRunHeap heapDown;
+ElevatorSimulator elevatorSimulator;
+
 
 void floorRun(void *arg)
 {
-	char topItem;
-	while(!GDFailed)
+	int topItem;
+	while(true)
 	{
-		rt_mutex_acquire(&mutex, TM_INFINITE);
-		rt_cond_wait(&freeCond, &mutex, TM_INFINITE);
-
-		int upHeapSize = heapUp -> getSize();
-		int downHeapSize = heapDown -> getSize();
-
-		if(!(elevatorSimulator -> getIsDirectionUp()))
+		if(!GDFailedEmptyHeap)
 		{
-			if(downHeapSize > 0)
+			rt_mutex_acquire(&mutex, TM_INFINITE);
+			rt_cond_wait(&freeCond, &mutex, TM_INFINITE);
+
+			int upHeapSize = heapUp.getSize();
+			int downHeapSize = heapDown.getSize();
+			if(upHeapSize==0 && downHeapSize==0){GDFailedEmptyHeap = true;}
+
+			if(downDirection)
 			{
-				topItem = heapDown -> pop();
-			}else if(upHeapSize > 0)
+				if(downHeapSize > 0)
+				{
+					topItem = (int)(heapDown.peek());
+				}else if(upHeapSize > 0)
+				{
+					topItem = (int)(heapUp.peek());
+				}
+			}else
 			{
-				topItem = heapUp -> pop();
+				if(upHeapSize > 0)
+				{
+					topItem = (int)(heapUp.peek());
+				}else if(downHeapSize > 0)
+				{
+					topItem = (int)(heapDown.peek());
+				}
 			}
-		}else
-		{
-			if(upHeapSize > 0)
+		
+			if(topItem != destination)
 			{
-				topItem = heapUp -> pop();
-			}else if(downHeapSize > 0)
-			{
-				topItem = heapDown -> pop();
+				printf("Floor Run. next Dest is %d\n.", topItem);
+				elevatorSimulator.setFinalDestination(topItem);
+				destination = topItem;
 			}
+			rt_mutex_release(&mutex);
 		}
+	}
+}
 
-		if(topItem != destination)
-		{
-			int nextDestination = atoi(&topItem);
-			int elevatorFloor = elevatorSimulator -> getCurrentFloor();
-			if(elevatorFloor != destination)
-			{
-				if(elevatorSimulator -> getIsDirectionUp()){heapUp -> pushFloorRequest((char)destination);}
-				else{heapDown -> pushFloorRequest((char)destination);}
-			}
-			printf("Floor Run. next Dest is %d\n", nextDestination);
-			elevatorSimulator -> setFinalDestination(nextDestination);
-			destination = nextDestination;
-		}
-		rt_mutex_release(&mutex);
-		rt_cond_wait(&reassignment, &mutex, TM_INFINITE);
+bool releaseFreeCond()
+{
+	int heapSize = heapUp.getSize() + heapDown.getSize();
+	if(heapSize > 0)
+	{
+		GDFailedEmptyHeap = false;
+		rt_cond_signal(&freeCond);
+		return true;
+	}else
+	{
+		return false;
 	}
 }
 
@@ -77,49 +95,107 @@ void supervisorRun(void *arg)
 {
 	while(true)
 	{
-		//printf("supervisorRun STARTED.\n");
-		if(GDFailed)
+		rt_mutex_acquire(&mutex, TM_INFINITE);
+		if(GDFailed && GDFailedEmptyHeap)
 		{
-			rt_mutex_acquire(&mutex, TM_INFINITE);
-			if(!(elevatorSimulator -> getIsTaskActive()))
+			if(!taskAssigned)
 			{
-				if((!(elevatorSimulator -> getIsDirectionUp()) && destination!=0) || destination == MAX_FLOORS)
+				if((downDirection && destination!=0) || destination == MAX_FLOORS)
 				{
 					destination--;
-					printf("Supervisor Run. next Dest is %d\n", destination);
-					elevatorSimulator -> setFinalDestination(destination);
+					elevatorSimulator.setFinalDestination(destination);
 				}else if(destination == 0 || destination != MAX_FLOORS)
 				{
 					destination++;
-					printf("Supervisor Run. next Dest is %d\n", destination);
-					elevatorSimulator -> setFinalDestination(destination);
+					elevatorSimulator.setFinalDestination(destination);
 				}
 			}
-			rt_mutex_release(&mutex);
 		}
+		rt_mutex_release(&mutex);
 		rt_task_sleep(500000000);
 	}
 }
 
-/*
+void statusRun(void *arg)
+{
+	while(true)
+	{
+		rt_task_sleep(75000000);
+		currentFloor = elevatorSimulator.getCurrentFloor();
+		taskAssigned = elevatorSimulator.getIsTaskActive();
+		if(taskAssigned && (elevatorSimulator.getIsDirectionUp()))
+		{
+			upDirection = true;
+		}
+		downDirection = !(elevatorSimulator.getIsDirectionUp());
+		currentPosition = elevatorSimulator.geCurrentPosition();
+		currentSpeed = elevatorSimulator.getCurrentSpeed();
+
+		int upHeapSize = heapUp.getSize();
+		int downHeapSize = heapDown.getSize();
+		if(upHeapSize==0 && downHeapSize==0){GDFailedEmptyHeap = true;}
+		if(upDirection && (upHeapSize > 0))
+		{
+			int topItem = (int)(heapUp.peek());
+			if(currentFloor == topItem && !taskAssigned)
+			{
+				printf("Task Completed %d\n", destination);
+				heapUp.pop();
+				releaseFreeCond();	
+			}else if(topItem < destination)
+			{
+				releaseFreeCond();
+			}
+		}else if(downDirection && (downHeapSize > 0))
+		{
+			int topItem = (int)(heapDown.peek());
+			if(currentFloor == topItem && !taskAssigned)
+			{
+				printf("Task Completed %d\n", destination);
+				heapDown.pop();
+				releaseFreeCond();
+			}else if((int)topItem > destination)
+			{
+				releaseFreeCond();
+			}
+		}
+	}
+}
+
 //this function is just for my testing purposes
 void randomRun(void *arg)
 {
-	int random_integer = rand();
-	if(random_integer > 10000000)
-	{
-		random_integer/=1000;
-	}
-	while(true)
-	{
-		usleep(random_integer);
-		bool busy = elevatorSimulator -> getIsTaskActive();
-		if(!busy)
-		{
-			rt_cond_signal(&reassignment);
-		}
-		rt_cond_signal(&freeCond);
-	}
+	heapUp.pushHallCall(5);
+	releaseFreeCond();
+	printf("Hall Call Up Floor : 5\n");
+	rt_task_sleep(5000000000 * 2);
+
+	heapUp.pushHallCall(3);
+	printf("Hall Call Up Floor : 3\n");
+	rt_task_sleep(5000000000 * 2);
+
+	heapUp.pushFloorRequest(4);
+	printf("Floor Request Up : 4\n");
+
+	heapUp.pushFloorRequest(9);
+	printf("Floor Request Up : 9\n");
+	rt_task_sleep(5000000000 * 2);
+
+	heapDown.pushHallCall(6);
+	printf("Hall Call Down Floor : 6\n");
+	rt_task_sleep(5000000000 * 2);
+
+	heapDown.pushHallCall(2);
+	printf("Hall Call Down Floor : 2\n");
+	rt_task_sleep(5000000000 * 2);
+
+	heapDown.pushFloorRequest(3);
+	printf("Floor Request Down : 3\n");
+	rt_task_sleep(5000000000 * 2);
+
+	heapDown.pushFloorRequest(0);
+	printf("Floor Request Down : 0\n");
+	rt_task_sleep(5000000000 * 2);
 }
 
 //this function is just for my testing purposes
@@ -128,19 +204,29 @@ void runValues(void *arg)
 	while(true)
 	{
 		usleep(1000000);
-		elevatorSimulator -> calculateValues();
-		elevatorSimulator -> print();
+		elevatorSimulator.calculateValues();
+		elevatorSimulator.print();
 	}
 }
 
 //this function is just for my testing purposes
 void supervisorStartUp(void *arg)
 {
-	usleep(30000000);
+	rt_task_sleep(5000000000 * 10);
 	printf("ElevatorDespatcher FAILED, Oh my god :(\n");
 	GDFailed = true;
+	rt_task_sleep(5000000000 * 20);
+	printf("ElevatorDespatcher FIXED, good :)\n");
+	GDFailed = false;
+
+	heapUp.pushHallCall(8);
+	printf("Hall Call Up Floor : 3\n");
+	rt_task_sleep(5000000000 * 2);
+
+	heapUp.pushFloorRequest(15);
+	printf("Floor Request Up : 4\n");
 }
-*/
+
 
 void catch_signal(int sig)
 {
@@ -155,33 +241,24 @@ int main(int argc, char* argv[]) {
 
 	//created rewuired mutex and condition variables
 	rt_mutex_create(&mutex, NULL);
-	rt_cond_create(&freeCond, NULL);		//will be signaled if there isa task avaiable in the heap.
-	rt_cond_create(&reassignment, NULL);		//will be signaled if there is a re assignment.
+	//will be signaled if there isa task avaiable in the heap.
+	rt_cond_create(&freeCond, NULL);
 
 	//create and run the run floor thread
 	rt_task_create(&floor_run, NULL, 0, 99, 0);
 	rt_task_start(&floor_run, &floorRun, NULL);
 	rt_task_create(&supervisor, NULL, 0, 99, 0);
 	rt_task_start(&supervisor, &supervisorRun, NULL);
+	rt_task_create(&status, NULL, 0, 99, 0);
+	rt_task_start(&status, &statusRun, NULL);
 	
-/*
 	//following is for my testing purpose
 	rt_task_create(&supervisorStart, NULL, 0, 99, 0);
 	rt_task_start(&supervisorStart, &supervisorStartUp, NULL);
-	heapDown -> pushFloorRequest('3');
-	heapDown -> pushFloorRequest('5');
-	heapDown -> pushHallCall('12');
-	heapDown -> pushHallCall('9');
-	heapUp -> pushFloorRequest('8');
-	heapUp -> pushFloorRequest('4');
-	heapUp -> pushHallCall('5');
-	heapUp -> pushHallCall('4');
 	rt_task_create(&release_cond, NULL, 0, 99, 0);
 	rt_task_start(&release_cond, &randomRun, NULL);
 	rt_task_create(&value_run, NULL, 0, 99, 0);
 	rt_task_start(&value_run, &runValues, NULL);
-*/
-	
 
 	pause();
 

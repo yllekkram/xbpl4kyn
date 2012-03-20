@@ -11,14 +11,14 @@ int main(int argc, char* argv[]) {
 		exit(1);
 	}
 	
-	ElevatorController* ec = new ElevatorController();
-	UDPView* uv = new UDPView(argv[1], argv[2]);
+	ElevatorController ec;
+	UDPView uv;
+	uv.init(argv[1], argv[2]);
 	
-	ec->addView(uv);
+	ec.addView(&uv);
 	
-	uv->registerWithViewer();
+	uv.registerWithViewer();
 	//~ uv->receiveMessage(strlen(argv[3]));
 	
-	delete uv;
 	exit(0);
 }

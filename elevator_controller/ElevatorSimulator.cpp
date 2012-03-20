@@ -10,10 +10,7 @@
 
 #include "ElevatorSimulator.hpp"
 
-
-
 // Uninitialized members
-//
 // float doorClosedTime
 // float travelTime
 // float doorOpenedTime
@@ -34,8 +31,8 @@ ElevatorSimulator::ElevatorSimulator()
 }
 
 ElevatorSimulator::~ElevatorSimulator(){
-	delete tp;								//deallocate the structure
-	delete tpe;								//deallocate the structure
+	delete tp;						//deallocate the structure
+	delete tpe;						//deallocate the structure
 }
 
 //reset the following values back to their original state
@@ -47,27 +44,27 @@ void ElevatorSimulator::reset(){
 
 //this function will find necessary values to calculate currentPosition, currentSpeed
 void ElevatorSimulator::findGraph(float travelDistance){
-	accTime = (MAX_SPEED - currentSpeed)/ACCELERATION;		//time take to accelerate to max_speed
+	accTime = (MAX_SPEED - currentSpeed)/ACCELERATION;			//time take to accelerate to max_speed
 	decTime = (0 - MAX_SPEED)/DECELATRAION;					//time take to decelerate from max_speed to zero
 	distAcc = currentSpeed*accTime + (0.5)*ACCELERATION*accTime*accTime;	//distance take to accelerate to max_speed
 	distDec = MAX_SPEED*decTime + (0.5)*DECELATRAION*decTime*decTime;	//distance take to decelerate from max_speed to zero
 
-	float totalDistAccDec = (distAcc + distDec);	//total time to accelerate and decelerate
-	if(totalDistAccDec<travelDistance){				//if all three stages of movements are required : accelerate, max_speed and decelerate
-		numState = 1;								//set the numState
-		distMaxSpeed = travelDistance - totalDistAccDec;	//indicate the distance traveled only be max_speed (no acceleration and deceleration)
+	float totalDistAccDec = (distAcc + distDec);				//total time to accelerate and decelerate
+	if(totalDistAccDec<travelDistance){					//if all three stages of movements are required : accelerate, max_speed and decelerate
+		numState = 1;							//set the numState
+		distMaxSpeed = travelDistance - totalDistAccDec;		//indicate the distance traveled only be max_speed (no acceleration and deceleration)
 		maxDistTime = distMaxSpeed/MAX_SPEED;				//indicate the time traveled only be max_speed (no acceleration and deceleration)
 		travelTime = accTime+maxDistTime+decTime;			//total travel time for the task
 	}else if(distAcc*10 > travelDistance || totalDistAccDec > travelDistance){	//if only acceleration and deceleration stages are accessed
-		numState = 2;									//set the numState
+		numState = 2;								//set the numState
 		midLocation = travelDistance/2;					//middle location where acceleration changes to declaration
-		midTime = sqrt((2*midLocation)/ACCELERATION);	//middle time where acceleration changes to declaration
+		midTime = sqrt((2*midLocation)/ACCELERATION);			//middle time where acceleration changes to declaration
 		midSpeed = ACCELERATION*midTime;				//middle speed where acceleration changes to declaration
-		travelTime = midTime + (0-midSpeed)/DECELATRAION;	//total travel time for this state
+		travelTime = midTime + (0-midSpeed)/DECELATRAION;		//total travel time for this state
 	}
-	doorOpenedTime = travelTime + DOOR_OPEN_TIME;			//time when the door finish opening for this task
-	doorOpenedAndReadyTime = doorOpenedTime + IN_OUT_TIME;	//time until the door remain open for this task
-	doorClosedTime = doorOpenedAndReadyTime + DOOR_CLOSE_TIME;	//time when the door finish closing for this task
+	doorOpenedTime = travelTime + DOOR_OPEN_TIME;				//time when the door finish opening for this task
+	doorOpenedAndReadyTime = doorOpenedTime + IN_OUT_TIME;			//time until the door remain open for this task
+	doorClosedTime = doorOpenedAndReadyTime + DOOR_CLOSE_TIME;		//time when the door finish closing for this task
 }
 
 //this will calculate the status of the elevator
@@ -75,32 +72,39 @@ void ElevatorSimulator::calculateValues(){
 	ftime(tpe);		//current time
 	if(task)		//task exist
 	{
-		float elaspedTime = (tpe->time - tp->time)*1000 + (tpe->millitm - tp->millitm);	//calculate the elapsed time in milliseconds
-		elaspedTime /= 1000;	//change the time to seconds
+		float elaspedTime = (tpe->time - tp->time)*1000 + (tpe->millitm - tp->millitm);		//calculate the elapsed time in milliseconds
+		elaspedTime /= 1000;		//change the time to seconds
 		if(numState==1){		//if current status is 1
-			if(elaspedTime < accTime){	//if the elapsed time is less than the time it takes to accelerate
-				if(!directionUP){currentPosition = tempCurrentPosition - (0.5)*ACCELERATION*elaspedTime*elaspedTime;}	//calculate the current position using acceleration and time
+			if(elaspedTime < accTime){		//if the elapsed time is less than the time it takes to accelerate
+				//calculate the current position using acceleration and time
+				if(!directionUP){currentPosition = tempCurrentPosition - (0.5)*ACCELERATION*elaspedTime*elaspedTime;}
 				else{currentPosition = tempCurrentPosition + (0.5)*ACCELERATION*elaspedTime*elaspedTime;}
 				currentSpeed += ACCELERATION*elaspedTime;	//calculate the current speed using acceleration and time
-			}else if(elaspedTime < (accTime+maxDistTime)){	//if the elapsed time is less than the time it takes to accelerate and maximum speed time
+			//if the elapsed time is less than the time it takes to accelerate and maximum speed time
+			}else if(elaspedTime < (accTime+maxDistTime)){
 				float extraTime = elaspedTime-accTime;	//amount of time spend with maximum speed
-				if(!directionUP){currentPosition = tempCurrentPosition - (0.5)*ACCELERATION*accTime*accTime - MAX_SPEED*extraTime;}	//calculate the current position using acceleration and time and maximum speed
+				//calculate the current position using acceleration and time and maximum speed
+				if(!directionUP){currentPosition = tempCurrentPosition - (0.5)*ACCELERATION*accTime*accTime - MAX_SPEED*extraTime;}
 				else{currentPosition = tempCurrentPosition + (0.5)*ACCELERATION*accTime*accTime + MAX_SPEED*extraTime;}
 				currentSpeed = MAX_SPEED;	//current speed will be the maximum speed
 			}else{
 				float extraTime = elaspedTime-(accTime+maxDistTime);	//currently in deceleration stage
-				if(!directionUP){currentPosition = tempCurrentPosition - (0.5)*ACCELERATION*accTime*accTime - MAX_SPEED*maxDistTime - (MAX_SPEED*extraTime + (0.5)*DECELATRAION*extraTime*extraTime);}	//calculate the current position using acceleration and time and maximum speed and deceleration
+				//calculate the current position using acceleration and time and maximum speed and deceleration
+				if(!directionUP){currentPosition = tempCurrentPosition - (0.5)*ACCELERATION*accTime*accTime - MAX_SPEED*maxDistTime - (MAX_SPEED*extraTime + (0.5)*DECELATRAION*extraTime*extraTime);}
 				else{currentPosition = tempCurrentPosition + (0.5)*ACCELERATION*accTime*accTime + MAX_SPEED*maxDistTime + (MAX_SPEED*extraTime + (0.5)*DECELATRAION*extraTime*extraTime);}
-				currentSpeed = DECELATRAION*extraTime + MAX_SPEED;	//calculate the current speed using acceleration and time and maximum speed and deceleration
+				//calculate the current speed using acceleration and time and maximum speed and deceleration
+				currentSpeed = DECELATRAION*extraTime + MAX_SPEED;
 			}
 		}else if(numState==2){	//if current status is 1
 			if(elaspedTime <= midTime){	//if the elapsed time is within the accelerating time period
-				if(!directionUP){currentPosition = tempCurrentPosition - (0.5)*ACCELERATION*elaspedTime*elaspedTime;}	//calculate position using acceleration
+				//calculate position using acceleration
+				if(!directionUP){currentPosition = tempCurrentPosition - (0.5)*ACCELERATION*elaspedTime*elaspedTime;}
 				else{currentPosition = tempCurrentPosition + (0.5)*ACCELERATION*elaspedTime*elaspedTime;}
 				currentSpeed += ACCELERATION*elaspedTime;	//calculate speed using acceleration
 			}else if(elaspedTime > midTime){
 				float extraTime = elaspedTime-midTime;		//calculate the time spend in deceleration
-				if(!directionUP){currentPosition = tempCurrentPosition - (0.5)*ACCELERATION*midTime*midTime + (0.5)*DECELATRAION*extraTime*extraTime;}	//calculate current position using acceleration, deceleration
+				//calculate current position using acceleration, deceleration
+				if(!directionUP){currentPosition = tempCurrentPosition - (0.5)*ACCELERATION*midTime*midTime + (0.5)*DECELATRAION*extraTime*extraTime;}
 				else{currentPosition = tempCurrentPosition + (0.5)*ACCELERATION*midTime*midTime - (0.5)*DECELATRAION*extraTime*extraTime;}
 				currentSpeed = DECELATRAION*extraTime + midSpeed;	//calculate speed using DECELATRAION and time
 			}
@@ -121,7 +125,7 @@ void ElevatorSimulator::calculateValues(){
 		{
 			numState = 0;	//reset the state
 			currentSpeed = 0;	//reset the current speed
-			currentFloor = finalDestination;					//set the current floor to final destination
+			currentFloor = finalDestination;			//set the current floor to final destination
 			currentPosition = finalDestination*FLOOR_HEIGHT;	//assign to final destination
 			DoorOpening = true;	//assign the door opening variable to true
 		}else if((currentPosition >= finalDestination*FLOOR_HEIGHT && directionUP || currentPosition <= finalDestination*FLOOR_HEIGHT && !directionUP) && elaspedTime >= doorOpenedTime && elaspedTime <= doorOpenedAndReadyTime)
@@ -169,4 +173,5 @@ bool ElevatorSimulator::getIsDirectionUp(){return directionUP;}
 bool ElevatorSimulator::getIsDoorOpening(){return DoorOpening;}
 bool ElevatorSimulator::getIsDoorOpen(){return DoorOpen;}
 bool ElevatorSimulator::getIsDoorClosing(){return DoorClosing;}
+float ElevatorSimulator::geCurrentPosition(){return currentPosition;}
 void ElevatorSimulator::print(){std::cout << "currentSpeed " << currentSpeed << " currentFloor " << currentFloor << " task " << task << " directionUP " << directionUP << " DoorOpening " << DoorOpening << " DoorOpen " << DoorOpen << " DoorClosing " << DoorClosing << std::endl;}

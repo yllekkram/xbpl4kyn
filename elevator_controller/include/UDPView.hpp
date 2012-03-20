@@ -7,9 +7,10 @@
 
 class UDPView : public ElevatorControllerView {
 	public:
-		UDPView(char* guiAddress, char* guiPort);
+		UDPView(){};
 		~UDPView();
 		
+		void init(char* guiAddress, char* guiPort);
 		// Override superclass method
 		virtual void setController(ElevatorController* ec);
 		

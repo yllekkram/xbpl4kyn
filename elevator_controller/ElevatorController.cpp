@@ -51,26 +51,45 @@ void ElevatorController::waitForGDRequest() {
 	switch (requestType) {
 		case STATUS_REQUEST:
       this->sendStatus();
-			std::cout << "Status Request" << std::endl;
+			std::cout << "EC" << (unsigned int)this->getID() << ": Status Request" << std::endl;
 			break;
 		case HALL_CALL_ASSIGNMENT:
       message = new HallCallAssignmentMessage(request);
-			std::cout << "Hall Call Assigned: Floor" << (int) request[1];
+			std::cout << "EC" << (unsigned int)this->getID() << ": Hall Call Assigned: Floor " << (int) request[1];
 			std::cout << std::endl;
 			break;
 		default:
-			std::cout << "Unknown Message Type" << std::endl;
+			std::cout << "EC" << (unsigned int)this->getID() << ": Unknown Message Type" << std::endl;
 	}
 }
 
 void ElevatorController::sendStatus() {
-	std::vector<char>* hallCalls = new std::vector<char>(); // = FloorRequestHeap.getHallCalls();
+	// std::vector<char>* hallCalls = new std::vector<char>(); // = FloorRequestHeap.getHallCalls();
 
-	this->sendMessage(StatusResponseMessage(this->id, 
-                                          5, 6, 7, hallCalls->size(), 
-                                          (char*) &hallCalls[0]));
+	// this->sendMessage(StatusResponseMessage(this->id, 
+  //                                         5, 6, 7, hallCalls->size(), 
+  //                                         (char*) &hallCalls[0]));
+	char len = 1 	/* EC ID */
+						+1	/* Message Type */
+						+1	/* dest */
+						+1	/* pos */
+						+1	/* speed */
+						+1	/* num hall calls */
+						+0	/* Hall calls */
+						+1;	/* Terminator */
+	
+	char message[len];
+	message[0] = STATUS_RESPONSE;
+	message[1] = this->id;
+	message[2] = 5;
+	message[3] = 6;
+	message[4] = 7;
+	message[5] = 0;
+	message[6] = MESSAGE_TERMINATOR;
 
-	delete hallCalls;
+	this->sendMessage(message, len);
+
+	// delete hallCalls;
 }
 
 void ElevatorController::connectToGD(char* gdAddress, int port) {
@@ -80,32 +99,33 @@ void ElevatorController::connectToGD(char* gdAddress, int port) {
 	echoserver.sin_addr.s_addr = inet_addr(gdAddress);
 	echoserver.sin_port = htons(port);
 
-  std::cout << "Connecting to GroupDispatcher...";
+  std::cout << "EC" << (unsigned int)this->getID() << ": Connecting to GroupDispatcher...";
 	/* Establish connection */
 	if (connect(this->sock,
 				(struct sockaddr *) &(echoserver),
 			sizeof(echoserver)) < 0) {
-		Die("Failed to connect with server");
+		//Die("Failed to connect with server");
 	}
   std::cout << "done." << std::endl;
 	this->sendRegistration();
 }
 
-void receiveHallCall(HallCallAssignmentMessage& message) {
-  std::cout << "Received hall call for floor " << (int) message.getFloor();
+void ElevatorController::receiveHallCall(HallCallAssignmentMessage& message) {
+  std::cout << "EC" << (unsigned int)this->getID() << ": Received hall call for floor " << (int) message.getFloor();
   std::cout << " in " << ((message.getDirection() == HALL_CALL_DIRECTION_DOWN) ? "downward" : "upward") << " direction" << std::endl;
 }
 
 void ElevatorController::sendRegistration() {
-  std::cout << "Sending EC->GD registration...";
+  std::cout << "EC" << (unsigned int)this->getID() << ": Sending EC->GD registration...";
 	sendMessage(RegisterWithGDMessage(this->id));
+
   std::cout << "done." << std::endl;
 	
 	receiveAck();
 }
 
 void ElevatorController::receiveAck() {
-  std::cout << "Waitng for EC->GD ack...";
+  std::cout << "EC" << (unsigned int)this->getID() << ": Waitng for EC->GD ack...";
 	char* message = this->receiveTCP(2);
   std::cout << "done." << std::endl;
 	if (message[0] != REGISTRATION_ACK)
@@ -133,13 +153,13 @@ char* ElevatorController::receiveTCP(unsigned int length) {
 	/* Receive the word back from the server */
 	while (received < length) {
 		int bytes = 0;
-		if ((bytes = recv(localSock, buffer, BUFFSIZE-1, 0)) < 1) {
-			Die("Failed to receive bytes from server");
-		}
+		std::cout << "EC" << (unsigned int)this->getID() << ": Waiting for TCP...";
+		bytes = recv(this->sock, buffer, BUFFSIZE-1, 0);
+		std::cout << "got " << bytes << " bytes" << std::endl;
 		received += bytes;
 	}
 
-	std::cout << "Received: ";
+	std::cout << "EC" << (unsigned int)this->getID() << ": Received: ";
 	printBuffer(buffer, length);
 	std::cout << std::endl;
 
@@ -147,13 +167,13 @@ char* ElevatorController::receiveTCP(unsigned int length) {
 }
 
 void ElevatorController::openDoor() {
-	std::cout << "EC opening door" << std::endl;
+	std::cout << "EC" << (unsigned int)this->getID() << ": opening door" << std::endl;
 }
 
 void ElevatorController::closeDoor() {
-	std::cout << "EC closing door" << std::endl;
+	std::cout << "EC" << (unsigned int)this->getID() << ": closing door" << std::endl;
 }
 
 void ElevatorController::emergencyStop() {
-	std::cout << "EC emergency stop" << std::endl;
+	std::cout << "EC" << (unsigned int)this->getID() << ": emergency stop" << std::endl;
 }
