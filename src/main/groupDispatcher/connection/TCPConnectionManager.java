@@ -87,20 +87,18 @@ public class TCPConnectionManager extends Observable{
 	public byte[] receiveData(Socket socket, int timeout) throws IOException, SocketTimeoutException{
 		socket.setSoTimeout(timeout);
 		InputStream in = socket.getInputStream();
-		
+
 		byte[] data = new byte[Constants.MAX_MESSAGE_LENGTH];
-		try {
-			byte currentB = (byte) in.read();
-			for(int currentIndex = 0; currentIndex < data.length && currentB != Constants.MESSAGE_DELIMITER; currentIndex++){
-				data[currentIndex] = currentB;
-				currentB = (byte) in.read();
-			}
-		} catch (IOException e) {
-			e.printStackTrace();
+
+		byte currentB = (byte) in.read();
+		for(int currentIndex = 0; currentIndex < data.length && currentB != Constants.MESSAGE_DELIMITER; currentIndex++){
+			data[currentIndex] = currentB;
+			currentB = (byte) in.read();
 		}
+
 		return data;
 	}
-	
+
 	public void waitForNewConnection(){
 		new Thread(new TCPConnectionCreationRunnable()).start();
 	}
