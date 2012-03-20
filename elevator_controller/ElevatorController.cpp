@@ -12,9 +12,10 @@
 
 char ElevatorController::nextID = 1;
 
-ElevatorController::ElevatorController() {
+ElevatorController::ElevatorController()
+	: downHeap(), upHeap() {
 	this->id = ElevatorController::getNextID();
-	
+
 	/* Create the TCP socket */
 	if ((this->sock = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0) {
 		Die("Failed to create socket");
@@ -40,7 +41,6 @@ void ElevatorController::run() {
 void ElevatorController::addView(ElevatorControllerView* ecv) {
 	this->views.push_back(ecv);
 	ecv->setController(this);
-	
 }
 
 void ElevatorController::waitForGDRequest() {
@@ -77,7 +77,7 @@ void ElevatorController::sendStatus() {
 						+1	/* num hall calls */
 						+0	/* Hall calls */
 						+1;	/* Terminator */
-	
+
 	char message[len];
 	message[0] = STATUS_RESPONSE;
 	message[1] = this->id;
@@ -120,7 +120,7 @@ void ElevatorController::sendRegistration() {
 	sendMessage(RegisterWithGDMessage(this->id));
 
   std::cout << "done." << std::endl;
-	
+
 	receiveAck();
 }
 
@@ -136,7 +136,7 @@ void ElevatorController::sendMessage(const Message& message) {
 	this->sendMessage(message.getBuffer(), message.getLen());
 }
 
-void ElevatorController::sendMessage(const char * message, int len) {
+void ElevatorController::sendMessage(const char* message, int len) {
 	if (len == 0) {
 		len = strlen(message);
 	}

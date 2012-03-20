@@ -71,19 +71,19 @@ ElevatorSimulatorTest: ElevatorSimulator.opp ElevatorSimulatorTest.opp
 ElevatorTestServer: ElevatorCommon.opp ElevatorTestServer.opp
 	$(CXXLD) $(CXXLDFLAGS) -o $@ $^
 
-testTCP: ElevatorCommon.opp ElevatorController.opp Message.opp testTCP.opp
+testTCP: ElevatorCommon.opp ElevatorController.opp Heap.opp Message.opp testTCP.opp
 	$(CXXLD) $(CXXLDFLAGS) -o $@ $^
 
-testThreadedElevatorController:ElevatorCommon.opp ElevatorController.opp Message.opp UDPView.opp test/testThreadedElevatorController.opp
+testThreadedElevatorController:ElevatorCommon.opp ElevatorController.opp Heap.opp Message.opp UDPView.opp test/testThreadedElevatorController.opp
 	$(CXXLD) $(CXXLDFLAGS) -o $@ $^
 	
 UDPTestServer: ElevatorCommon.opp UDPTestServer.opp
 	$(CXXLD) $(CXXLDFLAGS) -o $@ $^
 	
-testUDP: ElevatorCommon.opp ElevatorController.opp Message.opp UDPView.opp testUDP.opp
+testUDP: ElevatorCommon.opp ElevatorController.opp Heap.opp Message.opp UDPView.opp testUDP.opp
 	$(CXXLD) $(CXXLDFLAGS) -o $@ $^
 	
-testElevatorController: ElevatorCommon.opp ElevatorController.opp Message.opp UDPView.opp testElevatorController.opp
+testElevatorController: ElevatorCommon.opp ElevatorController.opp Heap.opp Message.opp UDPView.opp testElevatorController.opp
 	$(CXXLD) $(CXXLDFLAGS) -o $@ $^
 
 ElevatorCommon.opp: ElevatorCommon.hpp Exception.hpp
