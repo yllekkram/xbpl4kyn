@@ -69,11 +69,11 @@ void UDPView::waitForMessage() {
 	char* request = this->receiveMessage(MAX_GUI_REQUEST_SIZE);
 	char requestType = request[0];
 
-	std::cout << "Message: ";
+	std::cout << "EC" << (unsigned int)this->getEC()->getID() << ": Message: ";
 	printBuffer(request, MAX_GUI_REQUEST_SIZE);
 	std::cout << std::endl;
 
-	std::cout << "Received ";
+	std::cout <<  "EC" << (unsigned int)this->getEC()->getID() << ": Received ";
 	switch (requestType) {
 		case GUI_REGISTRATION_ACK:
 			std::cout << "Reg Ack" << std::endl;
@@ -125,7 +125,7 @@ char* UDPView::receiveMessage(unsigned int len) {
 	unsigned int clientlen = sizeof(client);
 	int received = 0;
 	
-  std::cout << "Receiving UDP message...";
+  std::cout <<  "EC" << (unsigned int)this->getEC()->getID() << ": Receiving UDP message...";
 	received = recvfrom(this->sock, buffer, BUFFSIZE, 0,
 														(struct sockaddr *) &client,
 														&clientlen);
