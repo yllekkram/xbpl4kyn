@@ -10,7 +10,7 @@
 #include "UDPView.hpp"
 
 /* Constants */
-#define NUM_ELEVATORS 5
+#define NUM_ELEVATORS 8
 /* End Constants */
 
 /* Function Headers */
@@ -69,6 +69,8 @@ void catch_signal(int sig) {
 		rt_task_delete(&ecThread[i]);
 		rt_task_delete(&udpThread[i]);
 	}
+
+	exit(1);
 }
 
 void runECThread(void* cookie) {
