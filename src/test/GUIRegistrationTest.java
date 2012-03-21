@@ -8,6 +8,7 @@ import main.groupDispatcher.connection.message.GroupDispatcherMessage;
 import main.groupDispatcher.control.GroupDispatcher;
 import main.model.ElevatorData;
 import main.util.Constants;
+import main.util.Log;
 
 import org.junit.*;
 
@@ -22,7 +23,8 @@ public class GUIRegistrationTest extends TestSuite{
 	GroupDispatcher gd;
 	
 	@Before
-	public void createGroupDispatcher(){
+	public void create(){
+		Log.setEnabled(false);
 		gd = GroupDispatcher.getInstance();
 		gd.startUp();
 		tcpTransmitter = new TCPTransmitter();

@@ -10,6 +10,7 @@ import main.groupDispatcher.connection.message.GroupDispatcherMessageParser;
 import main.groupDispatcher.connection.messageIncoming.GroupDispatcherMessageIncoming;
 import main.groupDispatcher.connection.messageIncoming.HallCallRequestMessage;
 import main.groupDispatcher.control.GroupDispatcher;
+import main.util.Log;
 
 
 public class UDPReceiveHandlerRunnable implements Runnable{
@@ -22,7 +23,7 @@ public class UDPReceiveHandlerRunnable implements Runnable{
 
 	
 	public void run() {
-		System.out.println("Group dispatcher - message received from GUI:" + Arrays.toString(inPacket.getData()));
+		Log.log("Group dispatcher - message received from GUI:" + Arrays.toString(inPacket.getData()));
 		
 		//parse the received message and act appropriately
 		GroupDispatcherMessageIncoming message;
@@ -33,7 +34,7 @@ public class UDPReceiveHandlerRunnable implements Runnable{
 				GroupDispatcher.getInstance().onHallCall(hallCall);
 			}else{
 				//ignore
-				System.out.println("UDPReceiveHandlerRunnable - unexpected message type");
+				Log.log("UDPReceiveHandlerRunnable - unexpected message type");
 			}
 		} catch (UnexpectedEndOfMessageException e) {
 			Main.onError(e);

@@ -7,6 +7,7 @@ import java.util.Arrays;
 
 import main.Main;
 import main.exception.UnexpectedEndOfMessageException;
+import main.util.Log;
 import main.view.ViewControl;
 import main.view.connection.UDPConnectionManager;
 import main.view.connection.message.ViewMessageParser;
@@ -46,7 +47,7 @@ public class ECRequestHandlerRunnable implements Runnable{
 				FloorReachedMessage message2 = (FloorReachedMessage) message;
 				ViewControl.getInstance().onFloorReached( message2.getElevatorControllerId(), message2.getFloor() );
 			}else{
-				System.out.println("GDRequestHandlerRunnable - Unexpected message received");
+				Log.log("GDRequestHandlerRunnable - Unexpected message received");
 			}
 		} catch (UnexpectedEndOfMessageException e) {
 			Main.onError(e);

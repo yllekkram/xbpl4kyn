@@ -14,6 +14,7 @@ import main.groupDispatcher.connection.message.GroupDispatcherMessageParser;
 import main.groupDispatcher.connection.messageIncoming.GroupDispatcherMessageIncoming;
 import main.groupDispatcher.connection.messageIncoming.RegistrationRequestMessage;
 import main.util.Constants;
+import main.util.Log;
 
 
 
@@ -51,7 +52,7 @@ public class TCPConnectionManager extends Observable{
 		} catch (IOException e) {
 			Main.onFatalError(e);
 		}
-		System.out.println("Client said: " + Arrays.toString(inData));
+		Log.log("Client said: " + Arrays.toString(inData));
 		
 		//parse message
 		GroupDispatcherMessageIncoming message;
@@ -59,12 +60,12 @@ public class TCPConnectionManager extends Observable{
 			message = GroupDispatcherMessageParser.getInstance().parseMessage(inData);
 		} catch (UnexpectedEndOfMessageException e) {
 			//cannot register the elevator at this point. Log the error and return.
-			System.out.println("TCPConnectionManager.onConnectionCreated() - UnexpectedEndOfMessageException caught");
+			Log.log("TCPConnectionManager.onConnectionCreated() - UnexpectedEndOfMessageException caught");
 			return;
 		}		
 		if(message instanceof RegistrationRequestMessage){
 			int clientId = ((RegistrationRequestMessage) message).getElevatorControllerId();
-			System.out.println("onConnectionCreated(" + clientId + ")");
+			Log.log("onConnectionCreated(" + clientId + ")");
 			
 			TCPClientSocketWrapper clientSocketWrapper = new TCPClientSocketWrapper(clientId, socket);
 			connections.put(Integer.valueOf(clientId), clientSocketWrapper);
@@ -74,7 +75,7 @@ public class TCPConnectionManager extends Observable{
 			notifyObservers(clientSocketWrapper);
 
 		}else{
-			System.out.println("TCPConnectionManager.onConnectionCreated() - Unexpected message");
+			Log.log("TCPConnectionManager.onConnectionCreated() - Unexpected message");
 		}
 	}
 	
@@ -91,7 +92,7 @@ public class TCPConnectionManager extends Observable{
 		try {
 			socket.getOutputStream().write(data);
 		} catch (IOException e) {
-			System.out.println("Failed to send the data: " + Arrays.toString(data));
+			Log.log("Failed to send the data: " + Arrays.toString(data));
 			e.printStackTrace();
 		}
 	}

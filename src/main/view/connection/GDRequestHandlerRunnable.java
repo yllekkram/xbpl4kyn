@@ -6,6 +6,7 @@ import java.util.Arrays;
 
 import main.Main;
 import main.exception.UnexpectedEndOfMessageException;
+import main.util.Log;
 import main.view.ViewControl;
 import main.view.connection.message.ViewMessageParser;
 import main.view.connection.message.messageIncoming.HallCallRequestAcknowledgmentMessage;
@@ -23,7 +24,7 @@ public class GDRequestHandlerRunnable implements Runnable{
 
 	
 	public void run() {
-		System.out.println("GUI - message received from GD: " + Arrays.toString(inPacket.getData()));
+		Log.log("GUI - message received from GD: " + Arrays.toString(inPacket.getData()));
 		
 		try {
 			//parse the message
@@ -39,7 +40,7 @@ public class GDRequestHandlerRunnable implements Runnable{
 			}else if(message instanceof HallCallRequestAcknowledgmentMessage){
 				System.out.println("GDRequestHandlerRunnable - HallCall request acknowledgment received");
 			}else{
-				System.out.println("GDRequestHandlerRunnable - Unexpected message received");
+				Log.log("GDRequestHandlerRunnable - Unexpected message received");
 			}
 		} catch (UnexpectedEndOfMessageException e) {
 			Main.onError(e);

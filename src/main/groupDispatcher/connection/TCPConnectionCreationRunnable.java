@@ -6,6 +6,7 @@ import java.net.Socket;
 
 import main.Main;
 import main.util.Constants;
+import main.util.Log;
 
 
 public class TCPConnectionCreationRunnable implements Runnable{
@@ -26,7 +27,7 @@ public class TCPConnectionCreationRunnable implements Runnable{
 
 	public void run(){
 		try {
-			System.out.println("waiting for a TCP connection from an ElevatorController..");
+			Log.log("waiting for a TCP connection from an ElevatorController..");
 			clientSocket = serverSocket.accept();
 			TCPConnectionManager.getInstance().onConnectionCreated(clientSocket);
 		} catch (Exception e) { onError(e); }

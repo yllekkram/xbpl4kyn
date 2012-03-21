@@ -9,6 +9,7 @@ import java.net.UnknownHostException;
 import java.util.concurrent.ConcurrentHashMap;
 
 import main.util.Constants;
+import main.util.Log;
 
 
 public class UDPConnectionManager {
@@ -45,7 +46,7 @@ public class UDPConnectionManager {
 	public void sendDataToElevator(int elevatorId, byte[] data){
 		UDPElevatorAddress elevatorAddress = elevatorAddressList.get(Integer.valueOf(elevatorId));
 		if(elevatorAddress == null){
-			System.out.println("The IP address and port for this elevator were not found. The ElevatorController was not registered.");
+			Log.log("The IP address and port for this elevator were not found. The ElevatorController was not registered.");
 		}else{
 			sendData(elevatorAddress.getIp(), elevatorAddress.getPort(), data);
 		}
