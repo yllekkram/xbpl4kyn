@@ -17,7 +17,7 @@
 #include "UDPView.hpp"
 
 /* Constants */
-#define NUM_ELEVATORS 1
+#define NUM_ELEVATORS 3
 #define STANDARD_PAUSE 2500000000U
 /* End Constants */
 
@@ -345,7 +345,9 @@ void randomRun(void *arg)
 {
 	int ID = *((int*)arg);
 	ec[ID].getUpHeap().pushHallCall(5);
+	rt_mutex_acquire(&mutex[ID], TM_INFINITE);
 	releaseFreeCond(ID);
+	rt_mutex_release(&mutex[ID]);
 	printf("RR%d Hall Call Up Floor : 5\n", ID);
 	sleep(40);
 
