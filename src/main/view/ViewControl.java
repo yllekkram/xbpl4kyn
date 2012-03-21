@@ -6,6 +6,7 @@ import javax.swing.SwingUtilities;
 import main.Main;
 import main.groupDispatcher.control.GroupDispatcher;
 import main.util.Constants;
+import main.util.Log;
 import main.view.connection.UDPConnectionManager;
 import main.view.connection.message.messageOutgoing.CloseDoorRequestMessage;
 import main.view.connection.message.messageOutgoing.FloorSelectionMessage;
@@ -35,7 +36,7 @@ public class ViewControl {
 	 * Handles the sequence of events that occur when the user starts the system
 	 */
 	public void onStart(){
-		System.out.println("Starting");
+		Log.log("Starting");
 		GroupDispatcher.getInstance().startUp();
 		ElevatorControlWindow.getInstance().onStart();
 		UDPConnectionManager.getInstance().initialize();
@@ -45,7 +46,7 @@ public class ViewControl {
 	 * Handles the sequence of events that occur when the user terminates the system
 	 */
 	public void onExit(){
-		System.out.println("Exiting");
+		Log.log("Exiting");
 		System.exit(0);
 	}
 	
@@ -58,7 +59,7 @@ public class ViewControl {
 		//disable the elevator panel
 		final ElevatorPanel elevatorPanel = ElevatorControlWindow.getInstance().getElevatorPanel(elevatorId);
 		if(elevatorPanel == null){
-			Main.onError(new IllegalStateException("GUI - Could not find the elevator panel"));
+			Main.onFatalError(new IllegalStateException("GUI - Could not find the elevator panel"));
 		}
 		SwingUtilities.invokeLater(new Runnable(){
 			public void run(){
@@ -71,7 +72,7 @@ public class ViewControl {
 		//enable the button
 		final FloorPanel floorPanel = ElevatorControlWindow.getInstance().getFloorPanel(floor);
 		if(floorPanel == null){
-			Main.onError(new IllegalStateException("GUI - Could not find the floor panel"));
+			Main.onFatalError(new IllegalStateException("GUI - Could not find the floor panel"));
 		}
 		SwingUtilities.invokeLater(new Runnable(){
 			public void run(){
@@ -81,17 +82,17 @@ public class ViewControl {
 	}
 	
 	public void onStopRequest(int carNumber){
-		System.out.println("ViewControl - User clicked on stopButton in elevator " + carNumber);
+		Log.log("ViewControl - User clicked on stopButton in elevator " + carNumber);
 		UDPConnectionManager.getInstance().sendDataToElevator(carNumber, new StopRequestMessage().serialize());
 	}
 	
 	public void onOpenDoorRequest(int carNumber){
-		System.out.println("ViewControl - User clicked on openDoorButton in elevator " + carNumber);
+		Log.log("ViewControl - User clicked on openDoorButton in elevator " + carNumber);
 		UDPConnectionManager.getInstance().sendDataToElevator(carNumber, new OpenDoorRequestMessage().serialize());
 	}
 	
 	public void onCloseDoorRequest(int carNumber){
-		System.out.println("ViewControl - User clicked on closeDoorButton in elevator " + carNumber);
+		Log.log("ViewControl - User clicked on closeDoorButton in elevator " + carNumber);
 		UDPConnectionManager.getInstance().sendDataToElevator(carNumber, new CloseDoorRequestMessage().serialize());
 	}
 	
@@ -99,7 +100,7 @@ public class ViewControl {
 		//enable the button
 		ElevatorPanel elevatorPanel = ElevatorControlWindow.getInstance().getElevatorPanel(elevatorId);
 		if(elevatorPanel == null){
-			Main.onError(new IllegalStateException("GUI - Could not find the elevator panel"));
+			Main.onFatalError(new IllegalStateException("GUI - Could not find the elevator panel"));
 		}
 		elevatorPanel.setButtonPressed(floor, false);
 		elevatorPanel.setFloor(floor);
@@ -109,14 +110,14 @@ public class ViewControl {
 		//enable the button
 		ElevatorPanel elevatorPanel = ElevatorControlWindow.getInstance().getElevatorPanel(elevatorId);
 		if(elevatorPanel == null){
-			Main.onError(new IllegalStateException("GUI - Could not find the elevator panel"));
+			Main.onFatalError(new IllegalStateException("GUI - Could not find the elevator panel"));
 		}
 		elevatorPanel.setDirection(newDirection);
 	}
 
 	public void onHallCall(int floorNumber, int directionRequested){
 		String directionRequestedStr = UIUtils.getDirectionString(directionRequested);
-		System.out.println("ElevatorMonitor - User on floor " + floorNumber + " pressed the " + directionRequestedStr + " button");
+		Log.log("ElevatorMonitor - User on floor " + floorNumber + " pressed the " + directionRequestedStr + " button");
 		
 		//send a message to the groupDispatcher
 		HallCallRequestMessage hallCallMessage = new HallCallRequestMessage(floorNumber, directionRequested);
@@ -125,7 +126,7 @@ public class ViewControl {
 	}
 	
 	public void onFloorSelection(int carNumber, int floorNumber){
-		System.out.println("ElevatorMonitor - User selected floor " + floorNumber + " in elevator " + carNumber);
+		Log.log("ElevatorMonitor - User selected floor " + floorNumber + " in elevator " + carNumber);
 		
 		//send a message to the appropriate elevator
 		UDPConnectionManager.getInstance().sendDataToElevator(carNumber, new FloorSelectionMessage(floorNumber).serialize());

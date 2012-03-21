@@ -4,6 +4,7 @@ import javax.swing.*;
 import javax.swing.border.Border;
 
 import main.util.Constants;
+import main.util.Log;
 import main.view.util.UIUtils;
 
 
@@ -63,7 +64,7 @@ public class FloorPanel extends JPanel implements ActionListener {
   		}else if(direction == Constants.DIRECTION_DOWN){
   			down.setEnabled(true);
   		}else{
-  			System.out.println("FloorPanel.enableButton() - Unexpected direction " + direction);
+  			Log.log("FloorPanel.enableButton() - Unexpected direction " + direction);
   		}
   	}
 }

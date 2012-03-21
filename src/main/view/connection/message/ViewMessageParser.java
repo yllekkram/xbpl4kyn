@@ -1,6 +1,7 @@
 package main.view.connection.message;
 
 
+import main.exception.UnexpectedEndOfMessageException;
 import main.view.connection.message.messageIncoming.DirectionChangeMessage;
 import main.view.connection.message.messageIncoming.FloorReachedMessage;
 import main.view.connection.message.messageIncoming.HallCallRequestAcknowledgmentMessage;
@@ -24,7 +25,7 @@ public class ViewMessageParser {
 	
 	}
 	
-	public ViewMessageIncoming parseMessage(byte[] data){
+	public ViewMessageIncoming parseMessage(byte[] data) throws UnexpectedEndOfMessageException{
 		int messageType = (int) data[0];
 		ViewMessageIncoming message;
 		

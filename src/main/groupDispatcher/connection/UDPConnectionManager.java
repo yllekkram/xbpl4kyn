@@ -34,7 +34,7 @@ public class UDPConnectionManager {
 	         receiveSocket = new DatagramSocket(Constants.GUI_TO_GD_UDP_PORT);
 	         receive();
 	      } catch (SocketException e) {
-	    	  Main.onError(e);
+	    	  Main.onFatalError(e);
 	      }
 	}
 	
@@ -42,7 +42,7 @@ public class UDPConnectionManager {
 		try {
 			sendData(InetAddress.getLocalHost().getHostAddress(), port, data);
 		} catch (UnknownHostException e) {
-			Main.onError(e);
+			Main.onFatalError(e);
 		}
 	}
 	
@@ -51,7 +51,7 @@ public class UDPConnectionManager {
 			DatagramPacket sendPacket = new DatagramPacket(data, data.length, InetAddress.getByName(ip), port);
 			sendSocket.send(sendPacket);
 		} catch (Exception e) {
-			Main.onError(e);
+			Main.onFatalError(e);
 		}
 	}
 
@@ -67,7 +67,7 @@ public class UDPConnectionManager {
 						//create a new thread to handle the received message
 						new Thread(new UDPReceiveHandlerRunnable(inPacket)).start();
 					} catch (IOException e) {
-						Main.onError(e);
+						Main.onFatalError(e);
 					}
 				}
 			}
