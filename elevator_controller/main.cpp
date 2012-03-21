@@ -17,7 +17,7 @@
 #include "UDPView.hpp"
 
 /* Constants */
-#define NUM_ELEVATORS 8
+#define NUM_ELEVATORS 1
 #define STANDARD_PAUSE 2500000000U
 /* End Constants */
 
@@ -38,15 +38,19 @@ void supervisorRun(void*);
 /* End Function Prototypes */
 
 /* Global Data Declarations */
-RT_TASK floor_run, supervisor, supervisorStart, release_cond, value_run, status;
+RT_TASK supervisorStart, release_cond, value_run, status;
 RT_MUTEX mutex, mutexBuffer;
 RT_COND freeCond;
 
 RT_TASK ecThread[NUM_ELEVATORS];
+RT_TASK frThread[NUM_ELEVATORS];
 RT_TASK udpThread[NUM_ELEVATORS];
+RT_TASK statusThread[NUM_ELEVATORS];
+RT_TASK supervisorThread[NUM_ELEVATORS];
 
 ElevatorController	ec[NUM_ELEVATORS];
 UDPView							uv[NUM_ELEVATORS];
+ElevatorSimulator 	es[NUM_ELEVATORS];
 
 //status updated every 75ms by the status thread
 char currentFloor;
@@ -65,8 +69,6 @@ bool GDFailedEmptyHeap = false;
 //double buffer used by both communication and status threads.
 unsigned char statusBuffer[2][BUFFSIZE];
 bool bufferSelecton = 0;
-
-ElevatorSimulator elevatorSimulator;
 /* End Global Data Declarations */
 
 int main(int argc, char* argv[]) {
@@ -76,31 +78,27 @@ int main(int argc, char* argv[]) {
 	signal(SIGTERM, catch_signal);
 	signal(SIGINT, catch_signal);
 
-	for (int i = 0; i < NUM_ELEVATORS; i++) {
-		rt_task_create(&ecThread[i], NULL, 0, 99, T_JOINABLE);
-		rt_task_create(&udpThread[i], NULL, 0, 99, T_JOINABLE);
-
-		// setupElevatorController(&ec[i], &uv[i], "192.168.251.1", "5000", "192.168.251.1", "5003");
-
-		// rt_task_start(&ecThread[i],		runECThread,	&ec[i]);
-		// rt_task_start(&udpThread[i],	runUDPThread,	&uv[i]);
-	}
-
 	//created rewuired mutex and condition variables
 	rt_mutex_create(&mutex, NULL);
 	//will be signaled if there isa task avaiable in the heap.
 	rt_cond_create(&freeCond, NULL);
 
-	//create and run the run floor thread
-	rt_task_create(&floor_run, NULL, 0, 99, 0);
-	rt_task_start(&floor_run, &floorRun, NULL);
+	for (int i = 0; i < NUM_ELEVATORS; i++) {
+		rt_task_create(&ecThread[i], 					NULL, 0, 99, T_JOINABLE);
+		rt_task_create(&frThread[i], 					NULL, 0, 99, T_JOINABLE);
+		rt_task_create(&statusThread[i], 			NULL, 0, 99, T_JOINABLE);
+		rt_task_create(&supervisorThread[i], 	NULL, 0, 99, T_JOINABLE);
+		rt_task_create(&udpThread[i], 				NULL, 0, 99, T_JOINABLE);
 
-	rt_task_create(&supervisor, NULL, 0, 99, 0);
-	rt_task_start(&supervisor, &supervisorRun, NULL);
+		// setupElevatorController(&ec[i], &uv[i], "192.168.251.1", "5000", "192.168.251.1", "5003");
 
-	rt_task_create(&status, NULL, 0, 99, 0);
-	rt_task_start(&status, &statusRun, NULL);
-	
+		// rt_task_start(&ecThread[i],					runECThread,	&ec[i]);
+		// rt_task_start(&udpThread[i],				runUDPThread,	&uv[i]);
+		// rt_task_start(&frThread[i], 				floorRun, 			NULL);
+		// rt_task_start(&supervisorThread[i], supervisorRun, 	NULL);
+		// rt_task_start(&statusThread[i], 		statusRun, 			NULL);
+	}
+
 	//following is for my testing purpose
 	rt_task_create(&supervisorStart, NULL, 0, 99, 0);
 	rt_task_start(&supervisorStart, &supervisorStartUp, NULL);
@@ -109,15 +107,17 @@ int main(int argc, char* argv[]) {
 	rt_task_create(&value_run, NULL, 0, 99, 0);
 	rt_task_start(&value_run, &runValues, NULL);
 
-	pause();
-
 	for (int i = 0; i < NUM_ELEVATORS; i++) {
 		rt_task_join(&ecThread[i]);
+		rt_task_join(&frThread[i]);
 		rt_task_join(&udpThread[i]);
+		rt_task_join(&statusThread[i]);
+		rt_task_join(&supervisorThread[i]);
 	}
 
-	rt_task_delete(&floor_run);
-	rt_task_delete(&supervisor);
+	rt_task_delete(&value_run);
+	rt_task_delete(&release_cond);
+	rt_task_delete(&supervisorStart);
 	rt_task_delete(&status);
 
 	rt_cond_delete(&freeCond);
@@ -183,7 +183,7 @@ void floorRun(void *arg)
 			if(topItem != destination)
 			{
 				printf("Floor Run. next Dest is %d\n.", topItem);
-				elevatorSimulator.setFinalDestination(topItem);
+				es[0].setFinalDestination(topItem);
 				destination = topItem;
 			}
 			rt_mutex_release(&mutex);
@@ -225,11 +225,11 @@ void supervisorRun(void *arg)
 				if((downDirection && destination!=0) || destination == MAX_FLOORS)
 				{
 					destination--;
-					elevatorSimulator.setFinalDestination(destination);
+					es[0].setFinalDestination(destination);
 				}else if(destination == 0 || destination != MAX_FLOORS)
 				{
 					destination++;
-					elevatorSimulator.setFinalDestination(destination);
+					es[0].setFinalDestination(destination);
 				}
 			}
 		}
@@ -264,19 +264,19 @@ void statusRun(void *arg)
 	{
 		sleep(3);
 		rt_mutex_acquire(&mutex, TM_INFINITE);
-		currentFloor = elevatorSimulator.getCurrentFloor();
-		taskAssigned = elevatorSimulator.getIsTaskActive();
-		if(taskAssigned && (elevatorSimulator.getIsDirectionUp()))
+		currentFloor = es[0].getCurrentFloor();
+		taskAssigned = es[0].getIsTaskActive();
+		if(taskAssigned && (es[0].getIsDirectionUp()))
 		{
 			upDirection = true;
 		}
-		downDirection = !(elevatorSimulator.getIsDirectionUp());
+		downDirection = !(es[0].getIsDirectionUp());
 
 		if(upDirection){direction = HALL_CALL_DIRECTION_UP;}
 		else{direction = HALL_CALL_DIRECTION_DOWN;}
 
-		currentPosition = elevatorSimulator.geCurrentPosition();
-		currentSpeed = elevatorSimulator.getCurrentSpeed();
+		currentPosition = (unsigned char)es[0].geCurrentPosition();
+		currentSpeed = (unsigned char)es[0].getCurrentSpeed();
 
 		int upHeapSize = ec[0].getUpHeap().getSize();
 		int downHeapSize = ec[0].getDownHeap().getSize();
@@ -357,8 +357,8 @@ void runValues(void *arg)
 	while(true)
 	{
 		usleep(1000000);
-		elevatorSimulator.calculateValues();
-		elevatorSimulator.print();
+		es[0].calculateValues();
+		es[0].print();
 	}
 }
 
@@ -383,7 +383,10 @@ void supervisorStartUp(void *arg)
 void catch_signal(int sig) {
 	for (int i = 0; i < NUM_ELEVATORS; i++) {
 		rt_task_delete(&ecThread[i]);
+		rt_task_delete(&frThread[i]);
 		rt_task_delete(&udpThread[i]);
+		rt_task_delete(&statusThread[i]);
+		rt_task_delete(&supervisorThread[i]);
 	}
 
 	exit(1);
