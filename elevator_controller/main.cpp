@@ -306,11 +306,11 @@ void statusRun(void *arg)
 		int upHeapSize = ec[ID].getUpHeap().getSize();
 		int downHeapSize = ec[ID].getDownHeap().getSize();
 		if(upHeapSize==0 && downHeapSize==0){GDFailedEmptyHeap[ID] = true;}
-		
+
 		if(upHeapSize > 0)
 		{
 			int topItem = (int)(ec[ID].getUpHeap().peek());
-			if(currentFloor[ID] == topItem && !taskAssigned)
+			if(currentFloor[ID] == topItem && !taskAssigned[ID])
 			{
 				printf("ST%d Task Completed %d\n", ID, destination[ID]);
 				ec[ID].getUpHeap().pop();
@@ -324,7 +324,7 @@ void statusRun(void *arg)
 		if(downHeapSize > 0)
 		{
 			int topItem = (int)(ec[ID].getDownHeap().peek());
-			if(currentFloor[ID] == topItem && !taskAssigned)
+			if(currentFloor[ID] == topItem && !taskAssigned[ID])
 			{
 				printf("ST%d Task Completed %d\n", ID, destination[ID]);
 				ec[ID].getDownHeap().pop();
