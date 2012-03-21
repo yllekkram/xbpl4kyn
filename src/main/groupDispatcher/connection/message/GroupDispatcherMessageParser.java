@@ -1,5 +1,6 @@
 package main.groupDispatcher.connection.message;
 
+import main.exception.UnexpectedEndOfMessageException;
 import main.groupDispatcher.connection.messageIncoming.ECStatusMessage;
 import main.groupDispatcher.connection.messageIncoming.GroupDispatcherMessageIncoming;
 import main.groupDispatcher.connection.messageIncoming.HallCallRequestMessage;
@@ -20,7 +21,7 @@ public class GroupDispatcherMessageParser {
 	
 	}
 	
-	public GroupDispatcherMessageIncoming parseMessage(byte[] data){
+	public GroupDispatcherMessageIncoming parseMessage(byte[] data) throws UnexpectedEndOfMessageException{
 		int messageType = (int) data[0];
 		GroupDispatcherMessageIncoming message;
 		

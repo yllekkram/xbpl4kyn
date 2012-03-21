@@ -37,6 +37,6 @@ public class TCPConnectionCreationRunnable implements Runnable{
 			serverSocket.close();
 			clientSocket.close();
 		} catch (Exception e1) {}
-		Main.onError(e);
+		Main.onFatalError(e);
 	}
 }	

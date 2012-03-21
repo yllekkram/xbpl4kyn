@@ -8,6 +8,7 @@ import java.net.SocketTimeoutException;
 import java.util.Arrays;
 
 import main.Main;
+import main.exception.UnexpectedEndOfMessageException;
 import main.groupDispatcher.connection.message.GroupDispatcherMessageParser;
 import main.groupDispatcher.connection.messageIncoming.ECStatusMessage;
 import main.groupDispatcher.connection.messageIncoming.GroupDispatcherMessageIncoming;
@@ -43,6 +44,9 @@ public class UpdaterRunnable implements Runnable{
 			}else{
 				System.out.println("UpdaterRunnable received null data from client " + clientId);
 			}
+		} catch(UnexpectedEndOfMessageException e){
+			Main.onError(e);
+			GroupDispatcher.getInstance().removeElevator(clientId);
 		} catch (SocketException e){
 			System.out.println("Received a SocketException in UpdaterRunnable for client " +  clientId + ". The elevator will be removed.");
 			GroupDispatcher.getInstance().removeElevator(clientId);
@@ -50,7 +54,7 @@ public class UpdaterRunnable implements Runnable{
 			System.out.println("Received a SocketTimeoutException in UpdaterRunnable for client " +  clientId + ". The elevator will be removed.");
 			GroupDispatcher.getInstance().removeElevator(clientId);
 		} catch (IOException e) { 
-			Main.onError(e); 
+			Main.onFatalError(e); 
 		}
 	}
 }

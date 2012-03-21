@@ -58,7 +58,7 @@ public class ViewControl {
 		//disable the elevator panel
 		final ElevatorPanel elevatorPanel = ElevatorControlWindow.getInstance().getElevatorPanel(elevatorId);
 		if(elevatorPanel == null){
-			Main.onError(new IllegalStateException("GUI - Could not find the elevator panel"));
+			Main.onFatalError(new IllegalStateException("GUI - Could not find the elevator panel"));
 		}
 		SwingUtilities.invokeLater(new Runnable(){
 			public void run(){
@@ -71,7 +71,7 @@ public class ViewControl {
 		//enable the button
 		final FloorPanel floorPanel = ElevatorControlWindow.getInstance().getFloorPanel(floor);
 		if(floorPanel == null){
-			Main.onError(new IllegalStateException("GUI - Could not find the floor panel"));
+			Main.onFatalError(new IllegalStateException("GUI - Could not find the floor panel"));
 		}
 		SwingUtilities.invokeLater(new Runnable(){
 			public void run(){
@@ -99,7 +99,7 @@ public class ViewControl {
 		//enable the button
 		ElevatorPanel elevatorPanel = ElevatorControlWindow.getInstance().getElevatorPanel(elevatorId);
 		if(elevatorPanel == null){
-			Main.onError(new IllegalStateException("GUI - Could not find the elevator panel"));
+			Main.onFatalError(new IllegalStateException("GUI - Could not find the elevator panel"));
 		}
 		elevatorPanel.setButtonPressed(floor, false);
 		elevatorPanel.setFloor(floor);
@@ -109,7 +109,7 @@ public class ViewControl {
 		//enable the button
 		ElevatorPanel elevatorPanel = ElevatorControlWindow.getInstance().getElevatorPanel(elevatorId);
 		if(elevatorPanel == null){
-			Main.onError(new IllegalStateException("GUI - Could not find the elevator panel"));
+			Main.onFatalError(new IllegalStateException("GUI - Could not find the elevator panel"));
 		}
 		elevatorPanel.setDirection(newDirection);
 	}
