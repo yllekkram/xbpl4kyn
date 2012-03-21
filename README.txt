@@ -1,7 +1,12 @@
 README
 
-To launch the GroupDispatcher and GUI, import the GroupDispatcher (located at the root of code.zip) project into Eclipse. Find and open Main.java and run it as a 
-Java application. When the UI appears, click start.
+GroupDispatcher and GUI:
+	Import the directory containing the Java code, as an Existing Java Project into Eclipse.
+	- To run the GroupDispatcher and GUI:
+		Find main/Main.java and run it as a Java Application
+		When the GUI appears, click start
+	- To run the unit tests:
+		Find test/TestAll.java and run it as a JUnit test suite
 
 To compile the ElevatorController, run the following commands:
 	# remove any leftover files from previous builds
