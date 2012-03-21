@@ -32,6 +32,8 @@ DownwardFloorRunHeap heapDown;
 ElevatorSimulator elevatorSimulator;
 
 
+
+
 void floorRun(void *arg)
 {
 	int topItem;
@@ -91,6 +93,14 @@ bool releaseFreeCond()
 	}
 }
 
+void sleep(int numTimes)
+{
+	for(int i=0; i<numTimes; i++)
+	{
+		rt_task_sleep(250000000);
+	}
+}
+
 void supervisorRun(void *arg)
 {
 	while(true)
@@ -112,7 +122,7 @@ void supervisorRun(void *arg)
 			}
 		}
 		rt_mutex_release(&mutex);
-		rt_task_sleep(500000000);
+		sleep(20);
 	}
 }
 
@@ -120,7 +130,7 @@ void statusRun(void *arg)
 {
 	while(true)
 	{
-		rt_task_sleep(75000000);
+		sleep(3);
 		currentFloor = elevatorSimulator.getCurrentFloor();
 		taskAssigned = elevatorSimulator.getIsTaskActive();
 		if(taskAssigned && (elevatorSimulator.getIsDirectionUp()))
@@ -168,22 +178,22 @@ void randomRun(void *arg)
 	heapUp.pushHallCall(5);
 	releaseFreeCond();
 	printf("Hall Call Up Floor : 5\n");
-	rt_task_sleep(5000000000 * 2);
+	sleep(40);
 
 	heapUp.pushHallCall(3);
 	printf("Hall Call Up Floor : 3\n");
-	rt_task_sleep(5000000000 * 2);
+	sleep(40);
 
 	heapUp.pushFloorRequest(4);
 	printf("Floor Request Up : 4\n");
 
 	heapUp.pushFloorRequest(9);
 	printf("Floor Request Up : 9\n");
-	rt_task_sleep(5000000000 * 2);
+	sleep(40);
 
 	heapDown.pushHallCall(6);
 	printf("Hall Call Down Floor : 6\n");
-	rt_task_sleep(5000000000 * 2);
+	sleep(40);
 
 	heapDown.pushHallCall(2);
 	printf("Hall Call Down Floor : 2\n");
@@ -191,11 +201,11 @@ void randomRun(void *arg)
 
 	heapDown.pushFloorRequest(3);
 	printf("Floor Request Down : 3\n");
-	rt_task_sleep(5000000000 * 2);
+	sleep(40);
 
 	heapDown.pushFloorRequest(0);
 	printf("Floor Request Down : 0\n");
-	rt_task_sleep(5000000000 * 2);
+	sleep(40);
 }
 
 //this function is just for my testing purposes
@@ -212,16 +222,16 @@ void runValues(void *arg)
 //this function is just for my testing purposes
 void supervisorStartUp(void *arg)
 {
-	rt_task_sleep(5000000000 * 10);
+	sleep(200);
 	printf("ElevatorDespatcher FAILED, Oh my god :(\n");
 	GDFailed = true;
-	rt_task_sleep(5000000000 * 20);
+	sleep(400);
 	printf("ElevatorDespatcher FIXED, good :)\n");
 	GDFailed = false;
 
 	heapUp.pushHallCall(8);
 	printf("Hall Call Up Floor : 3\n");
-	rt_task_sleep(5000000000 * 2);
+	sleep(40);
 
 	heapUp.pushFloorRequest(15);
 	printf("Floor Request Up : 4\n");
