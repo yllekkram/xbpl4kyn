@@ -14,25 +14,33 @@
 #include "ElevatorCommon.hpp"
 
 RT_TASK floor_run, supervisor, supervisorStart, release_cond, value_run, status;
-RT_MUTEX mutex;
+RT_MUTEX mutex, mutexBuffer;
 RT_COND freeCond;
 
-int currentFloor = 0;
+//status updated every 75ms by the status thread
+char currentFloor;
+char direction;
+char currentPosition;
+char currentSpeed;
+
+//will be used by the other threads.
+int destination = 0;
 int taskAssigned = false;
 bool upDirection = false;
 bool downDirection = false;
-float currentPosition = 0;
-float currentSpeed = 0;
-int destination = 0;
 bool GDFailed = false;
 bool GDFailedEmptyHeap = false;
 
+//will hold both up call calls and up floor selection
 UpwardFloorRunHeap heapUp;
+//will hold both Down call calls and Down floor selection
 DownwardFloorRunHeap heapDown;
+//will simulate the elevator and provide status to the status thread.
 ElevatorSimulator elevatorSimulator;
 
-
-
+//double buffer used by both communication and status threads.
+unsigned char statusBuffer[2][BUFFSIZE];
+bool bufferSelecton = 0;
 
 void floorRun(void *arg)
 {
@@ -126,11 +134,32 @@ void supervisorRun(void *arg)
 	}
 }
 
+void updateStatusBuffer()
+{
+	//upheap and the downheap (hallcall and floor selections should be included.
+	rt_mutex_acquire(&mutexBuffer, TM_INFINITE);
+	bool selectedBuffer = bufferSelecton;
+	rt_mutex_release(&mutexBuffer);
+	
+	rt_mutex_acquire(&mutex, TM_INFINITE);
+	statusBuffer[selectedBuffer][0] = currentFloor;
+	statusBuffer[selectedBuffer][1] = direction;
+	statusBuffer[selectedBuffer][2] = currentPosition;
+	statusBuffer[selectedBuffer][3] = currentSpeed;
+	//printf("writting to buffer %d %s\n", selectedBuffer, statusBuffer[selectedBuffer]);
+	rt_mutex_release(&mutex);
+
+	rt_mutex_acquire(&mutexBuffer, TM_INFINITE);
+	bufferSelecton = !bufferSelecton;
+	rt_mutex_release(&mutexBuffer);
+}
+
 void statusRun(void *arg)
 {
 	while(true)
 	{
 		sleep(3);
+		rt_mutex_acquire(&mutex, TM_INFINITE);
 		currentFloor = elevatorSimulator.getCurrentFloor();
 		taskAssigned = elevatorSimulator.getIsTaskActive();
 		if(taskAssigned && (elevatorSimulator.getIsDirectionUp()))
@@ -138,13 +167,18 @@ void statusRun(void *arg)
 			upDirection = true;
 		}
 		downDirection = !(elevatorSimulator.getIsDirectionUp());
+
+		if(upDirection){direction = HALL_CALL_DIRECTION_UP;}
+		else{direction = HALL_CALL_DIRECTION_DOWN;}
+
 		currentPosition = elevatorSimulator.geCurrentPosition();
 		currentSpeed = elevatorSimulator.getCurrentSpeed();
 
 		int upHeapSize = heapUp.getSize();
 		int downHeapSize = heapDown.getSize();
 		if(upHeapSize==0 && downHeapSize==0){GDFailedEmptyHeap = true;}
-		if(upDirection && (upHeapSize > 0))
+		
+		if(upHeapSize > 0)
 		{
 			int topItem = (int)(heapUp.peek());
 			if(currentFloor == topItem && !taskAssigned)
@@ -152,11 +186,13 @@ void statusRun(void *arg)
 				printf("Task Completed %d\n", destination);
 				heapUp.pop();
 				releaseFreeCond();	
-			}else if(topItem < destination)
+			}else if(upDirection && topItem < destination)
 			{
 				releaseFreeCond();
 			}
-		}else if(downDirection && (downHeapSize > 0))
+		} 
+		
+		if(downHeapSize > 0)
 		{
 			int topItem = (int)(heapDown.peek());
 			if(currentFloor == topItem && !taskAssigned)
@@ -164,11 +200,14 @@ void statusRun(void *arg)
 				printf("Task Completed %d\n", destination);
 				heapDown.pop();
 				releaseFreeCond();
-			}else if((int)topItem > destination)
+			}else if(downDirection && topItem > destination)
 			{
 				releaseFreeCond();
 			}
 		}
+
+		rt_mutex_release(&mutex);
+		updateStatusBuffer();
 	}
 }
 
@@ -191,12 +230,12 @@ void randomRun(void *arg)
 	printf("Floor Request Up : 9\n");
 	sleep(40);
 
-	heapDown.pushHallCall(6);
-	printf("Hall Call Down Floor : 6\n");
+	heapDown.pushHallCall(11);
+	printf("Hall Call Down Floor : 11\n");
 	sleep(40);
 
-	heapDown.pushHallCall(2);
-	printf("Hall Call Down Floor : 2\n");
+	heapDown.pushHallCall(5);
+	printf("Hall Call Down Floor : 5\n");
 	rt_task_sleep(5000000000 * 2);
 
 	heapDown.pushFloorRequest(3);
@@ -249,8 +288,10 @@ int main(int argc, char* argv[]) {
 	/* Avoids memory swapping for this program */
 	mlockall(MCL_CURRENT|MCL_FUTURE);
 
-	//created rewuired mutex and condition variables
+	//created required mutex and condition variables
 	rt_mutex_create(&mutex, NULL);
+	rt_mutex_create(&mutexBuffer, NULL);
+
 	//will be signaled if there isa task avaiable in the heap.
 	rt_cond_create(&freeCond, NULL);
 
