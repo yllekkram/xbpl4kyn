@@ -2,7 +2,7 @@
 #include "Heap.hpp"
 
 UpwardFloorRunHeap::UpwardFloorRunHeap()
-	: FloorRunHeap(HALL_CALL_DIRECTION_UP)
+	: FloorRunHeap(DIRECTION_UP)
 {
   this->floorRequestHeap = new MinHeap<char>();
   this->hallCallHeap = new MinHeap<char>();
@@ -76,7 +76,7 @@ void UpwardFloorRunHeap::pushHallCall(char dest) {
 }
 
 DownwardFloorRunHeap::DownwardFloorRunHeap()
-	: FloorRunHeap(HALL_CALL_DIRECTION_DOWN)
+	: FloorRunHeap(DIRECTION_DOWN)
 {
   this->floorRequestHeap = new MaxHeap<char>();
   this->hallCallHeap = new MaxHeap<char>();

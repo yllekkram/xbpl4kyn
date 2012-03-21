@@ -10,15 +10,15 @@
 #define MAX_FLOORS 25 /* Currently restricted by size of char */
 #define MESSAGE_TERMINATOR 255
 
+#define DIRECTION_UP 1
+#define DIRECTION_DOWN 2
+
 // Types for messages received from the GroupDispatcher
 #define MAX_GD_REQUEST_SIZE 3
 
 #define REGISTRATION_ACK 1
 #define STATUS_REQUEST 2
 #define HALL_CALL_ASSIGNMENT 3
-
-#define HALL_CALL_DIRECTION_UP 1
-#define HALL_CALL_DIRECTION_DOWN 2
 
 // Types for messages sent from the ElevatorController to the GroupDispatcher
 #define REGISTER_MESSAGE 4

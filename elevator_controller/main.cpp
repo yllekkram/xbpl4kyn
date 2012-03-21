@@ -273,8 +273,8 @@ void statusRun(void *arg)
 		}
 		downDirection = !(es[0].getIsDirectionUp());
 
-		if(upDirection){direction = HALL_CALL_DIRECTION_UP;}
-		else{direction = HALL_CALL_DIRECTION_DOWN;}
+		if(upDirection[ID]){direction[ID] = DIRECTION_UP;}
+		else{direction[ID] = DIRECTION_DOWN;}
 
 		currentPosition = (unsigned char)es[0].geCurrentPosition();
 		currentSpeed = (unsigned char)es[0].getCurrentSpeed();

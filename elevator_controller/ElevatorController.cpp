@@ -112,7 +112,7 @@ void ElevatorController::connectToGD(char* gdAddress, int port) {
 
 void ElevatorController::receiveHallCall(HallCallAssignmentMessage& message) {
   std::cout << "EC" << (unsigned int)this->getID() << ": Received hall call for floor " << (int) message.getFloor();
-  std::cout << " in " << ((message.getDirection() == HALL_CALL_DIRECTION_DOWN) ? "downward" : "upward") << " direction" << std::endl;
+  std::cout << " in " << ((message.getDirection() == DIRECTION_DOWN) ? "downward" : "upward") << " direction" << std::endl;
 }
 
 void ElevatorController::sendRegistration() {
