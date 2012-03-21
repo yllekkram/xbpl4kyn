@@ -97,6 +97,10 @@ class FloorRunHeap {
     virtual std::vector<char>* getHallCalls() const {
       return this->hallCallHeap->getVector();
     }
+
+		virtual std::vector<char>* getFloorRequests() const {
+			return this->floorRequestHeap->getVector();
+		}
   
   protected:
     char direction;

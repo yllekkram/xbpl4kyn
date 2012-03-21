@@ -3,6 +3,7 @@
 #include <signal.h>
 #include <unistd.h>
 #include <cstdlib>
+#include <math.h>
 #include <sys/mman.h>
 #include <native/task.h>
 #include <native/timer.h>
@@ -300,8 +301,8 @@ void statusRun(void *arg)
 		if(upDirection[ID]){direction[ID] = DIRECTION_UP;}
 		else{direction[ID] = DIRECTION_DOWN;}
 
-		currentPosition[ID] = (unsigned char)es[ID].geCurrentPosition();
-		currentSpeed[ID] = (unsigned char)es[ID].getCurrentSpeed();
+		currentPosition = ceil(elevatorSimulator.geCurrentPosition());
+		taskActive = taskAssigned;
 
 		int upHeapSize = ec[ID].getUpHeap().getSize();
 		int downHeapSize = ec[ID].getDownHeap().getSize();
