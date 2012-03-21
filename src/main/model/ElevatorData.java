@@ -9,10 +9,12 @@ public class ElevatorData {
 	private int direction;
 	private int speed;
 	private int position;
-	private Vector<Destination> destinations;
+	private Vector<Destination> assignedHallCalls;
+	private int[] floorSelections;
+	
 	
 	public ElevatorData(){
-		destinations = new Vector<Destination>();
+		this.assignedHallCalls = new Vector<Destination>();
 	}
 	
 	public void setDirection(int direction){
@@ -39,16 +41,20 @@ public class ElevatorData {
 		return position;
 	}
 	
-	public void setDestinations(Destination destinations[]){
-		this.destinations = new Vector<Destination>(Arrays.asList(destinations));
+	public void setAssignedHallCalls(Destination assignedHallCalls[]){
+		this.assignedHallCalls = new Vector<Destination>(Arrays.asList(assignedHallCalls));
 	}
 	
-	public Destination[] getDestinations(){
-		Destination destinations[] = new Destination[this.destinations.size()];
-		return this.destinations.toArray(destinations);
+	public Destination[] getAssignedHallCalls(){
+		Destination destinations[] = new Destination[this.assignedHallCalls.size()];
+		return this.assignedHallCalls.toArray(destinations);
 	}
 	
-	public void addDestination(Destination destination){
-		this.destinations.add(destination);
+	public void addAssignedHallCall(Destination destination){
+		this.assignedHallCalls.add(destination);
+	}
+	
+	public int[] getFloorSelections(){
+		return this.floorSelections;
 	}
 }

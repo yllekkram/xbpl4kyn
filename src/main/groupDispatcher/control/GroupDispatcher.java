@@ -25,6 +25,7 @@ import main.groupDispatcher.connection.messageOutgoing.RemoveElevatorMessage;
 import main.model.Destination;
 import main.model.ElevatorData;
 import main.util.Constants;
+import main.util.Log;
 
 
 public class GroupDispatcher implements Observer{
@@ -82,7 +83,7 @@ public class GroupDispatcher implements Observer{
 	}
 	
 	public void onConnectionCreated(TCPClientSocketWrapper clientSocket){
-		System.out.println("GroupDispatcher recevied a connection request from an ElevatorController,  sending acknowledgment..");
+		Log.log("GroupDispatcher recevied a connection request from an ElevatorController,  sending acknowledgment..");
 		
 		//respond with an acknowledgment message
 		TCPConnectionManager.getInstance().sendData(clientSocket.getClientId(), new RegistrationAcknowledgmentMessage().serialize());
@@ -90,6 +91,7 @@ public class GroupDispatcher implements Observer{
 		//store elevator models
 		ElevatorData elevatorControllerData = new ElevatorData();
 		elevatorCars.put(Integer.valueOf(clientSocket.getClientId()), elevatorControllerData); //thread-safe
+		Log.log("ElevatorCars.put() called, size = " + elevatorCars.size());
 		
 		//store elevator updater runnable
 		UpdaterRunnable runnable = new UpdaterRunnable(clientSocket.getClientId());
@@ -109,7 +111,7 @@ public class GroupDispatcher implements Observer{
 		
 		int selectedElevator = GroupDispatcher.getInstance().getDispatchStrategy().dispatch(floor, direction);
 		if(selectedElevator == -1){
-			System.out.println("No elevators connected. Hall call discarded.");
+			Log.log("No elevators connected. Hall call discarded.");
 			return;
 		}
 		TCPConnectionManager.getInstance().sendData(selectedElevator, new HallCallAssignmentMessage(floor, direction).serialize());
@@ -129,7 +131,7 @@ public class GroupDispatcher implements Observer{
 		elevator.setDirection(status.getDirection());
 		elevator.setPosition(status.getPosition());
 		elevator.setSpeed(status.getSpeed());
-		elevator.setDestinations(status.getDestinations());
+		elevator.setAssignedHallCalls(status.getHallCalls());
 	}
 
 	public void removeElevator(int elevatorId){
@@ -138,20 +140,21 @@ public class GroupDispatcher implements Observer{
 		//reassign hall calls
 		ElevatorData elevatorData = elevatorCars.remove(Integer.valueOf(elevatorId));
 		if(elevatorData == null){
-			Main.onError(new IllegalStateException("Attempting to remove an invalid elevator"));
+			Main.onFatalError(new IllegalStateException("Attempting to remove an invalid elevator, " + elevatorId));
 		}
 		
-		Destination[] destinations = elevatorData.getDestinations();
+		Destination[] assignedHallCalls = elevatorData.getAssignedHallCalls();
 		
-		if(destinations != null){
-			for(int i = 0; i<destinations.length; i++){
-				this.onHallCall(destinations[i].getFloor(), destinations[i].getDirection());
+		if(assignedHallCalls != null){
+			for(int i = 0; i<assignedHallCalls.length; i++){
+				this.onHallCall(assignedHallCalls[i].getFloor(), assignedHallCalls[i].getDirection());
 			}
 		}
+		
 		//handle UI change
 		UDPConnectionManager.getInstance().sendData(Constants.GD_TO_GUI_UDP_PORT, new RemoveElevatorMessage(elevatorId).serialize());
 		
-		System.out.println("Elevator " + elevatorId + " successfully removed.");
+		Log.log("Elevator " + elevatorId + " successfully removed.");
 	}
 	
 	

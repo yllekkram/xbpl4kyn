@@ -12,5 +12,6 @@ testElevatorController
 testTCP
 testUDP
 main
+!main/*
 ElevatorSimulatorTest
 .DS_Store

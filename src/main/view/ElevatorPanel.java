@@ -3,6 +3,7 @@ package main.view;
 import javax.swing.*;
 
 import main.util.Constants;
+import main.util.Log;
 import main.view.util.UIUtils;
 
 
@@ -99,7 +100,7 @@ public class ElevatorPanel extends JScrollPane implements ActionListener {
   		}else if (source == closeDoorButton){
   			ViewControl.getInstance().onCloseDoorRequest(carNumber);
   		}else{
-  			System.out.println("Unknown event");
+  			Log.log("Unknown event");
   		}
   	}
   	

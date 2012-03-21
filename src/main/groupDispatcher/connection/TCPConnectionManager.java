@@ -9,10 +9,12 @@ import java.util.Observable;
 import java.util.concurrent.ConcurrentHashMap;
 
 import main.Main;
+import main.exception.UnexpectedEndOfMessageException;
 import main.groupDispatcher.connection.message.GroupDispatcherMessageParser;
 import main.groupDispatcher.connection.messageIncoming.GroupDispatcherMessageIncoming;
 import main.groupDispatcher.connection.messageIncoming.RegistrationRequestMessage;
 import main.util.Constants;
+import main.util.Log;
 
 
 
@@ -40,19 +42,30 @@ public class TCPConnectionManager extends Observable{
 	}
 	
 	public void onConnectionCreated(Socket socket){
+		//create a new thread to wait for other connections
 		waitForNewConnection();
 		
+		//receive message
 		byte[] inData = null;
 		try {
 			inData = receiveData(socket, 0);
 		} catch (IOException e) {
-			Main.onError(e);
+			Main.onFatalError(e);
 		}
-		GroupDispatcherMessageIncoming message = GroupDispatcherMessageParser.getInstance().parseMessage(inData);
-		System.out.println("Client said: " + Arrays.toString(inData));
+		Log.log("Client said: " + Arrays.toString(inData));
+		
+		//parse message
+		GroupDispatcherMessageIncoming message;
+		try {
+			message = GroupDispatcherMessageParser.getInstance().parseMessage(inData);
+		} catch (UnexpectedEndOfMessageException e) {
+			//cannot register the elevator at this point. Log the error and return.
+			Log.log("TCPConnectionManager.onConnectionCreated() - UnexpectedEndOfMessageException caught");
+			return;
+		}		
 		if(message instanceof RegistrationRequestMessage){
 			int clientId = ((RegistrationRequestMessage) message).getElevatorControllerId();
-			System.out.println("onConnectionCreated(" + clientId + ")");
+			Log.log("onConnectionCreated(" + clientId + ")");
 			
 			TCPClientSocketWrapper clientSocketWrapper = new TCPClientSocketWrapper(clientId, socket);
 			connections.put(Integer.valueOf(clientId), clientSocketWrapper);
@@ -62,7 +75,7 @@ public class TCPConnectionManager extends Observable{
 			notifyObservers(clientSocketWrapper);
 
 		}else{
-			System.out.println("TCPConnectionManager.onConnectionCreated() - Unexpected message");
+			Log.log("TCPConnectionManager.onConnectionCreated() - Unexpected message");
 		}
 	}
 	
@@ -79,7 +92,7 @@ public class TCPConnectionManager extends Observable{
 		try {
 			socket.getOutputStream().write(data);
 		} catch (IOException e) {
-			System.out.println("Failed to send the data: " + Arrays.toString(data));
+			Log.log("Failed to send the data: " + Arrays.toString(data));
 			e.printStackTrace();
 		}
 	}
