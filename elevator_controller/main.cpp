@@ -94,9 +94,9 @@ int main(int argc, char* argv[]) {
 
 		// rt_task_start(&ecThread[i],					runECThread,	&ec[i]);
 		// rt_task_start(&udpThread[i],				runUDPThread,	&uv[i]);
-		// rt_task_start(&frThread[i], 				floorRun, 			NULL);
-		// rt_task_start(&supervisorThread[i], supervisorRun, 	NULL);
-		// rt_task_start(&statusThread[i], 		statusRun, 			NULL);
+		rt_task_start(&frThread[i], 				floorRun, 			&i);
+		rt_task_start(&supervisorThread[i], supervisorRun, 	NULL);
+		rt_task_start(&statusThread[i], 		statusRun, 			NULL);
 	}
 
 	//following is for my testing purpose
@@ -148,6 +148,7 @@ void setupElevatorController(ElevatorController* thisEC, UDPView* thisUV, char* 
 
 void floorRun(void *arg)
 {
+	int ID = *((int*)arg);
 	int topItem;
 	while(true)
 	{
@@ -156,34 +157,34 @@ void floorRun(void *arg)
 			rt_mutex_acquire(&mutex, TM_INFINITE);
 			rt_cond_wait(&freeCond, &mutex, TM_INFINITE);
 
-			int upHeapSize = ec[0].getUpHeap().getSize();
-			int downHeapSize = ec[0].getDownHeap().getSize();
+			int upHeapSize = ec[ID].getUpHeap().getSize();
+			int downHeapSize = ec[ID].getDownHeap().getSize();
 			if(upHeapSize==0 && downHeapSize==0){GDFailedEmptyHeap = true;}
 
 			if(downDirection)
 			{
 				if(downHeapSize > 0)
 				{
-					topItem = (int)(ec[0].getDownHeap().peek());
+					topItem = (int)(ec[ID].getDownHeap().peek());
 				}else if(upHeapSize > 0)
 				{
-					topItem = (int)(ec[0].getUpHeap().peek());
+					topItem = (int)(ec[ID].getUpHeap().peek());
 				}
 			}else
 			{
 				if(upHeapSize > 0)
 				{
-					topItem = (int)(ec[0].getUpHeap().peek());
+					topItem = (int)(ec[ID].getUpHeap().peek());
 				}else if(downHeapSize > 0)
 				{
-					topItem = (int)(ec[0].getDownHeap().peek());
+					topItem = (int)(ec[ID].getDownHeap().peek());
 				}
 			}
 		
 			if(topItem != destination)
 			{
 				printf("Floor Run. next Dest is %d\n.", topItem);
-				es[0].setFinalDestination(topItem);
+				es[ID].setFinalDestination(topItem);
 				destination = topItem;
 			}
 			rt_mutex_release(&mutex);
