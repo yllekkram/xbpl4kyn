@@ -56,7 +56,7 @@ endif
 
 xeno:: $(XENOEXE)
 
-main: main.opp Heap.opp ElevatorSimulator.opp
+main: ElevatorCommon.opp ElevatorController.opp ElevatorSimulator.opp Heap.opp Message.opp UDPView.opp main.opp
 	$(CXXLD) $(CXXLDFLAGS) -o $@ $^
 
 tests: test/test.opp test/testHeap.opp test/testMessage.opp Message.opp Heap.opp ElevatorCommon.opp
@@ -93,6 +93,7 @@ ElevatorSimulator.opp: ElevatorSimulator.hpp
 ElevatorSimulatorTest.opp: ElevatorSimulator.hpp
 ElevatorTestServer.opp: ElevatorCommon.hpp
 Heap.opp: Heap.hpp
+main.opp: ElevatorCommon.hpp ElevatorController.hpp ElevatorSimulator.hpp Exception.hpp Heap.hpp Message.hpp UDPView.hpp
 Message.opp: Message.hpp ElevatorCommon.hpp Exception.hpp
 UDPTestServer.opp: ElevatorCommon.hpp
 UDPView.opp: ElevatorControllerView.hpp Exception.hpp UDPView.hpp

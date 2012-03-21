@@ -2,20 +2,51 @@
 #include <stdlib.h>
 #include <signal.h>
 #include <unistd.h>
-#include <cstdlib> 
+#include <cstdlib>
 #include <sys/mman.h>
 #include <native/task.h>
 #include <native/timer.h>
 #include <native/mutex.h>
 #include <native/cond.h>
 
-#include "Heap.hpp"
-#include "ElevatorSimulator.hpp"
 #include "ElevatorCommon.hpp"
+#include "ElevatorController.hpp"
+#include "ElevatorSimulator.hpp"
+#include "Exception.hpp"
+#include "Heap.hpp"
+#include "UDPView.hpp"
 
+/* Constants */
+#define NUM_ELEVATORS 8
+#define STANDARD_PAUSE 2500000000U
+/* End Constants */
+
+/* Funtion Prototypes */
+void catch_signal(int);
+void floorRun(void*);
+bool relseaseFreeCond();
+void runECThread(void*);
+void runUDPThread(void*);
+void setupElevatorController(ElevatorController*, UDPView*, char*, char*, char*, char*);
+void statusRun(void*);
+void supervisorRun(void*);
+	/* Functions for testing */
+	void randomRun(void*);
+	void runValues(void*);
+	void supervisorStartUp(void*);
+	/* End Funtions for testing */
+/* End Function Prototypes */
+
+/* Global Data Declarations */
 RT_TASK floor_run, supervisor, supervisorStart, release_cond, value_run, status;
 RT_MUTEX mutex;
 RT_COND freeCond;
+
+RT_TASK ecThread[NUM_ELEVATORS];
+RT_TASK udpThread[NUM_ELEVATORS];
+
+ElevatorController	ec[NUM_ELEVATORS];
+UDPView							uv[NUM_ELEVATORS];
 
 int currentFloor = 0;
 int taskAssigned = false;
@@ -27,10 +58,85 @@ int destination = 0;
 bool GDFailed = false;
 bool GDFailedEmptyHeap = false;
 
-UpwardFloorRunHeap heapUp;
-DownwardFloorRunHeap heapDown;
 ElevatorSimulator elevatorSimulator;
+/* End Global Data Declarations */
 
+int main(int argc, char* argv[]) {
+	/* Avoids memory swapping for this program */
+	mlockall(MCL_CURRENT|MCL_FUTURE);
+
+	signal(SIGTERM, catch_signal);
+	signal(SIGINT, catch_signal);
+
+	for (int i = 0; i < NUM_ELEVATORS; i++) {
+		rt_task_create(&ecThread[i], NULL, 0, 99, T_JOINABLE);
+		rt_task_create(&udpThread[i], NULL, 0, 99, T_JOINABLE);
+
+		// setupElevatorController(&ec[i], &uv[i], "192.168.251.1", "5000", "192.168.251.1", "5003");
+
+		// rt_task_start(&ecThread[i],		runECThread,	&ec[i]);
+		// rt_task_start(&udpThread[i],	runUDPThread,	&uv[i]);
+	}
+
+	//created rewuired mutex and condition variables
+	rt_mutex_create(&mutex, NULL);
+	//will be signaled if there isa task avaiable in the heap.
+	rt_cond_create(&freeCond, NULL);
+
+	//create and run the run floor thread
+	rt_task_create(&floor_run, NULL, 0, 99, 0);
+	rt_task_start(&floor_run, &floorRun, NULL);
+
+	rt_task_create(&supervisor, NULL, 0, 99, 0);
+	rt_task_start(&supervisor, &supervisorRun, NULL);
+
+	rt_task_create(&status, NULL, 0, 99, 0);
+	rt_task_start(&status, &statusRun, NULL);
+	
+	//following is for my testing purpose
+	rt_task_create(&supervisorStart, NULL, 0, 99, 0);
+	rt_task_start(&supervisorStart, &supervisorStartUp, NULL);
+	rt_task_create(&release_cond, NULL, 0, 99, 0);
+	rt_task_start(&release_cond, &randomRun, NULL);
+	rt_task_create(&value_run, NULL, 0, 99, 0);
+	rt_task_start(&value_run, &runValues, NULL);
+
+	pause();
+
+	for (int i = 0; i < NUM_ELEVATORS; i++) {
+		rt_task_join(&ecThread[i]);
+		rt_task_join(&udpThread[i]);
+	}
+
+	rt_task_delete(&floor_run);
+	rt_task_delete(&supervisor);
+	rt_task_delete(&status);
+
+	rt_cond_delete(&freeCond);
+	rt_mutex_delete(&mutex);
+}
+
+void runECThread(void* cookie) {
+	printf("EC Thread\n");
+	ElevatorController* thisEC = (ElevatorController*)cookie;
+	thisEC->run();
+}
+
+void runUDPThread(void* cookie) {
+	printf("UDP Thread\n");
+	UDPView* thisUV = (UDPView*)cookie;
+	thisUV->run();
+}
+
+void setupElevatorController(ElevatorController* thisEC, UDPView* thisUV, char* gdAddress, char* gdPort, char* guiAddress, char* guiPort) {
+	thisUV->init(guiAddress, guiPort);
+	thisEC->connectToGD(gdAddress, atoi(gdPort));
+
+	try {
+		thisEC->addView(thisUV);
+	}
+	catch (Exception e) {}
+}
 
 void floorRun(void *arg)
 {
@@ -42,27 +148,27 @@ void floorRun(void *arg)
 			rt_mutex_acquire(&mutex, TM_INFINITE);
 			rt_cond_wait(&freeCond, &mutex, TM_INFINITE);
 
-			int upHeapSize = heapUp.getSize();
-			int downHeapSize = heapDown.getSize();
+			int upHeapSize = ec[0].getUpHeap().getSize();
+			int downHeapSize = ec[0].getDownHeap().getSize();
 			if(upHeapSize==0 && downHeapSize==0){GDFailedEmptyHeap = true;}
 
 			if(downDirection)
 			{
 				if(downHeapSize > 0)
 				{
-					topItem = (int)(heapDown.peek());
+					topItem = (int)(ec[0].getDownHeap().peek());
 				}else if(upHeapSize > 0)
 				{
-					topItem = (int)(heapUp.peek());
+					topItem = (int)(ec[0].getUpHeap().peek());
 				}
 			}else
 			{
 				if(upHeapSize > 0)
 				{
-					topItem = (int)(heapUp.peek());
+					topItem = (int)(ec[0].getUpHeap().peek());
 				}else if(downHeapSize > 0)
 				{
-					topItem = (int)(heapDown.peek());
+					topItem = (int)(ec[0].getDownHeap().peek());
 				}
 			}
 		
@@ -79,7 +185,7 @@ void floorRun(void *arg)
 
 bool releaseFreeCond()
 {
-	int heapSize = heapUp.getSize() + heapDown.getSize();
+	int heapSize = ec[0].getUpHeap().getSize() + ec[0].getDownHeap().getSize();
 	if(heapSize > 0)
 	{
 		GDFailedEmptyHeap = false;
@@ -131,28 +237,28 @@ void statusRun(void *arg)
 		currentPosition = elevatorSimulator.geCurrentPosition();
 		currentSpeed = elevatorSimulator.getCurrentSpeed();
 
-		int upHeapSize = heapUp.getSize();
-		int downHeapSize = heapDown.getSize();
+		int upHeapSize = ec[0].getUpHeap().getSize();
+		int downHeapSize = ec[0].getDownHeap().getSize();
 		if(upHeapSize==0 && downHeapSize==0){GDFailedEmptyHeap = true;}
 		if(upDirection && (upHeapSize > 0))
 		{
-			int topItem = (int)(heapUp.peek());
+			int topItem = (int)(ec[0].getUpHeap().peek());
 			if(currentFloor == topItem && !taskAssigned)
 			{
 				printf("Task Completed %d\n", destination);
-				heapUp.pop();
-				releaseFreeCond();	
+				ec[0].getUpHeap().pop();
+				releaseFreeCond();
 			}else if(topItem < destination)
 			{
 				releaseFreeCond();
 			}
 		}else if(downDirection && (downHeapSize > 0))
 		{
-			int topItem = (int)(heapDown.peek());
+			int topItem = (int)(ec[0].getDownHeap().peek());
 			if(currentFloor == topItem && !taskAssigned)
 			{
 				printf("Task Completed %d\n", destination);
-				heapDown.pop();
+				ec[0].getDownHeap().pop();
 				releaseFreeCond();
 			}else if((int)topItem > destination)
 			{
@@ -162,43 +268,43 @@ void statusRun(void *arg)
 	}
 }
 
-//this function is just for my testing purposes
+// this function is just for my testing purposes
 void randomRun(void *arg)
 {
-	heapUp.pushHallCall(5);
+	ec[0].getUpHeap().pushHallCall(5);
 	releaseFreeCond();
 	printf("Hall Call Up Floor : 5\n");
-	rt_task_sleep(5000000000 * 2);
+	rt_task_sleep(STANDARD_PAUSE * 2);
 
-	heapUp.pushHallCall(3);
+	ec[0].getUpHeap().pushHallCall(3);
 	printf("Hall Call Up Floor : 3\n");
-	rt_task_sleep(5000000000 * 2);
+	rt_task_sleep(STANDARD_PAUSE * 2);
 
-	heapUp.pushFloorRequest(4);
+	ec[0].getUpHeap().pushFloorRequest(4);
 	printf("Floor Request Up : 4\n");
 
-	heapUp.pushFloorRequest(9);
+	ec[0].getUpHeap().pushFloorRequest(9);
 	printf("Floor Request Up : 9\n");
-	rt_task_sleep(5000000000 * 2);
+	rt_task_sleep(STANDARD_PAUSE * 2);
 
-	heapDown.pushHallCall(6);
+	ec[0].getDownHeap().pushHallCall(6);
 	printf("Hall Call Down Floor : 6\n");
-	rt_task_sleep(5000000000 * 2);
+	rt_task_sleep(STANDARD_PAUSE * 2);
 
-	heapDown.pushHallCall(2);
+	ec[0].getDownHeap().pushHallCall(2);
 	printf("Hall Call Down Floor : 2\n");
-	rt_task_sleep(5000000000 * 2);
+	rt_task_sleep(STANDARD_PAUSE * 2);
 
-	heapDown.pushFloorRequest(3);
+	ec[0].getDownHeap().pushFloorRequest(3);
 	printf("Floor Request Down : 3\n");
-	rt_task_sleep(5000000000 * 2);
+	rt_task_sleep(STANDARD_PAUSE * 2);
 
-	heapDown.pushFloorRequest(0);
+	ec[0].getDownHeap().pushFloorRequest(0);
 	printf("Floor Request Down : 0\n");
-	rt_task_sleep(5000000000 * 2);
+	rt_task_sleep(STANDARD_PAUSE * 2);
 }
 
-//this function is just for my testing purposes
+// this function is just for my testing purposes
 void runValues(void *arg)
 {
 	while(true)
@@ -209,59 +315,29 @@ void runValues(void *arg)
 	}
 }
 
-//this function is just for my testing purposes
+// this function is just for my testing purposes
 void supervisorStartUp(void *arg)
 {
-	rt_task_sleep(5000000000 * 10);
+	rt_task_sleep(STANDARD_PAUSE * 10);
 	printf("ElevatorDespatcher FAILED, Oh my god :(\n");
 	GDFailed = true;
-	rt_task_sleep(5000000000 * 20);
+	rt_task_sleep(STANDARD_PAUSE * 20);
 	printf("ElevatorDespatcher FIXED, good :)\n");
 	GDFailed = false;
 
-	heapUp.pushHallCall(8);
+	ec[0].getUpHeap().pushHallCall(8);
 	printf("Hall Call Up Floor : 3\n");
-	rt_task_sleep(5000000000 * 2);
+	rt_task_sleep(STANDARD_PAUSE * 2);
 
-	heapUp.pushFloorRequest(15);
+	ec[0].getUpHeap().pushFloorRequest(15);
 	printf("Floor Request Up : 4\n");
 }
 
+void catch_signal(int sig) {
+	for (int i = 0; i < NUM_ELEVATORS; i++) {
+		rt_task_delete(&ecThread[i]);
+		rt_task_delete(&udpThread[i]);
+	}
 
-void catch_signal(int sig)
-{
+	exit(1);
 }
-
-int main(int argc, char* argv[]) {
-	signal(SIGTERM, catch_signal);
-	signal(SIGINT, catch_signal);
-
-	/* Avoids memory swapping for this program */
-	mlockall(MCL_CURRENT|MCL_FUTURE);
-
-	//created rewuired mutex and condition variables
-	rt_mutex_create(&mutex, NULL);
-	//will be signaled if there isa task avaiable in the heap.
-	rt_cond_create(&freeCond, NULL);
-
-	//create and run the run floor thread
-	rt_task_create(&floor_run, NULL, 0, 99, 0);
-	rt_task_start(&floor_run, &floorRun, NULL);
-	rt_task_create(&supervisor, NULL, 0, 99, 0);
-	rt_task_start(&supervisor, &supervisorRun, NULL);
-	rt_task_create(&status, NULL, 0, 99, 0);
-	rt_task_start(&status, &statusRun, NULL);
-	
-	//following is for my testing purpose
-	rt_task_create(&supervisorStart, NULL, 0, 99, 0);
-	rt_task_start(&supervisorStart, &supervisorStartUp, NULL);
-	rt_task_create(&release_cond, NULL, 0, 99, 0);
-	rt_task_start(&release_cond, &randomRun, NULL);
-	rt_task_create(&value_run, NULL, 0, 99, 0);
-	rt_task_start(&value_run, &runValues, NULL);
-
-	pause();
-
-	rt_task_delete(&floor_run);
-}
-
