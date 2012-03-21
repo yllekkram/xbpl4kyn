@@ -39,6 +39,8 @@ void supervisorRun(void*);
 /* End Function Prototypes */
 
 /* Global Data Declarations */
+int IDs[NUM_ELEVATORS]; // Store thread identifiers in gloabl memory to ensure that they always exist
+
 RT_MUTEX mutex[NUM_ELEVATORS];
 RT_MUTEX mutexBuffer[NUM_ELEVATORS];
 RT_COND freeCond[NUM_ELEVATORS];
@@ -84,6 +86,8 @@ int main(int argc, char* argv[]) {
 	signal(SIGINT, catch_signal);
 
 	for (int i = 0; i < NUM_ELEVATORS; i++) {
+		IDs[i] = i;
+
 		rt_mutex_create(&mutex[i], 				NULL);
 		rt_mutex_create(&mutexBuffer[i], 	NULL);
 
@@ -113,15 +117,15 @@ int main(int argc, char* argv[]) {
 
 		// setupElevatorController(&ec[i], &uv[i], "192.168.251.1", "5000", "192.168.251.1", "5003");
 
-		// rt_task_start(&ecThread[i],					runECThread,	&ec[i]);
-		// rt_task_start(&udpThread[i],				runUDPThread,	&uv[i]);
-		rt_task_start(&frThread[i], 				floorRun, 			&i);
-		rt_task_start(&supervisorThread[i], supervisorRun, 	&i);
-		rt_task_start(&statusThread[i], 		statusRun, 			&i);
+		// rt_task_start(&ecThread[i],					runECThread,		&IDs[i]);
+		// rt_task_start(&udpThread[i],				runUDPThread,		&IDs[i]);
+		rt_task_start(&frThread[i], 				floorRun, 			&IDs[i]);
+		rt_task_start(&supervisorThread[i], supervisorRun, 	&IDs[i]);
+		rt_task_start(&statusThread[i], 		statusRun, 			&IDs[i]);
 
-		rt_task_start(&supervisorStart[i],	supervisorRun,	&i);
-		rt_task_start(&release_cond[i],			randomRun,			&i);
-		rt_task_start(&value_run[i],				runValues,			&i);
+		rt_task_start(&supervisorStart[i],	supervisorRun,	&IDs[i]);
+		rt_task_start(&release_cond[i],			randomRun,			&IDs[i]);
+		rt_task_start(&value_run[i],				runValues,			&IDs[i]);
 	}
 
 	for (int i = 0; i < NUM_ELEVATORS; i++) {
