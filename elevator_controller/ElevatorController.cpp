@@ -46,7 +46,6 @@ ElevatorStatus::ElevatorStatus()
 		taskAssigned(0),		upDirection(false),					downDirection(false),
 		GDFailed(false),		GDFailedEmptyHeap(false),		elevatorServiceDirection(true),
     bufferSelection(0)
-		
 {}
 
 
@@ -64,7 +63,7 @@ ElevatorController::~ElevatorController() {
 }
 
 void ElevatorController::communicate() {
-	while (true) {
+	while (!this->eStat.GDFailed) {
 		try {
 			this->waitForGDRequest();
 		}
@@ -247,7 +246,15 @@ void ElevatorController::addView(ElevatorControllerView* ecv) {
 }
 
 void ElevatorController::waitForGDRequest() {
-	char* request = receiveTCP(MAX_GD_REQUEST_SIZE);
+	char* request;
+	try {
+		request = receiveTCP(MAX_GD_REQUEST_SIZE);
+	}
+	catch (Exception e) {
+		std::cout << "GD comm failed, enabling supervisor" << std::endl;
+		this->eStat.GDFailed = true;
+		return;
+	}
 	char requestType = request[0];
 
 	switch (requestType) {
