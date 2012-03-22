@@ -20,6 +20,13 @@ struct ECRTData {
 };
 
 struct ElevatorStatus {
+	ElevatorStatus()
+		: currentFloor(0),		direction(DIRECTION_UP),		currentPosition(0),
+			currentSpeed(0),		destination(0),							taskActive(false),
+			taskAssigned(0),		upDirection(false),							downDirection(false),
+			GDFailed(false),		GDFailedEmptyHeap(false)
+	{}
+
 	unsigned char currentFloor;
 	unsigned char direction;
 	unsigned char currentPosition;

@@ -94,17 +94,6 @@ int main(int argc, char* argv[]) {
 		rt_task_create(&release_cond[i],					NULL, 0, 99, T_JOINABLE);
 		rt_task_create(&value_run[i],						NULL, 0, 99, T_JOINABLE);
 
-		eStat[i].currentFloor = 0;
-		eStat[i].currentPosition = 0;
-		eStat[i].currentSpeed = 0;
-		eStat[i].destination = 0;
-		eStat[i].direction = 0;
-		eStat[i].downDirection = false;
-		eStat[i].GDFailed = false;
-		eStat[i].GDFailedEmptyHeap = false;
-		eStat[i].upDirection = false;
-		eStat[i].taskAssigned = false;
-		eStat[i].taskActive = 0;
 		bufferSelection[i] = 0;
 
 		setupElevatorController(IDs[i], "192.168.251.1", "5000", "192.168.251.1", "5003");
@@ -141,7 +130,6 @@ int main(int argc, char* argv[]) {
 }
 
 void runECThread(void* cookie) {
-	std::cout << "inside IDaddr: " << cookie << std::endl;
 	const int ID = *((int*)cookie);
 
 	printf("EC %d Thread\n", ID);
