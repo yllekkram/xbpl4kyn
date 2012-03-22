@@ -42,6 +42,10 @@ struct ElevatorStatus {
 
 class ElevatorController {
 	public:
+		/* Public Member Variables */
+		ElevatorStatus eStat;
+		/* End Public Member Variables */
+
 		ElevatorController();
 		~ElevatorController();
 

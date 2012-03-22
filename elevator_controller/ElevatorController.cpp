@@ -16,7 +16,7 @@
 char ElevatorController::nextID = 1;
 
 ElevatorController::ElevatorController()
-	: rtData(), downHeap(), upHeap(), missedFloors() {
+	: eStat(), rtData(), downHeap(), upHeap(), missedFloors() {
 	this->id = ElevatorController::getNextID();
 
 	/* Create the TCP socket */
