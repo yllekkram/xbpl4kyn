@@ -95,7 +95,7 @@ public class MessageTest {
 		byte[] testBytes = new byte[]{GroupDispatcherMessage.REGISTRATION_REQUEST};
 		try {
 			@SuppressWarnings("unused")
-			GroupDispatcherMessageIncoming message = GroupDispatcherMessageParser.getInstance().parseMessage(testBytes);
+			GroupDispatcherMessageIncoming message = GroupDispatcherMessageParser.parseMessage(testBytes);
 			fail("Expected an UnexpectedEndOfMessageException");
 		} catch (UnexpectedEndOfMessageException e) {
 			//ignore
@@ -105,7 +105,7 @@ public class MessageTest {
 		int elevatorId = 3;
 		testBytes = new byte[]{GroupDispatcherMessage.REGISTRATION_REQUEST, (byte) elevatorId};
 		try {
-			GroupDispatcherMessageIncoming message = GroupDispatcherMessageParser.getInstance().parseMessage(testBytes);
+			GroupDispatcherMessageIncoming message = GroupDispatcherMessageParser.parseMessage(testBytes);
 			assert(message instanceof RegistrationRequestMessage);
 			RegistrationRequestMessage message2 = (RegistrationRequestMessage) message;
 			assertEquals(elevatorId, message2.getElevatorControllerId());
@@ -122,7 +122,7 @@ public class MessageTest {
 		byte[] testBytes = new byte[]{GroupDispatcherMessage.HALLCALL_REQUEST, (byte) floor};
 		try {
 			@SuppressWarnings("unused")
-			GroupDispatcherMessageIncoming message = GroupDispatcherMessageParser.getInstance().parseMessage(testBytes);
+			GroupDispatcherMessageIncoming message = GroupDispatcherMessageParser.parseMessage(testBytes);
 			fail("Expected an UnexpectedEndOfMessageException");
 		} catch (UnexpectedEndOfMessageException e) {
 			//ignore
@@ -131,7 +131,7 @@ public class MessageTest {
 		//valid data test
 		testBytes = new byte[]{GroupDispatcherMessage.HALLCALL_REQUEST, (byte) floor, (byte) direction, (byte) floor};
 		try {
-			GroupDispatcherMessageIncoming message = GroupDispatcherMessageParser.getInstance().parseMessage(testBytes);
+			GroupDispatcherMessageIncoming message = GroupDispatcherMessageParser.parseMessage(testBytes);
 			assert(message instanceof HallCallRequestMessage);
 			HallCallRequestMessage message2 = (HallCallRequestMessage) message;
 			assertEquals(floor, message2.getFloorNumber());
@@ -156,7 +156,7 @@ public class MessageTest {
 		byte[] testBytes = new byte[]{GroupDispatcherMessage.EC_STATUS, (byte) position};
 		try {
 			@SuppressWarnings("unused")
-			GroupDispatcherMessageIncoming message = GroupDispatcherMessageParser.getInstance().parseMessage(testBytes);
+			GroupDispatcherMessageIncoming message = GroupDispatcherMessageParser.parseMessage(testBytes);
 			fail("Expected an UnexpectedEndOfMessageException");
 		} catch (UnexpectedEndOfMessageException e) {
 			//ignore
@@ -170,7 +170,7 @@ public class MessageTest {
 		testBytes = TestUtils.append(testBytes, new byte[]{(byte) floorSelections.length});
 		testBytes = TestUtils.append(testBytes, floorSelections);
 		try {
-			GroupDispatcherMessageIncoming message = GroupDispatcherMessageParser.getInstance().parseMessage(testBytes);
+			GroupDispatcherMessageIncoming message = GroupDispatcherMessageParser.parseMessage(testBytes);
 			assert(message instanceof ECStatusMessage);
 			ECStatusMessage message2 = (ECStatusMessage) message;
 			assertEquals(position, message2.getPosition());

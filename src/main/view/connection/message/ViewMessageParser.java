@@ -11,21 +11,8 @@ import main.view.connection.message.messageIncoming.RemoveElevatorMessage;
 import main.view.connection.message.messageIncoming.ViewMessageIncoming;
 
 public class ViewMessageParser {
-	
-	public static ViewMessageParser instance;
-	
-	public static ViewMessageParser getInstance(){
-		if(instance == null){
-			instance = new ViewMessageParser();
-		}
-		return instance;
-	}
-	
-	public ViewMessageParser(){
-	
-	}
-	
-	public ViewMessageIncoming parseMessage(byte[] data) throws UnexpectedEndOfMessageException{
+
+	public static ViewMessageIncoming parseMessage(byte[] data) throws UnexpectedEndOfMessageException{
 		int messageType = (int) data[0];
 		ViewMessageIncoming message;
 		

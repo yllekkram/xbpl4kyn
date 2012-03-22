@@ -34,7 +34,7 @@ public class UpdaterRunnable implements Runnable{
 			byte[] line = TCPConnectionManager.getInstance().receiveData(clientSocket, Constants.STATUS_UPDATE_REQUEST_TIMEOUT);
 			if(line != null){
 				Log.log("Client " + clientId  + " said: " + Arrays.toString(line));
-				GroupDispatcherMessageIncoming message = GroupDispatcherMessageParser.getInstance().parseMessage(line);
+				GroupDispatcherMessageIncoming message = GroupDispatcherMessageParser.parseMessage(line);
 				if(message instanceof ECStatusMessage){
 					ECStatusMessage status = (ECStatusMessage) message;
 					GroupDispatcher.getInstance().updateECStatus( clientId, status );

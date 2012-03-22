@@ -28,7 +28,7 @@ public class UDPReceiveHandlerRunnable implements Runnable{
 		//parse the received message and act appropriately
 		GroupDispatcherMessageIncoming message;
 		try {
-			message = GroupDispatcherMessageParser.getInstance().parseMessage(inPacket.getData());
+			message = GroupDispatcherMessageParser.parseMessage(inPacket.getData());
 			if(message instanceof HallCallRequestMessage){
 				HallCallRequestMessage hallCall = (HallCallRequestMessage) message;
 				GroupDispatcher.getInstance().onHallCall(hallCall);

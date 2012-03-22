@@ -8,20 +8,7 @@ import main.groupDispatcher.connection.messageIncoming.RegistrationRequestMessag
 
 public class GroupDispatcherMessageParser {
 	
-	public static GroupDispatcherMessageParser instance;
-	
-	public static GroupDispatcherMessageParser getInstance(){
-		if(instance == null){
-			instance = new GroupDispatcherMessageParser();
-		}
-		return instance;
-	}
-	
-	public GroupDispatcherMessageParser(){
-	
-	}
-	
-	public GroupDispatcherMessageIncoming parseMessage(byte[] data) throws UnexpectedEndOfMessageException{
+	public static GroupDispatcherMessageIncoming parseMessage(byte[] data) throws UnexpectedEndOfMessageException{
 		int messageType = (int) data[0];
 		GroupDispatcherMessageIncoming message;
 		

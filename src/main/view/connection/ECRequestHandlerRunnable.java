@@ -32,7 +32,7 @@ public class ECRequestHandlerRunnable implements Runnable{
 
 		try {
 			//parse the message
-			ViewMessageIncoming message = ViewMessageParser.getInstance().parseMessage(inPacket.getData());
+			ViewMessageIncoming message = ViewMessageParser.parseMessage(inPacket.getData());
 
 			//handle the message
 			if( message instanceof RegistrationRequestMessage){

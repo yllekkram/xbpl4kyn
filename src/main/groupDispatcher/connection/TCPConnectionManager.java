@@ -58,7 +58,7 @@ public class TCPConnectionManager extends Observable{
 		//parse message
 		GroupDispatcherMessageIncoming message;
 		try {
-			message = GroupDispatcherMessageParser.getInstance().parseMessage(inData);
+			message = GroupDispatcherMessageParser.parseMessage(inData);
 		} catch (UnexpectedEndOfMessageException e) {
 			//cannot register the elevator at this point. Log the error and return.
 			Log.log("TCPConnectionManager.onConnectionCreated() - UnexpectedEndOfMessageException caught");
