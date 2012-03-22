@@ -37,6 +37,7 @@ public class GroupDispatcher implements Observer{
 	
 	private DispatchStrategy dispatchStrategy;
 	private Timer timer;
+	private boolean timerEnabled;
 	
 	private static GroupDispatcher instance;
 	
@@ -56,7 +57,7 @@ public class GroupDispatcher implements Observer{
 	}
 	
 	public synchronized void setStatusUpdateRequestsEnabled(boolean enable){
-		if(enable){
+		if(enable && enable != timerEnabled){
 			TimerTask task = new TimerTask(){
 				public void run(){
 					Iterator<Runnable> iterator = updaterRunnables.values().iterator();
@@ -67,10 +68,10 @@ public class GroupDispatcher implements Observer{
 				}
 			};
 			timer.scheduleAtFixedRate(task, 0, Constants.STATUS_UPDATE_REQUEST_INTERVAL);
-		}else{
+		}else if(!enable && enable != timerEnabled){
 			timer.cancel();
-
 		}
+		timerEnabled = enable;
 	}
 	
 	private GroupDispatcher(){
@@ -81,6 +82,7 @@ public class GroupDispatcher implements Observer{
 		
 		dispatchStrategy = new SimpleDispatchStrategy();
 		timer = new Timer();
+		timerEnabled = false;
 	}
 	
 	
@@ -103,7 +105,6 @@ public class GroupDispatcher implements Observer{
 		//store elevator models
 		ElevatorData elevatorControllerData = new ElevatorData();
 		elevatorCars.put(Integer.valueOf(clientSocket.getClientId()), elevatorControllerData); //thread-safe
-		Log.log("ElevatorCars.put() called, size = " + elevatorCars.size());
 		
 		//store elevator updater runnable
 		UpdaterRunnable runnable = new UpdaterRunnable(clientSocket.getClientId());
