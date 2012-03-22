@@ -89,7 +89,7 @@ int main(int argc, char* argv[]) {
 	signal(SIGINT, catch_signal);
 
 	for (int i = 0; i < NUM_ELEVATORS; i++) {
-		IDs[i] = ec[i].getID();
+		IDs[i] = i;
 		std::cout << "ID: " << IDs[i] << std::endl;
 
 		rt_mutex_create(&rtData[i].mutex, 				NULL);

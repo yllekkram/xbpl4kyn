@@ -126,7 +126,7 @@ void ElevatorController::receiveHallCall(HallCallAssignmentMessage& message) {
 
 void ElevatorController::sendRegistration() {
   std::cout << "EC" << (unsigned int)this->getID() << ": Sending EC->GD registration...";
-	sendMessage(RegisterWithGDMessage(this->id));
+	sendMessage(RegisterWithGDMessage(this->getID()));
 
   std::cout << "done." << std::endl;
 
