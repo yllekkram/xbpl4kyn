@@ -19,7 +19,6 @@ ElevatorController::ElevatorController()
 	: eStat(), rtData(), downHeap(), upHeap(), missedFloors() {
 	this->id = ElevatorController::getNextID();
 
-	/* Create the TCP socket */
 	if ((this->sock = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0) {
 		Die("Failed to create socket");
 	}
@@ -206,8 +205,4 @@ void ElevatorController::addHallCall(unsigned char floor, unsigned char directio
 	else {
 		Die("Invalid direction for Hall Call");
 	}
-}
-
-void ElevatorController::addRTData(ECRTData* rtData) {
-	this->rtData = rtData;
 }

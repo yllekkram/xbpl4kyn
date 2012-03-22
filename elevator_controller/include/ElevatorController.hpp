@@ -3,9 +3,11 @@
 
 #include <native/cond.h>
 #include <native/mutex.h>
+#include <native/task.h>
 
 #include <netinet/in.h>
 #include <vector>
+#include <sys/mman.h>
 #include <sys/socket.h>
 
 #include "ElevatorControllerView.hpp"
@@ -14,6 +16,33 @@
 #include "Message.hpp"
 
 struct ECRTData {
+	ECRTData() {
+		mlockall(MCL_CURRENT|MCL_FUTURE);
+
+		rt_mutex_create(&(this->mutex), NULL);
+		rt_mutex_create(&(this->mutexBuffer), NULL);
+		rt_cond_create(&(this->freeCond), NULL);
+
+		rt_task_create(&(this->ecThread), NULL, 0, 99, T_JOINABLE);
+		rt_task_create(&(this->frThread), NULL, 0, 99, T_JOINABLE);
+		rt_task_create(&(this->udpThread), NULL, 0, 99, T_JOINABLE);
+		rt_task_create(&(this->statusThread), NULL, 0, 99, T_JOINABLE);
+		rt_task_create(&(this->supervisorThread), NULL, 0, 99, T_JOINABLE);
+	}
+
+	~ECRTData() {
+		rt_task_delete(&(this->supervisorThread));
+		rt_task_delete(&(this->statusThread));
+		rt_task_delete(&(this->udpThread));
+		rt_task_delete(&(this->frThread));
+		rt_task_delete(&(this->ecThread));
+
+		rt_cond_delete(&(this->freeCond));
+		rt_mutex_delete(&(this->mutexBuffer));
+		rt_mutex_delete(&(this->mutex));
+	}
+
+	RT_TASK ecThread, frThread, udpThread, statusThread, supervisorThread;
 	RT_MUTEX mutex;
 	RT_MUTEX mutexBuffer;
 	RT_COND freeCond;
@@ -44,13 +73,13 @@ class ElevatorController {
 	public:
 		/* Public Member Variables */
 		ElevatorStatus eStat;
+		ECRTData rtData;
 		/* End Public Member Variables */
 
 		ElevatorController();
 		~ElevatorController();
 
 		void connectToGD(char* gdAddress, int port);
-		void addRTData(ECRTData* rtData);
 		void addSimulator(ElevatorSimulator* es);
 		void addView(ElevatorControllerView* ecv);
 
@@ -77,7 +106,6 @@ class ElevatorController {
 		int sock;
 		struct sockaddr_in echoserver;
 
-		ECRTData* rtData;
 		std::vector<ElevatorControllerView*> views;
 
 		DownwardFloorRunHeap downHeap;

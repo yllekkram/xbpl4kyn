@@ -42,11 +42,6 @@ void supervisorRun(void*);
 /* Global Data Declarations */
 unsigned char IDs[NUM_ELEVATORS]; // Store thread identifiers in gloabl memory to ensure that they always exist
 
-// RT_MUTEX mutex[NUM_ELEVATORS];
-// RT_MUTEX mutexBuffer[NUM_ELEVATORS];
-// RT_COND freeCond[NUM_ELEVATORS];
-ECRTData rtData[NUM_ELEVATORS];
-
 RT_TASK ecThread[NUM_ELEVATORS];
 RT_TASK frThread[NUM_ELEVATORS];
 RT_TASK udpThread[NUM_ELEVATORS];
@@ -76,17 +71,6 @@ int main(int argc, char* argv[]) {
 	for (int i = 0; i < NUM_ELEVATORS; i++) {
 		IDs[i] = i;
 
-		rt_mutex_create(&rtData[i].mutex, 				NULL);
-		rt_mutex_create(&rtData[i].mutexBuffer, 	NULL);
-
-		rt_cond_create(&rtData[i].freeCond, NULL);
-
-		rt_task_create(&ecThread[i], 					NULL, 0, 99, T_JOINABLE);
-		rt_task_create(&frThread[i], 					NULL, 0, 99, T_JOINABLE);
-		rt_task_create(&statusThread[i], 			NULL, 0, 99, T_JOINABLE);
-		rt_task_create(&supervisorThread[i], 	NULL, 0, 99, T_JOINABLE);
-		rt_task_create(&udpThread[i], 				NULL, 0, 99, T_JOINABLE);
-
 		rt_task_create(&supervisorStart[i],			NULL, 0, 99, T_JOINABLE);
 		rt_task_create(&release_cond[i],					NULL, 0, 99, T_JOINABLE);
 		rt_task_create(&value_run[i],						NULL, 0, 99, T_JOINABLE);
@@ -95,11 +79,11 @@ int main(int argc, char* argv[]) {
 
 		setupElevatorController(IDs[i], "192.168.251.1", "5000", "192.168.251.1", "5003");
 		
-		rt_task_start(&ecThread[i],					runECThread,		&IDs[i]);
-		rt_task_start(&udpThread[i],				runUDPThread,		&IDs[i]);
-		rt_task_start(&frThread[i], 				floorRun, 			&IDs[i]);
-		rt_task_start(&supervisorThread[i], supervisorRun, 	&IDs[i]);
-		rt_task_start(&statusThread[i], 		statusRun, 			&IDs[i]);
+		rt_task_start(&(ec[i].rtData.ecThread),					runECThread,		&IDs[i]);
+		rt_task_start(&(ec[i].rtData.udpThread),				runUDPThread,		&IDs[i]);
+		rt_task_start(&(ec[i].rtData.frThread), 				floorRun, 			&IDs[i]);
+		rt_task_start(&(ec[i].rtData.supervisorThread), supervisorRun, 	&IDs[i]);
+		rt_task_start(&(ec[i].rtData.statusThread), 		statusRun, 			&IDs[i]);
 
 		rt_task_start(&supervisorStart[i],	supervisorRun,	&IDs[i]);
 		// rt_task_start(&release_cond[i],			randomRun,			&IDs[i]);
@@ -107,20 +91,15 @@ int main(int argc, char* argv[]) {
 	}
 
 	for (int i = 0; i < NUM_ELEVATORS; i++) {
-		rt_task_join(&ecThread[i]);
-		rt_task_join(&frThread[i]);
-		rt_task_join(&udpThread[i]);
-		rt_task_join(&statusThread[i]);
-		rt_task_join(&supervisorThread[i]);
+		rt_task_join(&(ec[i].rtData.ecThread));
+		rt_task_join(&(ec[i].rtData.frThread));
+		rt_task_join(&(ec[i].rtData.udpThread));
+		rt_task_join(&(ec[i].rtData.statusThread));
+		rt_task_join(&(ec[i].rtData.supervisorThread));
 
 		rt_task_join(&supervisorStart[i]);
 		rt_task_join(&release_cond[i]);
 		rt_task_join(&value_run[i]);
-
-		rt_cond_delete(&rtData[i].freeCond);
-
-		rt_mutex_delete(&rtData[i].mutexBuffer);
-		rt_mutex_delete(&rtData[i].mutex);
 	}
 
 	return 0;
@@ -149,7 +128,6 @@ void setupElevatorController(const int ID, char* gdAddress, char* gdPort, char* 
 	}
 	catch (Exception e) {}
 
-	ec[ID].addRTData(&rtData[ID]);
 	ec[ID].addSimulator(&es[ID]);
 }
 
@@ -161,8 +139,8 @@ void floorRun(void *arg)
 	{
 		if(!ec[ID].eStat.GDFailedEmptyHeap)
 		{
-			rt_mutex_acquire(&rtData[ID].mutex, TM_INFINITE);
-			rt_cond_wait(&rtData[ID].freeCond, &rtData[ID].mutex, TM_INFINITE);
+			rt_mutex_acquire(&(ec[ID].rtData.mutex), TM_INFINITE);
+			rt_cond_wait(&(ec[ID].rtData.freeCond), &(ec[ID].rtData.mutex), TM_INFINITE);
 
 			int upHeapSize = ec[ID].getUpHeap().getSize();
 			int downHeapSize = ec[ID].getDownHeap().getSize();
@@ -194,7 +172,7 @@ void floorRun(void *arg)
 				ec[ID].getSimulator()->setFinalDestination(topItem);
 				ec[ID].eStat.destination = topItem;
 			}
-			rt_mutex_release(&rtData[ID].mutex);
+			rt_mutex_release(&(ec[ID].rtData.mutex));
 		}
 	}
 }
@@ -205,7 +183,7 @@ bool releaseFreeCond(const int ID)
 	if(heapSize > 0)
 	{
 		ec[ID].eStat.GDFailedEmptyHeap = false;
-		rt_cond_signal(&rtData[ID].freeCond);
+		rt_cond_signal(&(ec[ID].rtData.freeCond));
 		return true;
 	}else
 	{
@@ -226,7 +204,7 @@ void supervisorRun(void *arg)
 	const int ID = *((int*)arg);
 	while(true)
 	{
-		rt_mutex_acquire(&rtData[ID].mutex, TM_INFINITE);
+		rt_mutex_acquire(&(ec[ID].rtData.mutex), TM_INFINITE);
 		if(ec[ID].eStat.GDFailed && ec[ID].eStat.GDFailedEmptyHeap)
 		{
 			if(!ec[ID].eStat.taskAssigned)
@@ -242,7 +220,7 @@ void supervisorRun(void *arg)
 				}
 			}
 		}
-		rt_mutex_release(&rtData[ID].mutex);
+		rt_mutex_release(&(ec[ID].rtData.mutex));
 		sleep(20);
 	}
 }
@@ -250,21 +228,21 @@ void supervisorRun(void *arg)
 void updateStatusBuffer(const int ID)
 {
 	//upheap and the downheap (hallcall and floor selections should be included.
-	rt_mutex_acquire(&rtData[ID].mutexBuffer, TM_INFINITE);
+	rt_mutex_acquire(&(ec[ID].rtData.mutexBuffer), TM_INFINITE);
 	bool selectedBuffer = bufferSelection[ID];
-	rt_mutex_release(&rtData[ID].mutexBuffer);
+	rt_mutex_release(&(ec[ID].rtData.mutexBuffer));
 	
-	rt_mutex_acquire(&rtData[ID].mutex, TM_INFINITE);
+	rt_mutex_acquire(&(ec[ID].rtData.mutex), TM_INFINITE);
 	statusBuffer[ID][selectedBuffer][0] = ec[ID].eStat.currentFloor;
 	statusBuffer[ID][selectedBuffer][1] = ec[ID].eStat.direction;
 	statusBuffer[ID][selectedBuffer][2] = ec[ID].eStat.currentPosition;
 	statusBuffer[ID][selectedBuffer][3] = ec[ID].eStat.currentSpeed;
 	//printf("writting to buffer %d %s\n", selectedBuffer, statusBuffer[selectedBuffer]);
-	rt_mutex_release(&rtData[ID].mutex);
+	rt_mutex_release(&(ec[ID].rtData.mutex));
 
-	rt_mutex_acquire(&rtData[ID].mutexBuffer, TM_INFINITE);
+	rt_mutex_acquire(&(ec[ID].rtData.mutexBuffer), TM_INFINITE);
 	bufferSelection[ID] = ++bufferSelection[ID] % 2;
-	rt_mutex_release(&rtData[ID].mutexBuffer);
+	rt_mutex_release(&(ec[ID].rtData.mutexBuffer));
 }
 
 void statusRun(void *arg)
@@ -273,7 +251,7 @@ void statusRun(void *arg)
 	while(true)
 	{
 		sleep(3);
-		rt_mutex_acquire(&rtData[ID].mutex, TM_INFINITE);
+		rt_mutex_acquire(&(ec[ID].rtData.mutex), TM_INFINITE);
 		ec[ID].eStat.currentFloor = ec[ID].getSimulator()->getCurrentFloor();
 		ec[ID].eStat.taskAssigned = ec[ID].getSimulator()->getIsTaskActive();
 		if(ec[ID].eStat.taskAssigned && (ec[ID].getSimulator()->getIsDirectionUp()))
@@ -314,7 +292,7 @@ void statusRun(void *arg)
 		}
 		releaseFreeCond(ID);
 
-		rt_mutex_release(&rtData[ID].mutex);
+		rt_mutex_release(&(ec[ID].rtData.mutex));
 		updateStatusBuffer(ID);
 	}
 }
@@ -324,9 +302,9 @@ void randomRun(void *arg)
 {
 	const int ID = *((int*)arg);
 	ec[ID].getUpHeap().pushHallCall(5);
-	rt_mutex_acquire(&rtData[ID].mutex, TM_INFINITE);
+	rt_mutex_acquire(&(ec[ID].rtData.mutex), TM_INFINITE);
 	releaseFreeCond(ID);
-	rt_mutex_release(&rtData[ID].mutex);
+	rt_mutex_release(&(ec[ID].rtData.mutex));
 	printf("RR%d Hall Call Up Floor : 5\n", ID);
 	sleep(40);
 
@@ -393,21 +371,5 @@ void supervisorStartUp(void *arg)
 }
 
 void catch_signal(int sig) {
-	for (int i = 0; i < NUM_ELEVATORS; i++) {
-		rt_task_delete(&ecThread[i]);
-		rt_task_delete(&frThread[i]);
-		rt_task_delete(&udpThread[i]);
-		rt_task_delete(&statusThread[i]);
-		rt_task_delete(&supervisorThread[i]);
-		rt_task_delete(&supervisorStart[i]);
-		rt_task_delete(&release_cond[i]);
-		rt_task_delete(&value_run[i]);
-
-		rt_cond_delete(&rtData[i].freeCond);
-
-		rt_mutex_delete(&rtData[i].mutexBuffer);
-		rt_mutex_delete(&rtData[i].mutex);
-	}
-
 	exit(1);
 }
