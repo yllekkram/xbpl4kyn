@@ -56,8 +56,8 @@ void ElevatorController::waitForGDRequest() {
 
 	switch (requestType) {
 		case STATUS_REQUEST:
-      this->sendStatus();
 			std::cout << "EC" << (unsigned int)this->getID() << ": Status Request" << std::endl;
+      this->sendStatus();
 			break;
 		case HALL_CALL_ASSIGNMENT:
 			std::cout << "EC" << (unsigned int)this->getID() << ": Hall Call Assigned: Floor " << (int) request[1] << std::endl;
@@ -76,21 +76,24 @@ void ElevatorController::sendStatus() {
   //                                         (char*) &hallCalls[0]));
 	char len = 1 	/* EC ID */
 						+1	/* Message Type */
-						+1	/* dest */
-						+1	/* pos */
-						+1	/* speed */
+						+1	/* Position */
+						+1	/* Direction */
+						+1	/* Is moving? */
 						+1	/* num hall calls */
 						+0	/* Hall calls */
+						+1	/* Num Floor Requests */
+						+0	/* Floor requests */
 						+1;	/* Terminator */
 
 	char message[len];
 	message[0] = STATUS_RESPONSE;
 	message[1] = this->id;
-	message[2] = 5;
-	message[3] = 6;
-	message[4] = 7;
+	message[2] = 1;
+	message[3] = DIRECTION_UP;
+	message[4] = 0;
 	message[5] = 0;
-	message[6] = MESSAGE_TERMINATOR;
+	message[6] = 0;
+	message[7] = MESSAGE_TERMINATOR;
 
 	this->sendMessage(message, len);
 
@@ -156,16 +159,16 @@ char* ElevatorController::receiveTCP(unsigned int length) {
 	unsigned int received = 0;
 
 	/* Receive the word back from the server */
-	while (received < length) {
-		int bytes = 0;
-		std::cout << "EC" << (unsigned int)this->getID() << ": Waiting for TCP...";
-		bytes = recv(this->sock, buffer, BUFFSIZE-1, 0);
-		std::cout << "got " << bytes << " bytes" << std::endl;
-		received += bytes;
+	int bytes = 0;
+	std::cout << "EC" << (unsigned int)this->getID() << ": Waiting for TCP...";
+	bytes = recv(this->sock, buffer, BUFFSIZE-1, 0);
+	if (bytes <= 0) {
+		Die("bytes received error");
 	}
+	std::cout << "got " << bytes << " bytes" << std::endl;
 
 	std::cout << "EC" << (unsigned int)this->getID() << ": Received: ";
-	printBuffer(buffer, length);
+	printBuffer(buffer, bytes);
 	std::cout << std::endl;
 
 	return buffer;
@@ -201,7 +204,7 @@ void ElevatorController::addHallCall(unsigned char floor, unsigned char directio
 		}
 	}
 	else {
-		Die("Invalid floor for Hall Call");
+		Die("Invalid direction for Hall Call");
 	}
 }
 
