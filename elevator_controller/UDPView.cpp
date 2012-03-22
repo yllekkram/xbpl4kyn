@@ -84,6 +84,7 @@ void UDPView::waitForMessage() {
 			break;
 		case FLOOR_SELECTION_MESSAGE:
 			std::cout << "floor selection: " << (int)request[1] << std::endl;
+			this->getEC()->addFloorSelection(request[1]);
 			break;
 		case OPEN_DOOR_REQUEST:
 			std::cout << "open door request" << std::endl;

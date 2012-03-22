@@ -52,6 +52,7 @@ ElevatorSimulator 	es[NUM_ELEVATORS];
 //double buffer used by both communication and status threads.
 unsigned char statusBuffer[NUM_ELEVATORS][2][BUFFSIZE];
 unsigned char bufferSelection[NUM_ELEVATORS];
+bool elevatorServiceDirection[NUM_ELEVATORS];
 /* End Global Data Declarations */
 
 int main(int argc, char* argv[]) {
@@ -67,8 +68,9 @@ int main(int argc, char* argv[]) {
 		rt_task_create(&value_run[i],						NULL, 0, 99, T_JOINABLE);
 
 		bufferSelection[i] = 0;
+		elevatorServiceDirection[i] = true;
 
-		setupElevatorController(IDs[i], "192.168.251.1", "5000", "192.168.251.1", "5003");
+		setupElevatorController(IDs[i], "127.0.0.1", "5000", "127.0.0.1", "5003");
 
 		rt_task_start(&(ec[i].rtData.ecThread),					runECThread,		&IDs[i]);
 		rt_task_start(&(ec[i].rtData.frThread), 				floorRun, 			&IDs[i]);
@@ -136,24 +138,30 @@ void floorRun(void *arg)
 			int upHeapSize = ec[ID].getUpHeap().getSize();
 			int downHeapSize = ec[ID].getDownHeap().getSize();
 			if(upHeapSize==0 && downHeapSize==0){ec[ID].eStat.GDFailedEmptyHeap = true;}
-
-			if(ec[ID].eStat.downDirection)
+			
+			if(!elevatorServiceDirection[ID])
 			{
 				if(downHeapSize > 0)
 				{
 					topItem = ec[ID].getDownHeap().peek();
+					elevatorServiceDirection[ID] = false;
 				}else if(upHeapSize > 0)
 				{
+					ec[ID].updateMissedFloor(false);
 					topItem = ec[ID].getUpHeap().peek();
+					elevatorServiceDirection[ID] = true;
 				}
 			}else
 			{
 				if(upHeapSize > 0)
 				{
 					topItem = ec[ID].getUpHeap().peek();
+					elevatorServiceDirection[ID] = true;
 				}else if(downHeapSize > 0)
 				{
+					ec[ID].updateMissedFloor(true);
 					topItem = ec[ID].getDownHeap().peek();
+					elevatorServiceDirection[ID] = false;
 				}
 			}
 		
@@ -248,11 +256,13 @@ void statusRun(void *arg)
 		if(ec[ID].eStat.taskAssigned && (ec[ID].getSimulator()->getIsDirectionUp()))
 		{
 			ec[ID].eStat.upDirection = true;
+			ec[ID].eStat.direction = DIRECTION_UP;
+		}else
+		{
+			ec[ID].eStat.upDirection = false;
+			ec[ID].eStat.direction = DIRECTION_DOWN;
 		}
-		ec[ID].eStat.downDirection = !(ec[ID].getSimulator()->getIsDirectionUp());
-
-		if(ec[ID].eStat.upDirection){ec[ID].eStat.direction = DIRECTION_UP;}
-		else{ec[ID].eStat.direction = DIRECTION_DOWN;}
+		ec[ID].eStat.downDirection = !(ec[ID].eStat.upDirection);
 
 		ec[ID].eStat.currentPosition = ceil(ec[ID].getSimulator()->geCurrentPosition());
 		ec[ID].eStat.taskActive = ec[ID].eStat.taskAssigned;
@@ -278,9 +288,9 @@ void statusRun(void *arg)
 			{
 				printf("ST%d Task Completed %d\n", ID, ec[ID].eStat.destination);
 				ec[ID].getDownHeap().pop();
-				releaseFreeCond(ID);
 			}
 		}
+
 		releaseFreeCond(ID);
 
 		rt_mutex_release(&(ec[ID].rtData.mutex));
