@@ -54,6 +54,11 @@ int main(int argc, char* argv[]) {
 	signal(SIGTERM, catch_signal);
 	signal(SIGINT, catch_signal);
 
+	if (argc != 5) {
+		std::cerr << "USAGE: main <gd_ip> <gd_port> <gui_ip> <gui_port>" << std::endl;
+		exit(1);
+	}
+
 	for (int i = 0; i < NUM_ELEVATORS; i++) {
 		IDs[i] = i;
 
@@ -61,7 +66,7 @@ int main(int argc, char* argv[]) {
 		rt_task_create(&release_cond[i],					NULL, 0, 99, T_JOINABLE);
 		rt_task_create(&value_run[i],						NULL, 0, 99, T_JOINABLE);
 
-		setupElevatorController(IDs[i], "192.168.251.1", "5000", "192.168.251.1", "5003");
+		setupElevatorController(IDs[i], argv[1], argv[2], argv[3], argv[4]);
 
 		rt_task_start(&(ec[i].rtData.ecThread),					runECThread,					&IDs[i]);
 		rt_task_start(&(ec[i].rtData.frThread), 				runFRThread, 						&IDs[i]);

@@ -8,17 +8,17 @@ GroupDispatcher and GUI:
 	- To run the unit tests:
 		Find test/TestAll.java and run it as a JUnit test suite
 
-To compile the ElevatorController, run the following commands:
+The ElevatorController must be compiled on a computer that is running Xenomai. To compile
+the ElevatorController, run the following commands:
 	# remove any leftover files from previous builds
 	cd elevator_controller
 	make clean
 	# compile
-	make
+	make xeno
 	
 To run the ElevatorController, first start the GroupDispatcher and GUI from within Eclipse. Next, from the working directory, run
 	./main <group_dispatcher_ip> <group_dispatcher_port> <gui_ip> <gui_port>
 	
-<group_dispatcher_port> is set to 5000
-<gui_port> is set to 5003
+By default, the GroupDispatcher runs on port 5000 and the GUI runs on port 5003
 For example, ./testElevatorController 127.0.0.1 5000 127.0.0.1 5003
 
