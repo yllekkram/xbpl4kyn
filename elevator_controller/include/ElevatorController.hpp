@@ -28,6 +28,9 @@ struct ECRTData {
 struct ElevatorStatus {
 	ElevatorStatus();
 
+	unsigned char statusBuffer[2][BUFFSIZE];
+	unsigned char bufferSelection;
+
 	unsigned char currentFloor;
 	unsigned char direction;
 	unsigned char currentPosition;

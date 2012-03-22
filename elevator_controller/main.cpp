@@ -17,7 +17,7 @@
 #include "UDPView.hpp"
 
 /* Constants */
-#define NUM_ELEVATORS 1
+#define NUM_ELEVATORS 8
 #define STANDARD_PAUSE 2500000000U
 /* End Constants */
 
@@ -48,10 +48,6 @@ RT_TASK value_run[NUM_ELEVATORS];
 ElevatorController	ec[NUM_ELEVATORS];
 UDPView							uv[NUM_ELEVATORS];
 ElevatorSimulator 	es[NUM_ELEVATORS];
-
-//double buffer used by both communication and status threads.
-unsigned char statusBuffer[NUM_ELEVATORS][2][BUFFSIZE];
-unsigned char bufferSelection[NUM_ELEVATORS];
 bool elevatorServiceDirection[NUM_ELEVATORS];
 /* End Global Data Declarations */
 
@@ -228,19 +224,19 @@ void updateStatusBuffer(const int ID)
 {
 	//upheap and the downheap (hallcall and floor selections should be included.
 	rt_mutex_acquire(&(ec[ID].rtData.mutexBuffer), TM_INFINITE);
-	bool selectedBuffer = bufferSelection[ID];
+	bool selectedBuffer = ec[ID].eStat.bufferSelection;
 	rt_mutex_release(&(ec[ID].rtData.mutexBuffer));
 	
 	rt_mutex_acquire(&(ec[ID].rtData.mutex), TM_INFINITE);
-	statusBuffer[ID][selectedBuffer][0] = ec[ID].eStat.currentFloor;
-	statusBuffer[ID][selectedBuffer][1] = ec[ID].eStat.direction;
-	statusBuffer[ID][selectedBuffer][2] = ec[ID].eStat.currentPosition;
-	statusBuffer[ID][selectedBuffer][3] = ec[ID].eStat.currentSpeed;
+	ec[ID].eStat.statusBuffer[selectedBuffer][0] = ec[ID].eStat.currentFloor;
+	ec[ID].eStat.statusBuffer[selectedBuffer][1] = ec[ID].eStat.direction;
+	ec[ID].eStat.statusBuffer[selectedBuffer][2] = ec[ID].eStat.currentPosition;
+	ec[ID].eStat.statusBuffer[selectedBuffer][3] = ec[ID].eStat.currentSpeed;
 	//printf("writting to buffer %d %s\n", selectedBuffer, statusBuffer[selectedBuffer]);
 	rt_mutex_release(&(ec[ID].rtData.mutex));
 
 	rt_mutex_acquire(&(ec[ID].rtData.mutexBuffer), TM_INFINITE);
-	bufferSelection[ID] = ++bufferSelection[ID] % 2;
+	ec[ID].eStat.bufferSelection = ++(ec[ID].eStat.bufferSelection) % 2;
 	rt_mutex_release(&(ec[ID].rtData.mutexBuffer));
 }
 
