@@ -85,6 +85,8 @@ public class ElevatorControlWindow extends JFrame implements ActionListener{
 	   	
 	    setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	    setLocationRelativeTo(null);
+	    
+	    onStart();
 	}
 	
 	public void display(){
