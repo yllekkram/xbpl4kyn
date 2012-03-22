@@ -28,7 +28,7 @@ public class SimpleDispatchStrategy implements DispatchStrategy{
 			Integer elevatorId = enumeration.nextElement();
 			ElevatorData elevatorData = elevatorCars.get(elevatorId);
 			
-			int distance =  elevatorData.getPosition() - floor;
+			int distance =  Math.abs(elevatorData.getPosition() - floor);
 			if( elevatorData.getDirection() == direction ){
 				if( distance < leastDistance && distance > 1 ){
 					leastDistance = distance;
