@@ -18,17 +18,9 @@
 #include "UDPView.hpp"
 
 /* Constants */
-#define NUM_ELEVATORS 3
+#define NUM_ELEVATORS 1
 #define STANDARD_PAUSE 2500000000U
 /* End Constants */
-
-/* Class and Struct Definitions */
-struct ECRTData {
-	RT_MUTEX mutex;
-	RT_MUTEX mutexBuffer;
-	RT_COND freeCond;
-};
-/* End Class and Struct Definitions */
 
 /* Funtion Prototypes */
 void catch_signal(int);
@@ -36,7 +28,7 @@ void floorRun(void*);
 bool relseaseFreeCond();
 void runECThread(void*);
 void runUDPThread(void*);
-void setupElevatorController(ElevatorController*, UDPView*, char*, char*, char*, char*);
+void setupElevatorController(int id, char*, char*, char*, char*);
 void sleep(int);
 void statusRun(void*);
 void supervisorRun(void*);
@@ -48,7 +40,7 @@ void supervisorRun(void*);
 /* End Function Prototypes */
 
 /* Global Data Declarations */
-int IDs[NUM_ELEVATORS]; // Store thread identifiers in gloabl memory to ensure that they always exist
+unsigned char IDs[NUM_ELEVATORS]; // Store thread identifiers in gloabl memory to ensure that they always exist
 
 // RT_MUTEX mutex[NUM_ELEVATORS];
 // RT_MUTEX mutexBuffer[NUM_ELEVATORS];
@@ -97,7 +89,8 @@ int main(int argc, char* argv[]) {
 	signal(SIGINT, catch_signal);
 
 	for (int i = 0; i < NUM_ELEVATORS; i++) {
-		IDs[i] = i;
+		IDs[i] = ec[i].getID();
+		std::cout << "ID: " << IDs[i] << std::endl;
 
 		rt_mutex_create(&rtData[i].mutex, 				NULL);
 		rt_mutex_create(&rtData[i].mutexBuffer, 	NULL);
@@ -127,11 +120,13 @@ int main(int argc, char* argv[]) {
 		taskActive[i] = 0;
 		bufferSelection[i] = 0;
 
-		// setupElevatorController(&ec[i], &uv[i], "192.168.251.1", "5000", "192.168.251.1", "5003");
-		ec[i].addSimulator(&es[i]);
-
-		// rt_task_start(&ecThread[i],					runECThread,		&IDs[i]);
-		// rt_task_start(&udpThread[i],				runUDPThread,		&IDs[i]);
+		setupElevatorController(IDs[i], "192.168.251.1", "5000", "192.168.251.1", "5003");
+		// ec[i].addSimulator(&es[i]);
+		
+		std::cout << "before EC ID: " << &IDs[i] << std::endl;
+		rt_task_start(&ecThread[i],					runECThread,		&IDs[i]);
+		std::cout << "after IDaddr: " << &IDs[i] << std::endl;
+		rt_task_start(&udpThread[i],				runUDPThread,		&IDs[i]);
 		rt_task_start(&frThread[i], 				floorRun, 			&IDs[i]);
 		rt_task_start(&supervisorThread[i], supervisorRun, 	&IDs[i]);
 		rt_task_start(&statusThread[i], 		statusRun, 			&IDs[i]);
@@ -162,30 +157,36 @@ int main(int argc, char* argv[]) {
 }
 
 void runECThread(void* cookie) {
-	printf("EC Thread\n");
-	ElevatorController* thisEC = (ElevatorController*)cookie;
-	thisEC->run();
+	std::cout << "inside IDaddr: " << cookie << std::endl;
+	const int ID = *((int*)cookie);
+
+	printf("EC %d Thread\n", ID);
+	ec[ID].run();
 }
 
 void runUDPThread(void* cookie) {
+	const int ID = *((int*)cookie);
+
 	printf("UDP Thread\n");
-	UDPView* thisUV = (UDPView*)cookie;
-	thisUV->run();
+	uv[ID].run();
 }
 
-void setupElevatorController(ElevatorController* thisEC, UDPView* thisUV, char* gdAddress, char* gdPort, char* guiAddress, char* guiPort) {
-	thisUV->init(guiAddress, guiPort);
-	thisEC->connectToGD(gdAddress, atoi(gdPort));
+void setupElevatorController(const int ID, char* gdAddress, char* gdPort, char* guiAddress, char* guiPort) {
+	uv[ID].init(guiAddress, guiPort);
+	ec[ID].connectToGD(gdAddress, atoi(gdPort));
 
 	try {
-		thisEC->addView(thisUV);
+		ec[ID].addView(&uv[ID]);
 	}
 	catch (Exception e) {}
+
+	ec[ID].addRTData(&rtData[ID]);
+	ec[ID].addSimulator(&es[ID]);
 }
 
 void floorRun(void *arg)
 {
-	int ID = *((int*)arg);
+	const int ID = *((int*)arg);
 	unsigned char topItem;
 	while(true)
 	{
@@ -229,7 +230,7 @@ void floorRun(void *arg)
 	}
 }
 
-bool releaseFreeCond(int ID)
+bool releaseFreeCond(const int ID)
 {
 	int heapSize = ec[ID].getUpHeap().getSize() + ec[ID].getDownHeap().getSize();
 	if(heapSize > 0)
@@ -253,7 +254,7 @@ void sleep(int numTimes)
 
 void supervisorRun(void *arg)
 {
-	int ID = *((int*)arg);
+	const int ID = *((int*)arg);
 	while(true)
 	{
 		rt_mutex_acquire(&rtData[ID].mutex, TM_INFINITE);
@@ -277,7 +278,7 @@ void supervisorRun(void *arg)
 	}
 }
 
-void updateStatusBuffer(int ID)
+void updateStatusBuffer(const int ID)
 {
 	//upheap and the downheap (hallcall and floor selections should be included.
 	rt_mutex_acquire(&rtData[ID].mutexBuffer, TM_INFINITE);
@@ -299,7 +300,7 @@ void updateStatusBuffer(int ID)
 
 void statusRun(void *arg)
 {
-	int ID = *((int*)arg);
+	const int ID = *((int*)arg);
 	while(true)
 	{
 		sleep(3);
@@ -358,7 +359,7 @@ void statusRun(void *arg)
 // this function is just for my testing purposes
 void randomRun(void *arg)
 {
-	int ID = *((int*)arg);
+	const int ID = *((int*)arg);
 	ec[ID].getUpHeap().pushHallCall(5);
 	rt_mutex_acquire(&rtData[ID].mutex, TM_INFINITE);
 	releaseFreeCond(ID);
@@ -397,7 +398,7 @@ void randomRun(void *arg)
 // this function is just for my testing purposes
 void runValues(void *arg)
 {
-	int ID = *((int*)arg);
+	const int ID = *((int*)arg);
 
 	while(true)
 	{
@@ -411,7 +412,7 @@ void runValues(void *arg)
 // this function is just for my testing purposes
 void supervisorStartUp(void *arg)
 {
-	int ID = *((int*)arg);
+	const int ID = *((int*)arg);
 
 	sleep(200);
 	printf("SSU%d GroupDispatcher FAILED, Oh my god :(\n", ID);

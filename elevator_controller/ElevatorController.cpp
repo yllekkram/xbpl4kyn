@@ -26,6 +26,7 @@ ElevatorController::ElevatorController()
 }
 
 ElevatorController::~ElevatorController() {
+	std::cout << "Ahhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh!" << std::endl << std::flush;
 	close(this->sock);
 }
 
@@ -157,6 +158,8 @@ void ElevatorController::sendMessage(const char* message, int len) {
 char* ElevatorController::receiveTCP(unsigned int length) {
 	char* buffer = new char[BUFFSIZE];
 	unsigned int received = 0;
+
+	std::cout << "Socket is: " << this->sock << std::endl;
 
 	/* Receive the word back from the server */
 	int bytes = 0;
