@@ -2,6 +2,8 @@
 #include <cstdlib>
 #include <cstring>
 #include <iostream>
+#include <native/cond.h>
+#include <native/mutex.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <unistd.h>
@@ -14,7 +16,7 @@
 char ElevatorController::nextID = 1;
 
 ElevatorController::ElevatorController()
-	: downHeap(), upHeap(), missedFloors() {
+	: rtData(), downHeap(), upHeap(), missedFloors() {
 	this->id = ElevatorController::getNextID();
 
 	/* Create the TCP socket */
@@ -201,4 +203,8 @@ void ElevatorController::addHallCall(unsigned char floor, unsigned char directio
 	else {
 		Die("Invalid floor for Hall Call");
 	}
+}
+
+void ElevatorController::addRTData(ECRTData* rtData) {
+	this->rtData = rtData;
 }

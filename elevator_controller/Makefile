@@ -7,8 +7,8 @@ RM					= rm
 
 vpath %.hpp include:test/include
 
-EXE				= ElevatorTestServer UDPTestServer testElevatorController testTCP testUDP ElevatorSimulatorTest
-XENOEXE		= main testThreadedElevatorController
+EXE				= ElevatorTestServer UDPTestServer ElevatorSimulatorTest
+XENOEXE		= main testThreadedElevatorController testElevatorController testTCP testUDP
 SRCS			= $(wildcard *.cpp)
 OBJS			= ${SRCS:.cpp=.opp}
 

@@ -1,6 +1,9 @@
 #ifndef ELEVATOR_CONTROLLER_HPP
 #define ELEVATOR_CONTROLLER_HPP
 
+#include <native/cond.h>
+#include <native/mutex.h>
+
 #include <netinet/in.h>
 #include <vector>
 #include <sys/socket.h>
@@ -10,14 +13,22 @@
 #include "Heap.hpp"
 #include "Message.hpp"
 
+struct ECRTData {
+	RT_MUTEX mutex;
+	RT_MUTEX mutexBuffer;
+	RT_COND freeCond;
+};
+
 class ElevatorController {
 	public:
 		ElevatorController();
 		~ElevatorController();
 
 		void connectToGD(char* gdAddress, int port);
+		void addRTData(ECRTData* rtData);
 		void addSimulator(ElevatorSimulator* es);
 		void addView(ElevatorControllerView* ecv);
+
     void run();
 
 		void waitForGDRequest();
@@ -40,7 +51,10 @@ class ElevatorController {
 		unsigned char id;
 		int sock;
 		struct sockaddr_in echoserver;
+
+		ECRTData* rtData;
 		std::vector<ElevatorControllerView*> views;
+
 		DownwardFloorRunHeap downHeap;
 		UpwardFloorRunHeap upHeap;
 		std::vector<char> missedFloors;
