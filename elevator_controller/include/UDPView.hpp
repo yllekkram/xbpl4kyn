@@ -1,13 +1,16 @@
 #ifndef UDP_VIEW_HPP
 #define UDP_VIEW_HPP
 
+#include <native/task.h>
 #include <netinet/in.h>
 
 #include "ElevatorControllerView.hpp"
 
 class UDPView : public ElevatorControllerView {
 	public:
-		UDPView(){};
+		RT_TASK udpThread;
+
+		UDPView();
 		~UDPView();
 		
 		void init(char* guiAddress, char* guiPort);

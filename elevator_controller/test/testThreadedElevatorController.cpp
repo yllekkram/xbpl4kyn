@@ -71,7 +71,7 @@ void catch_signal(int sig) {
 void runECThread(void* cookie) {
 	printf("EC Thread\n");
 	ElevatorController* thisEC = (ElevatorController*)cookie;
-	thisEC->run();
+	thisEC->communicate();
 }
 
 void runUDPThread(void* cookie) {
