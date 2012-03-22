@@ -16,6 +16,9 @@
 // Types for messages received from the GroupDispatcher
 #define MAX_GD_REQUEST_SIZE 3
 
+#define HCA_FLOOR_INDEX 1
+#define HCA_DIRECTION_INDEX 2
+
 #define REGISTRATION_ACK 1
 #define STATUS_REQUEST 2
 #define HALL_CALL_ASSIGNMENT 3

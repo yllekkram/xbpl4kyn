@@ -16,6 +16,7 @@ class ElevatorController {
 		~ElevatorController();
 
 		void connectToGD(char* gdAddress, int port);
+		void addSimulator(ElevatorSimulator* es);
 		void addView(ElevatorControllerView* ecv);
     void run();
 
@@ -27,6 +28,7 @@ class ElevatorController {
 		UpwardFloorRunHeap& getUpHeap() { return this->upHeap; }
 		ElevatorSimulator* getSimulator() { return this->es; }
 
+		void addHallCall(unsigned char floor, unsigned char direction);
 		void pushFloorButton(char floor);
 		void openDoor();
 		void closeDoor();
@@ -41,6 +43,7 @@ class ElevatorController {
 		std::vector<ElevatorControllerView*> views;
 		DownwardFloorRunHeap downHeap;
 		UpwardFloorRunHeap upHeap;
+		std::vector<char> missedFloors;
 
 		ElevatorSimulator* es;
 

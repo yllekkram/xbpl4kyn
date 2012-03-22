@@ -58,9 +58,8 @@ void ElevatorController::waitForGDRequest() {
 			std::cout << "EC" << (unsigned int)this->getID() << ": Status Request" << std::endl;
 			break;
 		case HALL_CALL_ASSIGNMENT:
-      message = new HallCallAssignmentMessage(request);
-			std::cout << "EC" << (unsigned int)this->getID() << ": Hall Call Assigned: Floor " << (int) request[1];
-			std::cout << std::endl;
+			std::cout << "EC" << (unsigned int)this->getID() << ": Hall Call Assigned: Floor " << (int) request[1] << std::endl;
+			this->addHallCall(request[HCA_FLOOR_INDEX], request[HCA_DIRECTION_INDEX]);
 			break;
 		default:
 			std::cout << "EC" << (unsigned int)this->getID() << ": Unknown Message Type" << std::endl;
@@ -180,4 +179,26 @@ void ElevatorController::closeDoor() {
 
 void ElevatorController::emergencyStop() {
 	std::cout << "EC" << (unsigned int)this->getID() << ": emergency stop" << std::endl;
+}
+
+void ElevatorController::addHallCall(unsigned char floor, unsigned char direction) {
+	if (direction == DIRECTION_UP) {
+		if (es->getCurrentFloor() >= (floor - 1)) { // The elevator cannot stop at the floor
+			this->missedFloors.push_back(floor);
+		}
+		else {
+			this->upHeap.pushHallCall(floor);
+		}
+	}
+	else if (direction == DIRECTION_DOWN) {
+		if (es->getCurrentFloor() <= (floor + 1)) {
+			this->missedFloors.push_back(floor);
+		}
+		else {
+			this->downHeap.pushHallCall(floor);
+		}
+	}
+	else {
+		Die("Invalid floor for Hall Call");
+	}
 }
