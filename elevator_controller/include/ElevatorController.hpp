@@ -39,6 +39,7 @@ struct ElevatorStatus {
 	bool downDirection;
 	bool GDFailed;
 	bool GDFailedEmptyHeap;
+	bool elevatorServiceDirection;
 
 	unsigned char statusBuffer[2][BUFFSIZE];
 	unsigned char bufferSelection;
@@ -75,6 +76,8 @@ class ElevatorController {
 
 		/* Elevator Operation */
 		void addHallCall(unsigned char floor, unsigned char direction);
+		void addFloorSelection(unsigned char floor);
+		void updateMissedFloor(bool up);
 		void pushFloorButton(char floor);
 		void openDoor();
 		void closeDoor();
@@ -97,6 +100,7 @@ class ElevatorController {
 		DownwardFloorRunHeap downHeap;
 		UpwardFloorRunHeap upHeap;
 		std::vector<char> missedFloors;
+		std::vector<char> missedFloorsSelection;
 
 		ElevatorSimulator* es;
 

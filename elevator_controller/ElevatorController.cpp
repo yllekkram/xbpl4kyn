@@ -44,12 +44,14 @@ ElevatorStatus::ElevatorStatus()
 	: currentFloor(0),		direction(DIRECTION_UP),		currentPosition(0),
 		currentSpeed(0),		destination(0),							taskActive(false),
 		taskAssigned(0),		upDirection(false),					downDirection(false),
-		GDFailed(false),		GDFailedEmptyHeap(false),		bufferSelection(0)
+		GDFailed(false),		GDFailedEmptyHeap(false),		elevatorServiceDirection(true),
+    bufferSelection(0)
+		
 {}
 
 
 ElevatorController::ElevatorController()
-	: eStat(), rtData(), downHeap(), upHeap(), missedFloors() {
+	: rtData(), eStat(), downHeap(), upHeap(), missedFloors(), missedFloorsSelection() {
 	this->id = ElevatorController::getNextID();
 
 	if ((this->sock = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0) {
@@ -85,24 +87,30 @@ void ElevatorController::floorRun() {
 			int upHeapSize = this->getUpHeap().getSize();
 			int downHeapSize = this->getDownHeap().getSize();
 			if(upHeapSize==0 && downHeapSize==0){this->eStat.GDFailedEmptyHeap = true;}
-
-			if(this->eStat.downDirection)
+			
+			if(!this->eStat.elevatorServiceDirection)
 			{
 				if(downHeapSize > 0)
 				{
 					topItem = this->getDownHeap().peek();
+					this->eStat.elevatorServiceDirection = false;
 				}else if(upHeapSize > 0)
 				{
+					this->updateMissedFloor(false);
 					topItem = this->getUpHeap().peek();
+					this->eStat.elevatorServiceDirection = true;
 				}
 			}else
 			{
 				if(upHeapSize > 0)
 				{
 					topItem = this->getUpHeap().peek();
+					this->eStat.elevatorServiceDirection = true;
 				}else if(downHeapSize > 0)
 				{
+					this->updateMissedFloor(true);
 					topItem = this->getDownHeap().peek();
+					this->eStat.elevatorServiceDirection = false;
 				}
 			}
 		
@@ -154,11 +162,13 @@ void ElevatorController::updateStatus() {
 		if(this->eStat.taskAssigned && (this->getSimulator()->getIsDirectionUp()))
 		{
 			this->eStat.upDirection = true;
+      this->eStat.direction = DIRECTION_UP;
 		}
-		this->eStat.downDirection = !(this->getSimulator()->getIsDirectionUp());
-
-		if(this->eStat.upDirection){this->eStat.direction = DIRECTION_UP;}
-		else{this->eStat.direction = DIRECTION_DOWN;}
+    else {
+      this->eStat.upDirection = false;
+			this->eStat.direction = DIRECTION_DOWN;
+    }
+		this->eStat.downDirection = !(this->eStat.upDirection);
 
 		this->eStat.currentPosition = (unsigned char)ceil(this->getSimulator()->geCurrentPosition());
 		this->eStat.taskActive = this->eStat.taskAssigned;
@@ -242,7 +252,7 @@ void ElevatorController::waitForGDRequest() {
 
 	switch (requestType) {
 		case STATUS_REQUEST:
-			std::cout << "EC" << (unsigned int)this->getID() << ": Status Request" << std::endl;
+			//std::cout << "EC" << (unsigned int)this->getID() << ": Status Request" << std::endl;
       this->sendStatus();
 			break;
 		case HALL_CALL_ASSIGNMENT:
@@ -348,16 +358,16 @@ char* ElevatorController::receiveTCP(unsigned int length) {
 
 	/* Receive the word back from the server */
 	int bytes = 0;
-	std::cout << "EC" << (unsigned int)this->getID() << ": Waiting for TCP...";
+	//std::cout << "EC" << (unsigned int)this->getID() << ": Waiting for TCP...";
 	bytes = recv(this->sock, buffer, BUFFSIZE-1, 0);
 	if (bytes <= 0) {
 		Die("bytes received error");
 	}
-	std::cout << "got " << bytes << " bytes" << std::endl;
+	//std::cout << "got " << bytes << " bytes" << std::endl;
 
-	std::cout << "EC" << (unsigned int)this->getID() << ": Received: ";
-	printBuffer(buffer, bytes);
-	std::cout << std::endl;
+	//std::cout << "EC" << (unsigned int)this->getID() << ": Received: ";
+	//printBuffer(buffer, bytes);
+	//std::cout << std::endl;
 
 	return buffer;
 }
@@ -374,17 +384,17 @@ void ElevatorController::emergencyStop() {
 	std::cout << "EC" << (unsigned int)this->getID() << ": emergency stop" << std::endl;
 }
 
-void ElevatorController::addHallCall(unsigned char floor, unsigned char direction) {
-	if (direction == DIRECTION_UP) {
-		if (es->getCurrentFloor() >= (floor - 1)) { // The elevator cannot stop at the floor
+void ElevatorController::addHallCall(unsigned char floor, unsigned char callDirection) {
+	if (callDirection == DIRECTION_UP) {
+		if ((es->getCurrentFloor() >= (floor - 1)) && (eStat.direction == DIRECTION_UP)) { // The elevator cannot stop at the floor
 			this->missedFloors.push_back(floor);
 		}
 		else {
 			this->upHeap.pushHallCall(floor);
 		}
 	}
-	else if (direction == DIRECTION_DOWN) {
-		if (es->getCurrentFloor() <= (floor + 1)) {
+	else if (callDirection == DIRECTION_DOWN) {
+		if ((es->getCurrentFloor() <= (floor + 1))  && (eStat.direction == DIRECTION_DOWN)) {
 			this->missedFloors.push_back(floor);
 		}
 		else {
@@ -394,4 +404,57 @@ void ElevatorController::addHallCall(unsigned char floor, unsigned char directio
 	else {
 		Die("Invalid direction for Hall Call");
 	}
+}
+
+void ElevatorController::addFloorSelection(unsigned char floor) {
+	if(es->getIsDirectionUp())
+	{	
+		if (es->getCurrentFloor() >= (floor - 1)) { // The elevator cannot stop at the floor
+			this->missedFloorsSelection.push_back(floor);
+		}
+		else {
+			this->upHeap.pushFloorRequest(floor);
+		}
+	}
+
+	if(!es->getIsDirectionUp())
+	{
+		if (es->getCurrentFloor() <= (floor + 1)) {
+			this->missedFloorsSelection.push_back(floor);
+		}
+		else {
+			this->downHeap.pushFloorRequest(floor);
+		}
+	}
+}
+
+void ElevatorController::updateMissedFloor(bool up)
+{
+	int i;
+	for(i=0; i< this->missedFloors.size(); i++)
+	{
+		if(up)
+		{
+			this->upHeap.pushHallCall((int) this->missedFloors.at(i));
+		}
+		else
+		{
+			this->downHeap.pushHallCall((int) this->missedFloors.at(i));
+		}
+	}
+	this->missedFloors.clear();
+	
+	int j;
+	for(j=0; j< this->missedFloorsSelection.size(); j++)
+	{
+		if(up)
+		{
+			this->downHeap.pushFloorRequest((int) this->missedFloorsSelection.at(j));
+		}
+		else
+		{
+			this->upHeap.pushFloorRequest((int) this->missedFloorsSelection.at(j));
+		}
+	}
+	this->missedFloorsSelection.clear();
 }
