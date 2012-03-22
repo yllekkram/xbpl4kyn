@@ -22,6 +22,14 @@
 #define STANDARD_PAUSE 2500000000U
 /* End Constants */
 
+/* Class and Struct Definitions */
+struct ECRTData {
+	RT_MUTEX mutex;
+	RT_MUTEX mutexBuffer;
+	RT_COND freeCond;
+};
+/* End Class and Struct Definitions */
+
 /* Funtion Prototypes */
 void catch_signal(int);
 void floorRun(void*);
@@ -115,7 +123,7 @@ int main(int argc, char* argv[]) {
 		GDFailedEmptyHeap[i] = false;
 		upDirection[i] = false;
 		taskAssigned[i] = false;
-		taskActive[i] = 1;
+		taskActive[i] = 0;
 		bufferSelection[i] = 0;
 
 		// setupElevatorController(&ec[i], &uv[i], "192.168.251.1", "5000", "192.168.251.1", "5003");
