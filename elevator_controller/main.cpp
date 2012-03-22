@@ -128,7 +128,7 @@ int main(int argc, char* argv[]) {
 		rt_task_start(&statusThread[i], 		statusRun, 			&IDs[i]);
 
 		rt_task_start(&supervisorStart[i],	supervisorRun,	&IDs[i]);
-		rt_task_start(&release_cond[i],			randomRun,			&IDs[i]);
+		// rt_task_start(&release_cond[i],			randomRun,			&IDs[i]);
 		rt_task_start(&value_run[i],				runValues,			&IDs[i]);
 	}
 
@@ -326,13 +326,9 @@ void statusRun(void *arg)
 			{
 				printf("ST%d Task Completed %d\n", ID, destination[ID]);
 				ec[ID].getUpHeap().pop();
-				releaseFreeCond(ID);
-			}else if(upDirection[ID] && topItem < destination[ID])
-			{
-				releaseFreeCond(ID);
 			}
-		} 
-		
+		}
+
 		if(downHeapSize > 0)
 		{
 			int topItem = (int)(ec[ID].getDownHeap().peek());
@@ -341,11 +337,9 @@ void statusRun(void *arg)
 				printf("ST%d Task Completed %d\n", ID, destination[ID]);
 				ec[ID].getDownHeap().pop();
 				releaseFreeCond(ID);
-			}else if(downDirection[ID] && topItem > destination[ID])
-			{
-				releaseFreeCond(ID);
 			}
 		}
+		releaseFreeCond(ID);
 
 		rt_mutex_release(&rtData[ID].mutex);
 		updateStatusBuffer(ID);
