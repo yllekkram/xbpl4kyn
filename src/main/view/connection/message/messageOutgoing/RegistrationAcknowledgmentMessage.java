@@ -9,7 +9,9 @@ public class RegistrationAcknowledgmentMessage extends ViewMessageOutgoing {
 	}
 	
 	public byte[] serialize() {
-		return new byte[]{ViewMessage.REGISTRATION_ACKNOWLEDGMENT};
+		return new byte[]{
+				ViewMessage.REGISTRATION_ACKNOWLEDGMENT
+				};
 	}
 	
 	

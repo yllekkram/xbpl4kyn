@@ -56,21 +56,22 @@ public class ElevatorControlWindow extends JFrame implements ActionListener{
 	    {
 	    	//menu
 	    	JMenu fileMenu = new JMenu("File");
+	    	
 	    	//start
 	    	startMenuItem = new JMenuItem ("Start");
 	    	startMenuItem.addActionListener(this);
+	    	fileMenu.add( startMenuItem );
+	    	
 	    	//exit
 	    	exitMenuItem = new JMenuItem("Exit");
 	    	exitMenuItem.addActionListener(this);
+	    	fileMenu.add( exitMenuItem );
 
 	    	//connect
 	    	connectMenuItem = new JMenuItem ("Connect");
 	    	connectMenuItem.addActionListener(this);
-	    	
-	    	//build
-	    	fileMenu.add( startMenuItem );
-	    	fileMenu.add( exitMenuItem );
 	    	fileMenu.add( connectMenuItem );
+	    	
 	    	JMenuBar menubar = new JMenuBar();
 	    	menubar.add( fileMenu );
 	    	this.setJMenuBar( menubar );

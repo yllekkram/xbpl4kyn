@@ -11,10 +11,15 @@ public class HallCallAssignmentMessage extends GroupDispatcherMessageOutgoing{
 	
 	public HallCallAssignmentMessage(int floorNumber, int direction){
 		this.floorNumber = floorNumber;
-		this.direction = floorNumber;
+		this.direction = direction;
 	}
 	
 	public byte[] serialize() {
-		return new byte[]{GroupDispatcherMessage.HALLCALL_ASSIGNMENT, (byte) this.floorNumber, (byte) this.direction, Constants.MESSAGE_DELIMITER};
+		return new byte[]{
+				GroupDispatcherMessage.HALLCALL_ASSIGNMENT,
+				(byte) this.floorNumber,
+				(byte) this.direction,
+				Constants.MESSAGE_DELIMITER
+				};
 	}
 }

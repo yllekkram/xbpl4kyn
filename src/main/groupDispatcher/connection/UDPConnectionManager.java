@@ -16,6 +16,7 @@ public class UDPConnectionManager {
 	private DatagramSocket sendSocket, receiveSocket;
 	
 	private static UDPConnectionManager instance;
+	private static boolean isAlive;
 	
 	private UDPConnectionManager(){
 		
@@ -32,6 +33,7 @@ public class UDPConnectionManager {
 		try {
 	         sendSocket = new DatagramSocket();
 	         receiveSocket = new DatagramSocket(Constants.GUI_TO_GD_UDP_PORT);
+	         isAlive = true;
 	         receive();
 	      } catch (SocketException e) {
 	    	  Main.onFatalError(e);
@@ -61,6 +63,9 @@ public class UDPConnectionManager {
 				//continually loop, waiting for messages until something goes wrong
 				while(true){
 					try {
+						if(!isAlive){
+							break;
+						}
 						DatagramPacket inPacket = new DatagramPacket(new byte[Constants.MAX_MESSAGE_LENGTH], Constants.MAX_MESSAGE_LENGTH);
 						receiveSocket.receive(inPacket);
 						
@@ -73,5 +78,13 @@ public class UDPConnectionManager {
 			}
 		}).start();
 		
+	}
+	
+	public void destroy(){
+		isAlive = false;
+		if(sendSocket != null)
+			sendSocket.close();
+		if(receiveSocket != null)
+			receiveSocket.close();
 	}
 }

@@ -26,14 +26,15 @@ public class GUIRegistrationTest extends TestSuite{
 	public void create(){
 		Log.setEnabled(false);
 		gd = GroupDispatcher.getInstance();
-		gd.startUp();
+		gd.startUp(true, false);
+		gd.setStatusUpdateRequestsEnabled(false);
 		tcpTransmitter = new TCPTransmitter();
 	}
 	
 	@After
 	public void destroy(){
+		GroupDispatcher.getInstance().destroy();
 		tcpTransmitter.closeSockets();
-		GroupDispatcher.clearInstance();
 	}
 		
 	@Test

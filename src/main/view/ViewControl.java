@@ -37,7 +37,7 @@ public class ViewControl {
 	 */
 	public void onStart(){
 		Log.log("Starting");
-		GroupDispatcher.getInstance().startUp();
+		GroupDispatcher.getInstance().startUp(true, true);
 		ElevatorControlWindow.getInstance().onStart();
 		UDPConnectionManager.getInstance().initialize();
 	}
