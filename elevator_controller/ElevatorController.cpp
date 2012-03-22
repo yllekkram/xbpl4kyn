@@ -72,6 +72,30 @@ void ElevatorController::communicate() {
 	}
 }
 
+void ElevatorController::supervise() {
+	while(true)
+	{
+		rt_mutex_acquire(&(this->rtData.mutex), TM_INFINITE);
+		if(this->eStat.GDFailed && this->eStat.GDFailedEmptyHeap)
+		{
+			if(!this->eStat.taskAssigned)
+			{
+				if((this->eStat.downDirection && this->eStat.destination!=0) || this->eStat.destination == MAX_FLOORS)
+				{
+					this->eStat.destination--;
+					this->getSimulator()->setFinalDestination(this->eStat.destination);
+				}else if(this->eStat.destination == 0 || this->eStat.destination != MAX_FLOORS)
+				{
+					this->eStat.destination++;
+					this->getSimulator()->setFinalDestination(this->eStat.destination);
+				}
+			}
+		}
+		rt_mutex_release(&(this->rtData.mutex));
+		sleep(20);
+	}
+}
+
 void ElevatorController::addSimulator(ElevatorSimulator* es) {
 	this->es = es;
 }

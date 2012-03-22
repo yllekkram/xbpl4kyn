@@ -26,11 +26,11 @@ void catch_signal(int);
 void floorRun(void*);
 bool relseaseFreeCond();
 void runECThread(void*);
+void runSupervisorThread(void*);
 void runUDPThread(void*);
 void setupElevatorController(int id, char*, char*, char*, char*);
 void sleep(int);
 void statusRun(void*);
-void supervisorRun(void*);
 	/* Functions for testing */
 	void randomRun(void*);
 	void runValues(void*);
@@ -64,15 +64,15 @@ int main(int argc, char* argv[]) {
 
 		setupElevatorController(IDs[i], "192.168.251.1", "5000", "192.168.251.1", "5003");
 
-		rt_task_start(&(ec[i].rtData.ecThread),					runECThread,		&IDs[i]);
-		rt_task_start(&(ec[i].rtData.frThread), 				floorRun, 			&IDs[i]);
-		rt_task_start(&(ec[i].rtData.supervisorThread), supervisorRun, 	&IDs[i]);
-		rt_task_start(&(ec[i].rtData.statusThread), 		statusRun, 			&IDs[i]);
-		rt_task_start(&(uv[i].udpThread),								runUDPThread,		&IDs[i]);
+		rt_task_start(&(ec[i].rtData.ecThread),					runECThread,					&IDs[i]);
+		rt_task_start(&(ec[i].rtData.frThread), 				floorRun, 						&IDs[i]);
+		rt_task_start(&(ec[i].rtData.supervisorThread), runSupervisorThread, 	&IDs[i]);
+		rt_task_start(&(ec[i].rtData.statusThread), 		statusRun, 						&IDs[i]);
+		rt_task_start(&(uv[i].udpThread),								runUDPThread,					&IDs[i]);
 
-		rt_task_start(&supervisorStart[i],	supervisorRun,	&IDs[i]);
+		rt_task_start(&supervisorStart[i],	supervisorStartUp,	&IDs[i]);
 		// rt_task_start(&release_cond[i],			randomRun,			&IDs[i]);
-		rt_task_start(&value_run[i],				runValues,			&IDs[i]);
+		rt_task_start(&value_run[i],				runValues,					&IDs[i]);
 	}
 
 	for (int i = 0; i < NUM_ELEVATORS; i++) {
@@ -93,14 +93,21 @@ int main(int argc, char* argv[]) {
 void runECThread(void* cookie) {
 	const int ID = *((int*)cookie);
 
-	printf("EC %d Thread\n", ID);
+	printf("EC %d Thread\n", ec[ID].getID());
 	ec[ID].communicate();
+}
+
+void runSupervisorThread(void* cookie) {
+	const int ID = *((int*)cookie);
+
+	printf("SV%d Thread\n", ec[ID].getID());;
+	ec[ID].supervise();
 }
 
 void runUDPThread(void* cookie) {
 	const int ID = *((int*)cookie);
 
-	printf("UDP Thread\n");
+	printf("UDP%d Thread\n", ec[ID].getID());
 	uv[ID].run();
 }
 
@@ -181,32 +188,6 @@ void sleep(int numTimes)
 	for(int i=0; i<numTimes; i++)
 	{
 		rt_task_sleep(250000000);
-	}
-}
-
-void supervisorRun(void *arg)
-{
-	const int ID = *((int*)arg);
-	while(true)
-	{
-		rt_mutex_acquire(&(ec[ID].rtData.mutex), TM_INFINITE);
-		if(ec[ID].eStat.GDFailed && ec[ID].eStat.GDFailedEmptyHeap)
-		{
-			if(!ec[ID].eStat.taskAssigned)
-			{
-				if((ec[ID].eStat.downDirection && ec[ID].eStat.destination!=0) || ec[ID].eStat.destination == MAX_FLOORS)
-				{
-					ec[ID].eStat.destination--;
-					ec[ID].getSimulator()->setFinalDestination(ec[ID].eStat.destination);
-				}else if(ec[ID].eStat.destination == 0 || ec[ID].eStat.destination != MAX_FLOORS)
-				{
-					ec[ID].eStat.destination++;
-					ec[ID].getSimulator()->setFinalDestination(ec[ID].eStat.destination);
-				}
-			}
-		}
-		rt_mutex_release(&(ec[ID].rtData.mutex));
-		sleep(20);
 	}
 }
 

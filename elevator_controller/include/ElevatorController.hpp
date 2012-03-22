@@ -28,9 +28,6 @@ struct ECRTData {
 struct ElevatorStatus {
 	ElevatorStatus();
 
-	unsigned char statusBuffer[2][BUFFSIZE];
-	unsigned char bufferSelection;
-
 	unsigned char currentFloor;
 	unsigned char direction;
 	unsigned char currentPosition;
@@ -42,6 +39,9 @@ struct ElevatorStatus {
 	bool downDirection;
 	bool GDFailed;
 	bool GDFailedEmptyHeap;
+
+	unsigned char statusBuffer[2][BUFFSIZE];
+	unsigned char bufferSelection;
 };
 
 class ElevatorController {
@@ -59,6 +59,7 @@ class ElevatorController {
 		void addView(ElevatorControllerView* ecv);
 
     void communicate();
+		void supervise();
 
 		void waitForGDRequest();
     void sendStatus();
