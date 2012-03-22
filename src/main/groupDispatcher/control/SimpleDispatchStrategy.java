@@ -30,12 +30,12 @@ public class SimpleDispatchStrategy implements DispatchStrategy{
 			
 			int distance =  elevatorData.getPosition() - floor;
 			if( elevatorData.getDirection() == direction ){
-				if(distance < leastDistance){
+				if( distance < leastDistance && distance > 1 ){
 					leastDistance = distance;
 					selectedElevatorId = elevatorId.intValue();
 				} 
 			}else{
-				if(distance < leastDistanceOp){
+				if( distance < leastDistanceOp && (distance > 1 || (distance == 0 && !elevatorData.isMoving())) ){
 					leastDistanceOp = distance;
 					selectedElevatorIdOp = elevatorId.intValue();
 				}
