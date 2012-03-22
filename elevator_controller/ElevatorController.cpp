@@ -8,12 +8,13 @@
 
 #include "ElevatorCommon.hpp"
 #include "ElevatorController.hpp"
+#include "ElevatorSimulator.hpp"
 #include "Exception.hpp"
 
 char ElevatorController::nextID = 1;
 
 ElevatorController::ElevatorController()
-	: downHeap(), upHeap() {
+	: downHeap(), upHeap(), missedFloors() {
 	this->id = ElevatorController::getNextID();
 
 	/* Create the TCP socket */
@@ -38,6 +39,10 @@ void ElevatorController::run() {
 	}
 }
 
+void ElevatorController::addSimulator(ElevatorSimulator* es) {
+	this->es = es;
+}
+
 void ElevatorController::addView(ElevatorControllerView* ecv) {
 	this->views.push_back(ecv);
 	ecv->setController(this);
@@ -46,7 +51,6 @@ void ElevatorController::addView(ElevatorControllerView* ecv) {
 void ElevatorController::waitForGDRequest() {
 	char* request = receiveTCP(MAX_GD_REQUEST_SIZE);
 	char requestType = request[0];
-  Message* message = NULL;
 
 	switch (requestType) {
 		case STATUS_REQUEST:

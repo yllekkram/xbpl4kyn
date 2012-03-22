@@ -6,6 +6,7 @@
 #include <sys/socket.h>
 
 #include "ElevatorControllerView.hpp"
+#include "ElevatorSimulator.hpp"
 #include "Heap.hpp"
 #include "Message.hpp"
 
@@ -24,6 +25,7 @@ class ElevatorController {
 		char getID() const { return this->id; }
 		DownwardFloorRunHeap& getDownHeap() { return this->downHeap; }
 		UpwardFloorRunHeap& getUpHeap() { return this->upHeap; }
+		ElevatorSimulator* getSimulator() { return this->es; }
 
 		void pushFloorButton(char floor);
 		void openDoor();
@@ -39,6 +41,8 @@ class ElevatorController {
 		std::vector<ElevatorControllerView*> views;
 		DownwardFloorRunHeap downHeap;
 		UpwardFloorRunHeap upHeap;
+
+		ElevatorSimulator* es;
 
 		static char getNextID() {
 			return nextID++;

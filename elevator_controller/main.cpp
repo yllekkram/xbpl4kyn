@@ -68,7 +68,8 @@ char currentSpeed[NUM_ELEVATORS];
 
 //will be used by the other threads.
 int destination[NUM_ELEVATORS];
-int taskAssigned[NUM_ELEVATORS];
+char taskActive[NUM_ELEVATORS];
+bool taskAssigned[NUM_ELEVATORS];
 bool upDirection[NUM_ELEVATORS];
 bool downDirection[NUM_ELEVATORS];
 bool GDFailed[NUM_ELEVATORS];
@@ -114,9 +115,11 @@ int main(int argc, char* argv[]) {
 		GDFailedEmptyHeap[i] = false;
 		upDirection[i] = false;
 		taskAssigned[i] = false;
+		taskActive[i] = 1;
 		bufferSelection[i] = 0;
 
 		// setupElevatorController(&ec[i], &uv[i], "192.168.251.1", "5000", "192.168.251.1", "5003");
+		ec[i].addSimulator(&es[i]);
 
 		// rt_task_start(&ecThread[i],					runECThread,		&IDs[i]);
 		// rt_task_start(&udpThread[i],				runUDPThread,		&IDs[i]);
@@ -207,7 +210,7 @@ void floorRun(void *arg)
 			if(topItem != destination[ID])
 			{
 				printf("FR%d next Dest is %d\n.", ID, topItem);
-				es[ID].setFinalDestination(topItem);
+				ec[ID].getSimulator()->setFinalDestination(topItem);
 				destination[ID] = topItem;
 			}
 			rt_mutex_release(&mutex[ID]);
@@ -250,11 +253,11 @@ void supervisorRun(void *arg)
 				if((downDirection[ID] && destination[ID]!=0) || destination[ID] == MAX_FLOORS)
 				{
 					destination[ID]--;
-					es[ID].setFinalDestination(destination[ID]);
+					ec[ID].getSimulator()->setFinalDestination(destination[ID]);
 				}else if(destination[ID] == 0 || destination[ID] != MAX_FLOORS)
 				{
 					destination[ID]++;
-					es[ID].setFinalDestination(destination[ID]);
+					ec[ID].getSimulator()->setFinalDestination(destination[ID]);
 				}
 			}
 		}
@@ -290,19 +293,19 @@ void statusRun(void *arg)
 	{
 		sleep(3);
 		rt_mutex_acquire(&mutex[ID], TM_INFINITE);
-		currentFloor[ID] = es[ID].getCurrentFloor();
-		taskAssigned[ID] = es[ID].getIsTaskActive();
-		if(taskAssigned[ID] && (es[ID].getIsDirectionUp()))
+		currentFloor[ID] = ec[ID].getSimulator()->getCurrentFloor();
+		taskAssigned[ID] = ec[ID].getSimulator()->getIsTaskActive();
+		if(taskAssigned[ID] && (ec[ID].getSimulator()->getIsDirectionUp()))
 		{
 			upDirection[ID] = true;
 		}
-		downDirection[ID] = !(es[ID].getIsDirectionUp());
+		downDirection[ID] = !(ec[ID].getSimulator()->getIsDirectionUp());
 
 		if(upDirection[ID]){direction[ID] = DIRECTION_UP;}
 		else{direction[ID] = DIRECTION_DOWN;}
 
-		currentPosition = ceil(elevatorSimulator.geCurrentPosition());
-		taskActive = taskAssigned;
+		currentPosition[ID] = ceil(ec[ID].getSimulator()->geCurrentPosition());
+		taskActive[ID] = taskAssigned[ID];
 
 		int upHeapSize = ec[ID].getUpHeap().getSize();
 		int downHeapSize = ec[ID].getDownHeap().getSize();
@@ -388,9 +391,9 @@ void runValues(void *arg)
 	while(true)
 	{
 		usleep(1000000);
-		es[ID].calculateValues();
+		ec[ID].getSimulator()->calculateValues();
 		std::cout << "RV" << ID << " ";
-		es[ID].print();
+		ec[ID].getSimulator()->print();
 	}
 }
 
