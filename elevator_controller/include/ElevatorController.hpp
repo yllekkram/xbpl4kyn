@@ -47,7 +47,6 @@ struct ElevatorStatus {
 class ElevatorController {
 	public:
 		/* Public Member Variables */
-		ElevatorStatus eStat;
 		ECRTData rtData;
 		/* End Public Member Variables */
 
@@ -58,23 +57,31 @@ class ElevatorController {
 		void addSimulator(ElevatorSimulator* es);
 		void addView(ElevatorControllerView* ecv);
 
+		/* Methods to be run in threads */
     void communicate();
+		void floorRun();
 		void supervise();
 		void updateStatus();
 
+		/* Communication */
 		void waitForGDRequest();
     void sendStatus();
 
+		/* Accessors */
 		char getID() const { return this->id; }
 		DownwardFloorRunHeap& getDownHeap() { return this->downHeap; }
 		UpwardFloorRunHeap& getUpHeap() { return this->upHeap; }
 		ElevatorSimulator* getSimulator() { return this->es; }
 
+		/* Elevator Operation */
 		void addHallCall(unsigned char floor, unsigned char direction);
 		void pushFloorButton(char floor);
 		void openDoor();
 		void closeDoor();
 		void emergencyStop();
+
+		/* Friends */
+		friend void supervisorStartUp(void*);
 
 	private:
 		static char nextID;
@@ -84,6 +91,8 @@ class ElevatorController {
 		struct sockaddr_in echoserver;
 
 		std::vector<ElevatorControllerView*> views;
+
+		ElevatorStatus eStat;
 
 		DownwardFloorRunHeap downHeap;
 		UpwardFloorRunHeap upHeap;

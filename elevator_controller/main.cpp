@@ -23,9 +23,8 @@
 
 /* Funtion Prototypes */
 void catch_signal(int);
-void floorRun(void*);
-bool relseaseFreeCond();
 void runECThread(void*);
+void runFRThread(void*);
 void runStatusThread(void*);
 void runSupervisorThread(void*);
 void runUDPThread(void*);
@@ -65,7 +64,7 @@ int main(int argc, char* argv[]) {
 		setupElevatorController(IDs[i], "192.168.251.1", "5000", "192.168.251.1", "5003");
 
 		rt_task_start(&(ec[i].rtData.ecThread),					runECThread,					&IDs[i]);
-		rt_task_start(&(ec[i].rtData.frThread), 				floorRun, 						&IDs[i]);
+		rt_task_start(&(ec[i].rtData.frThread), 				runFRThread, 						&IDs[i]);
 		rt_task_start(&(ec[i].rtData.supervisorThread), runSupervisorThread, 	&IDs[i]);
 		rt_task_start(&(ec[i].rtData.statusThread), 		runStatusThread, 						&IDs[i]);
 		rt_task_start(&(uv[i].udpThread),								runUDPThread,					&IDs[i]);
@@ -93,14 +92,21 @@ int main(int argc, char* argv[]) {
 void runECThread(void* cookie) {
 	const int ID = *((int*)cookie);
 
-	printf("EC %d Thread\n", ec[ID].getID());
+	printf("EC%d Thread\n", ec[ID].getID());
 	ec[ID].communicate();
+}
+
+void runFRThread(void* cookie) {
+	int ID = *((int*)cookie);
+
+	printf("FR%d Thread\n", ec[ID].getID());
+	ec[ID].floorRun();
 }
 
 void runStatusThread(void* cookie) {
 	const int ID = *((int*)cookie);
 
-	printf("Stat%d Thread", ec[ID].getID());
+	printf("ST%d Thread\n", ec[ID].getID());
 	ec[ID].updateStatus();
 }
 
@@ -130,66 +136,6 @@ void setupElevatorController(const int ID, char* gdAddress, char* gdPort, char* 
 	ec[ID].addSimulator(&es[ID]);
 }
 
-void floorRun(void *arg)
-{
-	const int ID = *((int*)arg);
-	unsigned char topItem;
-	while(true)
-	{
-		if(!ec[ID].eStat.GDFailedEmptyHeap)
-		{
-			rt_mutex_acquire(&(ec[ID].rtData.mutex), TM_INFINITE);
-			rt_cond_wait(&(ec[ID].rtData.freeCond), &(ec[ID].rtData.mutex), TM_INFINITE);
-
-			int upHeapSize = ec[ID].getUpHeap().getSize();
-			int downHeapSize = ec[ID].getDownHeap().getSize();
-			if(upHeapSize==0 && downHeapSize==0){ec[ID].eStat.GDFailedEmptyHeap = true;}
-
-			if(ec[ID].eStat.downDirection)
-			{
-				if(downHeapSize > 0)
-				{
-					topItem = ec[ID].getDownHeap().peek();
-				}else if(upHeapSize > 0)
-				{
-					topItem = ec[ID].getUpHeap().peek();
-				}
-			}else
-			{
-				if(upHeapSize > 0)
-				{
-					topItem = ec[ID].getUpHeap().peek();
-				}else if(downHeapSize > 0)
-				{
-					topItem = ec[ID].getDownHeap().peek();
-				}
-			}
-		
-			if(topItem != ec[ID].eStat.destination)
-			{
-				printf("FR%d next Dest is %d\n.", ID, topItem);
-				ec[ID].getSimulator()->setFinalDestination(topItem);
-				ec[ID].eStat.destination = topItem;
-			}
-			rt_mutex_release(&(ec[ID].rtData.mutex));
-		}
-	}
-}
-
-bool releaseFreeCond(const int ID)
-{
-	int heapSize = ec[ID].getUpHeap().getSize() + ec[ID].getDownHeap().getSize();
-	if(heapSize > 0)
-	{
-		ec[ID].eStat.GDFailedEmptyHeap = false;
-		rt_cond_signal(&(ec[ID].rtData.freeCond));
-		return true;
-	}else
-	{
-		return false;
-	}
-}
-
 void sleep(int numTimes)
 {
 	for(int i=0; i<numTimes; i++)
@@ -198,34 +144,11 @@ void sleep(int numTimes)
 	}
 }
 
-void updateStatusBuffer(const int ID)
-{
-	//upheap and the downheap (hallcall and floor selections should be included.
-	rt_mutex_acquire(&(ec[ID].rtData.mutexBuffer), TM_INFINITE);
-	bool selectedBuffer = ec[ID].eStat.bufferSelection;
-	rt_mutex_release(&(ec[ID].rtData.mutexBuffer));
-	
-	rt_mutex_acquire(&(ec[ID].rtData.mutex), TM_INFINITE);
-	ec[ID].eStat.statusBuffer[selectedBuffer][0] = ec[ID].eStat.currentFloor;
-	ec[ID].eStat.statusBuffer[selectedBuffer][1] = ec[ID].eStat.direction;
-	ec[ID].eStat.statusBuffer[selectedBuffer][2] = ec[ID].eStat.currentPosition;
-	ec[ID].eStat.statusBuffer[selectedBuffer][3] = ec[ID].eStat.currentSpeed;
-	//printf("writting to buffer %d %s\n", selectedBuffer, statusBuffer[selectedBuffer]);
-	rt_mutex_release(&(ec[ID].rtData.mutex));
-
-	rt_mutex_acquire(&(ec[ID].rtData.mutexBuffer), TM_INFINITE);
-	ec[ID].eStat.bufferSelection = ++(ec[ID].eStat.bufferSelection) % 2;
-	rt_mutex_release(&(ec[ID].rtData.mutexBuffer));
-}
-
 // this function is just for my testing purposes
 void randomRun(void *arg)
 {
 	const int ID = *((int*)arg);
 	ec[ID].getUpHeap().pushHallCall(5);
-	rt_mutex_acquire(&(ec[ID].rtData.mutex), TM_INFINITE);
-	releaseFreeCond(ID);
-	rt_mutex_release(&(ec[ID].rtData.mutex));
 	printf("RR%d Hall Call Up Floor : 5\n", ID);
 	sleep(40);
 

@@ -73,6 +73,50 @@ void ElevatorController::communicate() {
 	}
 }
 
+void ElevatorController::floorRun() {
+	unsigned char topItem;
+	while(true)
+	{
+		if(!this->eStat.GDFailedEmptyHeap)
+		{
+			rt_mutex_acquire(&(this->rtData.mutex), TM_INFINITE);
+			rt_cond_wait(&(this->rtData.freeCond), &(this->rtData.mutex), TM_INFINITE);
+
+			int upHeapSize = this->getUpHeap().getSize();
+			int downHeapSize = this->getDownHeap().getSize();
+			if(upHeapSize==0 && downHeapSize==0){this->eStat.GDFailedEmptyHeap = true;}
+
+			if(this->eStat.downDirection)
+			{
+				if(downHeapSize > 0)
+				{
+					topItem = this->getDownHeap().peek();
+				}else if(upHeapSize > 0)
+				{
+					topItem = this->getUpHeap().peek();
+				}
+			}else
+			{
+				if(upHeapSize > 0)
+				{
+					topItem = this->getUpHeap().peek();
+				}else if(downHeapSize > 0)
+				{
+					topItem = this->getDownHeap().peek();
+				}
+			}
+
+			if(topItem != this->eStat.destination)
+			{
+				printf("FR%d next Dest is %d\n.", this->getID(), topItem);
+				this->getSimulator()->setFinalDestination(topItem);
+				this->eStat.destination = topItem;
+			}
+			rt_mutex_release(&(this->rtData.mutex));
+		}
+	}
+}
+
 void ElevatorController::supervise() {
 	while(true)
 	{
@@ -137,7 +181,6 @@ void ElevatorController::updateStatus() {
 			{
 				printf("ST%d Task Completed %d\n", this->getID(), this->eStat.destination);
 				this->getDownHeap().pop();
-				this->releaseFreeCond();
 			}
 		}
 		this->releaseFreeCond();
