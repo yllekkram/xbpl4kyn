@@ -50,9 +50,10 @@ void supervisorRun(void*);
 /* Global Data Declarations */
 int IDs[NUM_ELEVATORS]; // Store thread identifiers in gloabl memory to ensure that they always exist
 
-RT_MUTEX mutex[NUM_ELEVATORS];
-RT_MUTEX mutexBuffer[NUM_ELEVATORS];
-RT_COND freeCond[NUM_ELEVATORS];
+// RT_MUTEX mutex[NUM_ELEVATORS];
+// RT_MUTEX mutexBuffer[NUM_ELEVATORS];
+// RT_COND freeCond[NUM_ELEVATORS];
+ECRTData rtData[NUM_ELEVATORS];
 
 RT_TASK ecThread[NUM_ELEVATORS];
 RT_TASK frThread[NUM_ELEVATORS];
@@ -98,10 +99,10 @@ int main(int argc, char* argv[]) {
 	for (int i = 0; i < NUM_ELEVATORS; i++) {
 		IDs[i] = i;
 
-		rt_mutex_create(&mutex[i], 				NULL);
-		rt_mutex_create(&mutexBuffer[i], 	NULL);
+		rt_mutex_create(&rtData[i].mutex, 				NULL);
+		rt_mutex_create(&rtData[i].mutexBuffer, 	NULL);
 
-		rt_cond_create(&freeCond[i], NULL);
+		rt_cond_create(&rtData[i].freeCond, NULL);
 
 		rt_task_create(&ecThread[i], 					NULL, 0, 99, T_JOINABLE);
 		rt_task_create(&frThread[i], 					NULL, 0, 99, T_JOINABLE);
@@ -151,8 +152,10 @@ int main(int argc, char* argv[]) {
 		rt_task_join(&release_cond[i]);
 		rt_task_join(&value_run[i]);
 
-		rt_cond_delete(&freeCond[i]);
-		rt_mutex_delete(&mutex[i]);
+		rt_cond_delete(&rtData[i].freeCond);
+
+		rt_mutex_delete(&rtData[i].mutexBuffer);
+		rt_mutex_delete(&rtData[i].mutex);
 	}
 
 	return 0;
@@ -188,8 +191,8 @@ void floorRun(void *arg)
 	{
 		if(!GDFailedEmptyHeap[ID])
 		{
-			rt_mutex_acquire(&mutex[ID], TM_INFINITE);
-			rt_cond_wait(&freeCond[ID], &mutex[ID], TM_INFINITE);
+			rt_mutex_acquire(&rtData[ID].mutex, TM_INFINITE);
+			rt_cond_wait(&rtData[ID].freeCond, &rtData[ID].mutex, TM_INFINITE);
 
 			int upHeapSize = ec[ID].getUpHeap().getSize();
 			int downHeapSize = ec[ID].getDownHeap().getSize();
@@ -221,7 +224,7 @@ void floorRun(void *arg)
 				ec[ID].getSimulator()->setFinalDestination(topItem);
 				destination[ID] = topItem;
 			}
-			rt_mutex_release(&mutex[ID]);
+			rt_mutex_release(&rtData[ID].mutex);
 		}
 	}
 }
@@ -232,7 +235,7 @@ bool releaseFreeCond(int ID)
 	if(heapSize > 0)
 	{
 		GDFailedEmptyHeap[ID] = false;
-		rt_cond_signal(&freeCond[ID]);
+		rt_cond_signal(&rtData[ID].freeCond);
 		return true;
 	}else
 	{
@@ -253,7 +256,7 @@ void supervisorRun(void *arg)
 	int ID = *((int*)arg);
 	while(true)
 	{
-		rt_mutex_acquire(&mutex[ID], TM_INFINITE);
+		rt_mutex_acquire(&rtData[ID].mutex, TM_INFINITE);
 		if(GDFailed[ID] && GDFailedEmptyHeap[ID])
 		{
 			if(!taskAssigned[ID])
@@ -269,7 +272,7 @@ void supervisorRun(void *arg)
 				}
 			}
 		}
-		rt_mutex_release(&mutex[ID]);
+		rt_mutex_release(&rtData[ID].mutex);
 		sleep(20);
 	}
 }
@@ -277,21 +280,21 @@ void supervisorRun(void *arg)
 void updateStatusBuffer(int ID)
 {
 	//upheap and the downheap (hallcall and floor selections should be included.
-	rt_mutex_acquire(&mutexBuffer[ID], TM_INFINITE);
+	rt_mutex_acquire(&rtData[ID].mutexBuffer, TM_INFINITE);
 	bool selectedBuffer = bufferSelection[ID];
-	rt_mutex_release(&mutexBuffer[ID]);
+	rt_mutex_release(&rtData[ID].mutexBuffer);
 	
-	rt_mutex_acquire(&mutex[ID], TM_INFINITE);
+	rt_mutex_acquire(&rtData[ID].mutex, TM_INFINITE);
 	statusBuffer[ID][selectedBuffer][0] = currentFloor[ID];
 	statusBuffer[ID][selectedBuffer][1] = direction[ID];
 	statusBuffer[ID][selectedBuffer][2] = currentPosition[ID];
 	statusBuffer[ID][selectedBuffer][3] = currentSpeed[ID];
 	//printf("writting to buffer %d %s\n", selectedBuffer, statusBuffer[selectedBuffer]);
-	rt_mutex_release(&mutex[ID]);
+	rt_mutex_release(&rtData[ID].mutex);
 
-	rt_mutex_acquire(&mutexBuffer[ID], TM_INFINITE);
+	rt_mutex_acquire(&rtData[ID].mutexBuffer, TM_INFINITE);
 	bufferSelection[ID] = ++bufferSelection[ID] % 2;
-	rt_mutex_release(&mutexBuffer[ID]);
+	rt_mutex_release(&rtData[ID].mutexBuffer);
 }
 
 void statusRun(void *arg)
@@ -300,7 +303,7 @@ void statusRun(void *arg)
 	while(true)
 	{
 		sleep(3);
-		rt_mutex_acquire(&mutex[ID], TM_INFINITE);
+		rt_mutex_acquire(&rtData[ID].mutex, TM_INFINITE);
 		currentFloor[ID] = ec[ID].getSimulator()->getCurrentFloor();
 		taskAssigned[ID] = ec[ID].getSimulator()->getIsTaskActive();
 		if(taskAssigned[ID] && (ec[ID].getSimulator()->getIsDirectionUp()))
@@ -347,7 +350,7 @@ void statusRun(void *arg)
 			}
 		}
 
-		rt_mutex_release(&mutex[ID]);
+		rt_mutex_release(&rtData[ID].mutex);
 		updateStatusBuffer(ID);
 	}
 }
@@ -357,9 +360,9 @@ void randomRun(void *arg)
 {
 	int ID = *((int*)arg);
 	ec[ID].getUpHeap().pushHallCall(5);
-	rt_mutex_acquire(&mutex[ID], TM_INFINITE);
+	rt_mutex_acquire(&rtData[ID].mutex, TM_INFINITE);
 	releaseFreeCond(ID);
-	rt_mutex_release(&mutex[ID]);
+	rt_mutex_release(&rtData[ID].mutex);
 	printf("RR%d Hall Call Up Floor : 5\n", ID);
 	sleep(40);
 
@@ -436,10 +439,10 @@ void catch_signal(int sig) {
 		rt_task_delete(&release_cond[i]);
 		rt_task_delete(&value_run[i]);
 
-		rt_cond_delete(&freeCond[i]);
+		rt_cond_delete(&rtData[i].freeCond);
 
-		rt_mutex_delete(&mutexBuffer[i]);
-		rt_mutex_delete(&mutex[i]);
+		rt_mutex_delete(&rtData[i].mutexBuffer);
+		rt_mutex_delete(&rtData[i].mutex);
 	}
 
 	exit(1);
