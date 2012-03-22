@@ -10,7 +10,7 @@ import org.junit.runners.Suite;
 
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
-    GUIRegistrationTest.class,
+    GDRegistrationTest.class,
     MessageTest.class,
     UpdaterRunnableTest.class
 })
