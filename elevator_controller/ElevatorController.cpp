@@ -105,7 +105,7 @@ void ElevatorController::floorRun() {
 					topItem = this->getDownHeap().peek();
 				}
 			}
-
+		
 			if(topItem != this->eStat.destination)
 			{
 				printf("FR%d next Dest is %d\n.", this->getID(), topItem);
@@ -142,9 +142,12 @@ void ElevatorController::supervise() {
 }
 
 void ElevatorController::updateStatus() {
+	rt_task_set_periodic(NULL, TM_NOW, 75000000);
+
 	while(true)
 	{
-		sleep(3);
+		rt_task_wait_period(NULL);
+
 		rt_mutex_acquire(&(this->rtData.mutex), TM_INFINITE);
 		this->eStat.currentFloor = this->getSimulator()->getCurrentFloor();
 		this->eStat.taskAssigned = this->getSimulator()->getIsTaskActive();
