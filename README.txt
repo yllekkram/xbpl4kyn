@@ -19,6 +19,6 @@ To run the ElevatorController, first start the GroupDispatcher and GUI from with
 	./main <group_dispatcher_ip> <group_dispatcher_port> <gui_ip> <gui_port>
 	
 <group_dispatcher_port> is set to 5000
-<gui_ip> is set to 5003
+<gui_port> is set to 5003
 For example, ./testElevatorController 127.0.0.1 5000 127.0.0.1 5003
 

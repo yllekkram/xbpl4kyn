@@ -12,6 +12,10 @@ public class RemoveElevatorMessage extends GroupDispatcherMessageOutgoing{
 	}
 
 	public byte[] serialize(){
-		return new byte[]{ GroupDispatcherMessage.REMOVE_ELEVATOR, (byte) elevatorId, Constants.MESSAGE_DELIMITER};
+		return new byte[]{
+				GroupDispatcherMessage.REMOVE_ELEVATOR,
+				(byte) elevatorId,
+				Constants.MESSAGE_DELIMITER
+				};
 	}
 }

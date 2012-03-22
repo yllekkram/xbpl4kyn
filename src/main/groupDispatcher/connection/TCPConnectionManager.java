@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.util.Arrays;
+import java.util.Enumeration;
 import java.util.Observable;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -112,6 +113,16 @@ public class TCPConnectionManager extends Observable{
 		return data;
 	}
 
+	public void destroy(){
+		Enumeration<TCPClientSocketWrapper> enumeration = connections.elements();
+		while(enumeration.hasMoreElements()){
+			TCPClientSocketWrapper socketWrapper = enumeration.nextElement();
+			try {
+				socketWrapper.getSocket().close();
+			} catch (IOException e) {}
+		}
+	}
+	
 	public void waitForNewConnection(){
 		new Thread(new TCPConnectionCreationRunnable()).start();
 	}

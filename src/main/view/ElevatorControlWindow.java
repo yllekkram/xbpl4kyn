@@ -56,21 +56,22 @@ public class ElevatorControlWindow extends JFrame implements ActionListener{
 	    {
 	    	//menu
 	    	JMenu fileMenu = new JMenu("File");
+	    	
 	    	//start
 	    	startMenuItem = new JMenuItem ("Start");
 	    	startMenuItem.addActionListener(this);
+	    	fileMenu.add( startMenuItem );
+	    	
 	    	//exit
 	    	exitMenuItem = new JMenuItem("Exit");
 	    	exitMenuItem.addActionListener(this);
+	    	fileMenu.add( exitMenuItem );
 
 	    	//connect
 	    	connectMenuItem = new JMenuItem ("Connect");
 	    	connectMenuItem.addActionListener(this);
-	    	
-	    	//build
-	    	fileMenu.add( startMenuItem );
-	    	fileMenu.add( exitMenuItem );
 	    	fileMenu.add( connectMenuItem );
+	    	
 	    	JMenuBar menubar = new JMenuBar();
 	    	menubar.add( fileMenu );
 	    	this.setJMenuBar( menubar );
@@ -151,13 +152,13 @@ public class ElevatorControlWindow extends JFrame implements ActionListener{
 		//middle floors
 		for(int i=Constants.FLOOR_COUNT-1; i>=2; --i){
 			floorPanel = new FloorPanel(i, "Floor "+i, Constants.DIRECTION_BOTH);
-			floorPanels.put(Integer.valueOf(Constants.FLOOR_COUNT), floorPanel);
+			floorPanels.put(Integer.valueOf(i), floorPanel);
 			floorPanelContainer.add(floorPanel);
 		}
 		
 		//bottom floor
 		floorPanel = new FloorPanel(1, "Basement", Constants.DIRECTION_UP);
-		floorPanels.put(Integer.valueOf(Constants.FLOOR_COUNT), floorPanel);
+		floorPanels.put(Integer.valueOf(1), floorPanel);
 		floorPanelContainer.add(floorPanel);
 	}
 	

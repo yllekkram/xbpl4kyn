@@ -7,7 +7,7 @@ import java.util.Vector;
 public class ElevatorData {
 
 	private int direction;
-	private int speed;
+	private boolean isMoving;
 	private int position;
 	private Vector<Destination> assignedHallCalls;
 	private int[] floorSelections;
@@ -25,12 +25,12 @@ public class ElevatorData {
 		return direction;
 	}
 	
-	public void setSpeed(int speed){
-		this.speed = speed;
+	public void setIsMoving(boolean isMoving){
+		this.isMoving = isMoving;
 	}
 	
-	public int getSpeed(){
-		return speed;
+	public boolean isMoving(){
+		return this.isMoving;
 	}
 
 	public void setPosition(int position) {
@@ -38,7 +38,7 @@ public class ElevatorData {
 	}
 	
 	public int getPosition() {
-		return position;
+		return this.position;
 	}
 	
 	public void setAssignedHallCalls(Destination assignedHallCalls[]){

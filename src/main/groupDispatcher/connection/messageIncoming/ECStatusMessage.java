@@ -10,7 +10,7 @@ public class ECStatusMessage extends GroupDispatcherMessageIncoming {
 
 	int position;
 	int direction;
-	int speed;
+	boolean isMoving;
 	Destination hallcalls[];
 	int floorSelections[];
 	
@@ -23,10 +23,10 @@ public class ECStatusMessage extends GroupDispatcherMessageIncoming {
 			this.position = (int) data[2];
 
 			this.direction = (int) data[3];
-			this.speed = (int) data[4];
+			this.isMoving = data[4] != 0;
 
 			int index = 5;
-			int hallcallCount = (int) data[5];
+			int hallcallCount = (int) data[index++];
 			hallcalls = new Destination[hallcallCount];
 			for(int i = 0; i<hallcallCount; i++){
 				hallcalls[i] = new Destination( (int) data[index++], (int) data[index++] );
@@ -50,8 +50,8 @@ public class ECStatusMessage extends GroupDispatcherMessageIncoming {
 		return this.direction;
 	}
 	
-	public int getSpeed(){
-		return this.speed;
+	public boolean isMoving(){
+		return this.isMoving;
 	}
 	
 	public Destination[] getHallCalls(){

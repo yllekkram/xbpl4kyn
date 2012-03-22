@@ -10,6 +10,9 @@ public class StatusRequestMessage extends GroupDispatcherMessageOutgoing{
 	}
 	
 	public byte[] serialize() {
-		return new byte[]{GroupDispatcherMessage.STATUS_REQUEST, Constants.MESSAGE_DELIMITER};
+		return new byte[]{
+				GroupDispatcherMessage.STATUS_REQUEST,
+				Constants.MESSAGE_DELIMITER
+				};
 	}
 }

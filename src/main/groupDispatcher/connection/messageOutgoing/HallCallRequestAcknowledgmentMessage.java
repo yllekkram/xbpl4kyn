@@ -9,6 +9,9 @@ public class HallCallRequestAcknowledgmentMessage extends GroupDispatcherMessage
 	}
 	
 	public byte[] serialize() {
-		return new byte[]{GroupDispatcherMessage.HALLCALL_REQUEST_ACHNOWLEDGMENT, Constants.MESSAGE_DELIMITER};
+		return new byte[]{
+				GroupDispatcherMessage.HALLCALL_REQUEST_ACHNOWLEDGMENT,
+				Constants.MESSAGE_DELIMITER
+				};
 	}
 }

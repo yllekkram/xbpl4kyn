@@ -9,6 +9,8 @@ public class StopRequestMessage extends ViewMessageOutgoing {
 	}
 	
 	public byte[] serialize() {
-		return new byte[]{ ViewMessage.STOP_REQUEST };
+		return new byte[]{
+				ViewMessage.STOP_REQUEST
+				};
 	}
 }

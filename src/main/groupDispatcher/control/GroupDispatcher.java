@@ -20,6 +20,7 @@ import main.groupDispatcher.connection.messageIncoming.ECStatusMessage;
 import main.groupDispatcher.connection.messageIncoming.HallCallRequestMessage;
 import main.groupDispatcher.connection.messageOutgoing.HallCallAssignmentMessage;
 import main.groupDispatcher.connection.messageOutgoing.HallCallRequestAcknowledgmentMessage;
+import main.groupDispatcher.connection.messageOutgoing.HallCallServicedMessage;
 import main.groupDispatcher.connection.messageOutgoing.RegistrationAcknowledgmentMessage;
 import main.groupDispatcher.connection.messageOutgoing.RemoveElevatorMessage;
 import main.model.Destination;
@@ -35,9 +36,10 @@ public class GroupDispatcher implements Observer{
 	private ConcurrentHashMap<Integer, ElevatorData> elevatorCars;
 	
 	private DispatchStrategy dispatchStrategy;
+	private Timer timer;
 	
 	private static GroupDispatcher instance;
-
+	
 	public synchronized static GroupDispatcher getInstance(){
 		if(instance == null){
 			instance = new GroupDispatcher();
@@ -45,8 +47,30 @@ public class GroupDispatcher implements Observer{
 		return instance;
 	}
 	
-	public synchronized static void clearInstance(){
+	public synchronized void destroy(){
+		timer.cancel();
+		timer = null;
+		TCPConnectionManager.getInstance().destroy();
+		UDPConnectionManager.getInstance().destroy();
 		instance = null;
+	}
+	
+	public synchronized void setStatusUpdateRequestsEnabled(boolean enable){
+		if(enable){
+			TimerTask task = new TimerTask(){
+				public void run(){
+					Iterator<Runnable> iterator = updaterRunnables.values().iterator();
+					while(iterator.hasNext()){
+						Runnable runnable = iterator.next();
+						executor.execute(runnable);
+					}
+				}
+			};
+			timer.scheduleAtFixedRate(task, 0, Constants.STATUS_UPDATE_REQUEST_INTERVAL);
+		}else{
+			timer.cancel();
+
+		}
 	}
 	
 	private GroupDispatcher(){
@@ -56,30 +80,18 @@ public class GroupDispatcher implements Observer{
 		TCPConnectionManager.getInstance().addObserver(this);
 		
 		dispatchStrategy = new SimpleDispatchStrategy();
+		timer = new Timer();
 	}
 	
 	
-	public void startUp(){
-		TCPConnectionManager.getInstance().initialize();
-		UDPConnectionManager.getInstance().initialize();
-		
-		//execute
-		this.run();
-	}
-	
-	
-	public void run(){
-		TimerTask task = new TimerTask(){
-			public void run(){
-				Iterator<Runnable> iterator = updaterRunnables.values().iterator();
-				while(iterator.hasNext()){
-					Runnable runnable = iterator.next();
-					executor.execute(runnable);
-				}
-			}
-		};
-		Timer timer = new Timer();
-		timer.scheduleAtFixedRate(task, 0, Constants.STATUS_UPDATE_REQUEST_INTERVAL);
+	public void startUp(boolean enableTCP, boolean enableUDP){
+		if(enableTCP){
+			TCPConnectionManager.getInstance().initialize();			
+			this.setStatusUpdateRequestsEnabled(true);
+		}
+		if(enableUDP){
+			UDPConnectionManager.getInstance().initialize();			
+		}
 	}
 	
 	public void onConnectionCreated(TCPClientSocketWrapper clientSocket){
@@ -128,12 +140,21 @@ public class GroupDispatcher implements Observer{
 	
 	public void updateECStatus(int elevatorId, ECStatusMessage status){
 		ElevatorData elevator = elevatorCars.get(Integer.valueOf(elevatorId));
+		
+		if(elevator.isMoving() && status.isMoving()){
+			//if elevator has stopped, let the GUI know
+			onFloorReached(status.getPosition(), status.getDirection());
+		}
 		elevator.setDirection(status.getDirection());
 		elevator.setPosition(status.getPosition());
-		elevator.setSpeed(status.getSpeed());
+		elevator.setIsMoving(status.isMoving());
 		elevator.setAssignedHallCalls(status.getHallCalls());
 	}
 
+	public void onFloorReached(int floor, int direction){
+		UDPConnectionManager.getInstance().sendData(Constants.GD_TO_GUI_UDP_PORT, new HallCallServicedMessage(floor, direction).serialize());
+	}
+	
 	public void removeElevator(int elevatorId){
 		updaterRunnables.remove(Integer.valueOf(elevatorId));
 		

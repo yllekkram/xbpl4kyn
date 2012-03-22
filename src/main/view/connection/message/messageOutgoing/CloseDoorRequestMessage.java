@@ -9,6 +9,8 @@ public class CloseDoorRequestMessage extends ViewMessageOutgoing {
 	}
 	
 	public byte[] serialize() {
-		return new byte[]{ViewMessage.CLOSE_DOOR_REQUEST};
+		return new byte[]{
+				ViewMessage.CLOSE_DOOR_REQUEST
+				};
 	}
 }

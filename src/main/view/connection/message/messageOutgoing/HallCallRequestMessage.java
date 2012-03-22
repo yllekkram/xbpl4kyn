@@ -12,6 +12,10 @@ public class HallCallRequestMessage extends ViewMessageOutgoing{
 	}
 	
 	public byte[] serialize() {
-		return new byte[]{ViewMessage.HALLCALL_REQUEST, (byte) this.destination.getFloor(), (byte) this.destination.getDirection()};
+		return new byte[]{
+				ViewMessage.HALLCALL_REQUEST,
+				(byte) this.destination.getFloor(),
+				(byte) this.destination.getDirection()
+				};
 	}
 }

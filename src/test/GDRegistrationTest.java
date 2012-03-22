@@ -17,7 +17,7 @@ import test.util.TCPTransmitter;
 
 import junit.framework.TestSuite;
 
-public class GUIRegistrationTest extends TestSuite{
+public class GDRegistrationTest extends TestSuite{
 
 	TCPTransmitter tcpTransmitter;
 	GroupDispatcher gd;

@@ -9,6 +9,8 @@ public class OpenDoorRequestMessage extends ViewMessageOutgoing {
 	}
 	
 	public byte[] serialize() {
-		return new byte[]{ViewMessage.OPEN_DOOR_REQUEST};
+		return new byte[]{
+				ViewMessage.OPEN_DOOR_REQUEST
+				};
 	}
 }

@@ -10,7 +10,10 @@ public class RegistrationAcknowledgmentMessage extends GroupDispatcherMessageOut
 	}
 	
 	public byte[] serialize() {
-		return new byte[]{GroupDispatcherMessage.REGISTRATION_ACKNOWLEDGMENT, Constants.MESSAGE_DELIMITER};
+		return new byte[]{
+				GroupDispatcherMessage.REGISTRATION_ACKNOWLEDGMENT,
+				Constants.MESSAGE_DELIMITER
+				};
 	}
 }
 

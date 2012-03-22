@@ -12,6 +12,9 @@ public class FloorSelectionMessage extends ViewMessageOutgoing {
 	}
 	
 	public byte[] serialize() {
-		return new byte[]{ViewMessage.FLOOR_SELECTION, (byte) floor};
+		return new byte[]{
+				ViewMessage.FLOOR_SELECTION,
+				(byte) floor
+				};
 	}
 }
