@@ -7,8 +7,8 @@ RM					= rm
 
 vpath %.hpp include:test/include
 
-EXE				= ElevatorTestServer UDPTestServer testElevatorController testTCP testUDP ElevatorSimulatorTest
-XENOEXE		= main testThreadedElevatorController
+EXE				= ElevatorTestServer UDPTestServer ElevatorSimulatorTest
+XENOEXE		= main testThreadedElevatorController testElevatorController testTCP testUDP
 SRCS			= $(wildcard *.cpp)
 OBJS			= ${SRCS:.cpp=.opp}
 
@@ -56,7 +56,7 @@ endif
 
 xeno:: $(XENOEXE)
 
-main: main.opp Heap.opp ElevatorSimulator.opp
+main: ElevatorCommon.opp ElevatorController.opp ElevatorSimulator.opp Heap.opp Message.opp UDPView.opp main.opp
 	$(CXXLD) $(CXXLDFLAGS) -o $@ $^
 
 tests: test/test.opp test/testHeap.opp test/testMessage.opp Message.opp Heap.opp ElevatorCommon.opp
@@ -71,28 +71,29 @@ ElevatorSimulatorTest: ElevatorSimulator.opp ElevatorSimulatorTest.opp
 ElevatorTestServer: ElevatorCommon.opp ElevatorTestServer.opp
 	$(CXXLD) $(CXXLDFLAGS) -o $@ $^
 
-testTCP: ElevatorCommon.opp ElevatorController.opp Message.opp testTCP.opp
+testTCP: ElevatorCommon.opp ElevatorController.opp ElevatorSimulator.opp Heap.opp Message.opp testTCP.opp
 	$(CXXLD) $(CXXLDFLAGS) -o $@ $^
 
-testThreadedElevatorController:ElevatorCommon.opp ElevatorController.opp Message.opp UDPView.opp test/testThreadedElevatorController.opp
+testThreadedElevatorController:ElevatorCommon.opp ElevatorController.opp ElevatorSimulator.opp Heap.opp Message.opp UDPView.opp test/testThreadedElevatorController.opp
 	$(CXXLD) $(CXXLDFLAGS) -o $@ $^
 	
 UDPTestServer: ElevatorCommon.opp UDPTestServer.opp
 	$(CXXLD) $(CXXLDFLAGS) -o $@ $^
 	
-testUDP: ElevatorCommon.opp ElevatorController.opp Message.opp UDPView.opp testUDP.opp
+testUDP: ElevatorCommon.opp ElevatorController.opp ElevatorSimulator.opp Heap.opp Message.opp UDPView.opp testUDP.opp
 	$(CXXLD) $(CXXLDFLAGS) -o $@ $^
 	
-testElevatorController: ElevatorCommon.opp ElevatorController.opp Message.opp UDPView.opp testElevatorController.opp
+testElevatorController: ElevatorCommon.opp ElevatorController.opp ElevatorSimulator.opp Heap.opp Message.opp UDPView.opp testElevatorController.opp
 	$(CXXLD) $(CXXLDFLAGS) -o $@ $^
 
 ElevatorCommon.opp: ElevatorCommon.hpp Exception.hpp
-ElevatorController.opp: ElevatorCommon.hpp Exception.hpp Heap.hpp Message.hpp
+ElevatorController.opp: ElevatorCommon.hpp ElevatorSimulator.hpp Exception.hpp Heap.hpp Message.hpp
 ElevatorControllerView.opp: ElevatorControllerView.hpp
 ElevatorSimulator.opp: ElevatorSimulator.hpp
 ElevatorSimulatorTest.opp: ElevatorSimulator.hpp
 ElevatorTestServer.opp: ElevatorCommon.hpp
 Heap.opp: Heap.hpp
+main.opp: ElevatorCommon.hpp ElevatorController.hpp ElevatorSimulator.hpp Exception.hpp Heap.hpp Message.hpp UDPView.hpp
 Message.opp: Message.hpp ElevatorCommon.hpp Exception.hpp
 UDPTestServer.opp: ElevatorCommon.hpp
 UDPView.opp: ElevatorControllerView.hpp Exception.hpp UDPView.hpp

@@ -1,3 +1,6 @@
+#ifndef ELEVATOR_SIMULATOR_HPP
+#define ELEVATOR_SIMULATOR_HPP
+
 #define MAX_SPEED	3			//maximum speed of elevator
 #define ACCELERATION	0.64			//acceleration of elevator
 #define DECELATRAION	-0.64			//Deceleration of elevator
@@ -58,3 +61,5 @@ class ElevatorSimulator {
 		float midTime;				//mid time before acceleration switch to deceleration movement
 		float midSpeed;				//mid speed before acceleration switch to deceleration movement
 };	
+
+#endif

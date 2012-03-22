@@ -79,22 +79,22 @@ SUITE(HallCallAssignmentMessage) {
   TEST(ConstructorWithValuesGiven) {
     HallCallAssignmentMessage message(
       7, /* Destination */
-      HALL_CALL_DIRECTION_UP
+      DIRECTION_UP
     );
     
     CHECK_EQUAL(4U, message.getLen());
     CHECK_EQUAL(7, message.getFloor());
-    CHECK_EQUAL(HALL_CALL_DIRECTION_UP, message.getDirection());
+    CHECK_EQUAL(DIRECTION_UP, message.getDirection());
   }
   
   TEST(ConstructorWithBufferGiven) {
-    char buffer[] = {HALL_CALL_ASSIGNMENT, 7, HALL_CALL_DIRECTION_UP};
+    char buffer[] = {HALL_CALL_ASSIGNMENT, 7, DIRECTION_UP};
     
     HallCallAssignmentMessage message(buffer);
     
     CHECK_EQUAL(3U, message.getLen());
     CHECK_EQUAL(7, message.getFloor());
-    CHECK_EQUAL(HALL_CALL_DIRECTION_UP, message.getDirection());
+    CHECK_EQUAL(DIRECTION_UP, message.getDirection());
   }
 
   TEST(ConstructorWithInvalidBufferGiven) {

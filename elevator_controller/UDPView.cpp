@@ -4,6 +4,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <iostream>
+#include <native/task.h>
 #include <unistd.h>
 #include <netinet/in.h>
 
@@ -12,9 +13,12 @@
 #include "Exception.hpp"
 #include "UDPView.hpp"
 
-/* Global Data Declaration */
-/* End Global Data Declaration */
+UDPView::UDPView() {
+	rt_task_create(&(this->udpThread), NULL, 0, 99, T_JOINABLE);
+}
+
 UDPView::~UDPView() {
+	rt_task_delete(&(this->udpThread));
 	close(this->sock);
 }
 
