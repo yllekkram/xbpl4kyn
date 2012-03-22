@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <signal.h>
 #include <unistd.h>
+#include <math.h>
 #include <cstdlib> 
 #include <sys/mman.h>
 #include <native/task.h>
@@ -21,11 +22,11 @@ RT_COND freeCond;
 char currentFloor;
 char direction;
 char currentPosition;
-char currentSpeed;
+char taskActive;
 
 //will be used by the other threads.
 int destination = 0;
-int taskAssigned = false;
+bool taskAssigned = false;
 bool upDirection = false;
 bool downDirection = false;
 bool GDFailed = false;
@@ -145,7 +146,7 @@ void updateStatusBuffer()
 	statusBuffer[selectedBuffer][0] = currentFloor;
 	statusBuffer[selectedBuffer][1] = direction;
 	statusBuffer[selectedBuffer][2] = currentPosition;
-	statusBuffer[selectedBuffer][3] = currentSpeed;
+	statusBuffer[selectedBuffer][3] = taskActive;
 	//printf("writting to buffer %d %s\n", selectedBuffer, statusBuffer[selectedBuffer]);
 	rt_mutex_release(&mutex);
 
@@ -171,8 +172,8 @@ void statusRun(void *arg)
 		if(upDirection){direction = HALL_CALL_DIRECTION_UP;}
 		else{direction = HALL_CALL_DIRECTION_DOWN;}
 
-		currentPosition = elevatorSimulator.geCurrentPosition();
-		currentSpeed = elevatorSimulator.getCurrentSpeed();
+		currentPosition = ceil(elevatorSimulator.geCurrentPosition());
+		taskActive = taskAssigned;
 
 		int upHeapSize = heapUp.getSize();
 		int downHeapSize = heapDown.getSize();
@@ -236,7 +237,7 @@ void randomRun(void *arg)
 
 	heapDown.pushHallCall(5);
 	printf("Hall Call Down Floor : 5\n");
-	rt_task_sleep(5000000000 * 2);
+	sleep(40);
 
 	heapDown.pushFloorRequest(3);
 	printf("Floor Request Down : 3\n");

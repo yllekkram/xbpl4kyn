@@ -24,7 +24,7 @@ ElevatorSimulator::ElevatorSimulator()
 	midLocation(0), task(false), directionUP(true),
 	DoorOpening(false), DoorOpen(false), DoorClosing(false),
 	numState(0), accTime(0), decTime(0), maxDistTime(0), distAcc(0),
-	distDec(0), distMaxSpeed(0), midTime(0), midSpeed(0)
+	distDec(0), distMaxSpeed(0), midTime(0), midSpeed(0), doorOpenButton(false), doorCloseButton(false)
 {
 	tp = new struct timeb;					//structure for saving start time
 	tpe = new struct timeb;					//structure for saving current time
@@ -39,7 +39,7 @@ ElevatorSimulator::~ElevatorSimulator(){
 void ElevatorSimulator::reset(){
 	finalDestination = 0; midLocation = 0; accTime = 0; decTime = 0; distAcc = 0; distDec = 0; numState = 0;
 	midSpeed = 0; midLocation = 0; midTime = 0; distMaxSpeed = 0; maxDistTime = 0; travelTime = 0;
-	DoorOpening = false; DoorOpen = false; DoorClosing = false; task = false;
+	DoorOpening = false; DoorOpen = false; DoorClosing = false; task = false; doorOpenButton = false; doorCloseButton = false;
 }
 
 //this function will find necessary values to calculate currentPosition, currentSpeed
@@ -165,6 +165,21 @@ void ElevatorSimulator::setFinalDestination(int floorNum)
 	findGraph(requiredDistance);	//call this method
 }
 
+void ElevatorSimulator::setDoorOpen()
+{
+	if(!doorOpenButton && DoorOpening && !DoorOpen && !DoorClosing)
+	{
+		doorOpenedAndReadyTime += IN_OUT_TIME;
+	}
+}
+
+void ElevatorSimulator::setDoorClose()
+{
+	if(!doorOpenButton && DoorOpening && !DoorOpen && !DoorClosing)
+	{
+		doorOpenedAndReadyTime -= (IN_OUT_TIME/2);
+	}
+}
 
 float ElevatorSimulator::getCurrentSpeed(){return currentSpeed;}
 int ElevatorSimulator::getCurrentFloor(){return currentFloor;}

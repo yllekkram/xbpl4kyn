@@ -22,6 +22,8 @@ class ElevatorSimulator {
 		bool getIsDoorOpening();
 		bool getIsDoorOpen();
 		bool getIsDoorClosing();
+		void setDoorOpen();
+		void setDoorClose();
 		void print();
 
 		
@@ -49,6 +51,8 @@ class ElevatorSimulator {
 		float distMaxSpeed;			//maximum distance spent on maximum speed
 		float travelTime;			//total time spent traveling
 		float doorOpenedTime;			//time until door open for current task
+		bool doorOpenButton;
+		bool doorCloseButton;
 		float doorOpenedAndReadyTime;		//time until door open until close for current task
 		float doorClosedTime;			//time until door close for current task
 		float midTime;				//mid time before acceleration switch to deceleration movement
