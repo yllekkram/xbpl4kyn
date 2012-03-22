@@ -19,6 +19,20 @@ struct ECRTData {
 	RT_COND freeCond;
 };
 
+struct ElevatorStatus {
+	unsigned char currentFloor;
+	unsigned char direction;
+	unsigned char currentPosition;
+	unsigned char currentSpeed;
+	unsigned char destination;
+	unsigned char taskActive;
+	bool taskAssigned;
+	bool upDirection;
+	bool downDirection;
+	bool GDFailed;
+	bool GDFailedEmptyHeap;
+};
+
 class ElevatorController {
 	public:
 		ElevatorController();

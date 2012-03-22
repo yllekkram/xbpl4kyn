@@ -62,19 +62,7 @@ UDPView							uv[NUM_ELEVATORS];
 ElevatorSimulator 	es[NUM_ELEVATORS];
 
 //status updated every 75ms by the status thread
-char currentFloor[NUM_ELEVATORS];
-char direction[NUM_ELEVATORS];
-char currentPosition[NUM_ELEVATORS];
-char currentSpeed[NUM_ELEVATORS];
-
-//will be used by the other threads.
-int destination[NUM_ELEVATORS];
-char taskActive[NUM_ELEVATORS];
-bool taskAssigned[NUM_ELEVATORS];
-bool upDirection[NUM_ELEVATORS];
-bool downDirection[NUM_ELEVATORS];
-bool GDFailed[NUM_ELEVATORS];
-bool GDFailedEmptyHeap[NUM_ELEVATORS];
+ElevatorStatus eStat[NUM_ELEVATORS];
 
 //double buffer used by both communication and status threads.
 unsigned char statusBuffer[NUM_ELEVATORS][2][BUFFSIZE];
@@ -106,17 +94,17 @@ int main(int argc, char* argv[]) {
 		rt_task_create(&release_cond[i],					NULL, 0, 99, T_JOINABLE);
 		rt_task_create(&value_run[i],						NULL, 0, 99, T_JOINABLE);
 
-		currentFloor[i] = 0;
-		currentPosition[i] = 0;
-		currentSpeed[i] = 0;
-		destination[i] = 0;
-		direction[i] = 0;
-		downDirection[i] = false;
-		GDFailed[i] = false;
-		GDFailedEmptyHeap[i] = false;
-		upDirection[i] = false;
-		taskAssigned[i] = false;
-		taskActive[i] = 0;
+		eStat[i].currentFloor = 0;
+		eStat[i].currentPosition = 0;
+		eStat[i].currentSpeed = 0;
+		eStat[i].destination = 0;
+		eStat[i].direction = 0;
+		eStat[i].downDirection = false;
+		eStat[i].GDFailed = false;
+		eStat[i].GDFailedEmptyHeap = false;
+		eStat[i].upDirection = false;
+		eStat[i].taskAssigned = false;
+		eStat[i].taskActive = 0;
 		bufferSelection[i] = 0;
 
 		setupElevatorController(IDs[i], "192.168.251.1", "5000", "192.168.251.1", "5003");
@@ -186,16 +174,16 @@ void floorRun(void *arg)
 	unsigned char topItem;
 	while(true)
 	{
-		if(!GDFailedEmptyHeap[ID])
+		if(!eStat[ID].GDFailedEmptyHeap)
 		{
 			rt_mutex_acquire(&rtData[ID].mutex, TM_INFINITE);
 			rt_cond_wait(&rtData[ID].freeCond, &rtData[ID].mutex, TM_INFINITE);
 
 			int upHeapSize = ec[ID].getUpHeap().getSize();
 			int downHeapSize = ec[ID].getDownHeap().getSize();
-			if(upHeapSize==0 && downHeapSize==0){GDFailedEmptyHeap[ID] = true;}
+			if(upHeapSize==0 && downHeapSize==0){eStat[ID].GDFailedEmptyHeap = true;}
 
-			if(downDirection[ID])
+			if(eStat[ID].downDirection)
 			{
 				if(downHeapSize > 0)
 				{
@@ -215,11 +203,11 @@ void floorRun(void *arg)
 				}
 			}
 		
-			if(topItem != destination[ID])
+			if(topItem != eStat[ID].destination)
 			{
 				printf("FR%d next Dest is %d\n.", ID, topItem);
 				ec[ID].getSimulator()->setFinalDestination(topItem);
-				destination[ID] = topItem;
+				eStat[ID].destination = topItem;
 			}
 			rt_mutex_release(&rtData[ID].mutex);
 		}
@@ -231,7 +219,7 @@ bool releaseFreeCond(const int ID)
 	int heapSize = ec[ID].getUpHeap().getSize() + ec[ID].getDownHeap().getSize();
 	if(heapSize > 0)
 	{
-		GDFailedEmptyHeap[ID] = false;
+		eStat[ID].GDFailedEmptyHeap = false;
 		rt_cond_signal(&rtData[ID].freeCond);
 		return true;
 	}else
@@ -254,18 +242,18 @@ void supervisorRun(void *arg)
 	while(true)
 	{
 		rt_mutex_acquire(&rtData[ID].mutex, TM_INFINITE);
-		if(GDFailed[ID] && GDFailedEmptyHeap[ID])
+		if(eStat[ID].GDFailed && eStat[ID].GDFailedEmptyHeap)
 		{
-			if(!taskAssigned[ID])
+			if(!eStat[ID].taskAssigned)
 			{
-				if((downDirection[ID] && destination[ID]!=0) || destination[ID] == MAX_FLOORS)
+				if((eStat[ID].downDirection && eStat[ID].destination!=0) || eStat[ID].destination == MAX_FLOORS)
 				{
-					destination[ID]--;
-					ec[ID].getSimulator()->setFinalDestination(destination[ID]);
-				}else if(destination[ID] == 0 || destination[ID] != MAX_FLOORS)
+					eStat[ID].destination--;
+					ec[ID].getSimulator()->setFinalDestination(eStat[ID].destination);
+				}else if(eStat[ID].destination == 0 || eStat[ID].destination != MAX_FLOORS)
 				{
-					destination[ID]++;
-					ec[ID].getSimulator()->setFinalDestination(destination[ID]);
+					eStat[ID].destination++;
+					ec[ID].getSimulator()->setFinalDestination(eStat[ID].destination);
 				}
 			}
 		}
@@ -282,10 +270,10 @@ void updateStatusBuffer(const int ID)
 	rt_mutex_release(&rtData[ID].mutexBuffer);
 	
 	rt_mutex_acquire(&rtData[ID].mutex, TM_INFINITE);
-	statusBuffer[ID][selectedBuffer][0] = currentFloor[ID];
-	statusBuffer[ID][selectedBuffer][1] = direction[ID];
-	statusBuffer[ID][selectedBuffer][2] = currentPosition[ID];
-	statusBuffer[ID][selectedBuffer][3] = currentSpeed[ID];
+	statusBuffer[ID][selectedBuffer][0] = eStat[ID].currentFloor;
+	statusBuffer[ID][selectedBuffer][1] = eStat[ID].direction;
+	statusBuffer[ID][selectedBuffer][2] = eStat[ID].currentPosition;
+	statusBuffer[ID][selectedBuffer][3] = eStat[ID].currentSpeed;
 	//printf("writting to buffer %d %s\n", selectedBuffer, statusBuffer[selectedBuffer]);
 	rt_mutex_release(&rtData[ID].mutex);
 
@@ -301,30 +289,30 @@ void statusRun(void *arg)
 	{
 		sleep(3);
 		rt_mutex_acquire(&rtData[ID].mutex, TM_INFINITE);
-		currentFloor[ID] = ec[ID].getSimulator()->getCurrentFloor();
-		taskAssigned[ID] = ec[ID].getSimulator()->getIsTaskActive();
-		if(taskAssigned[ID] && (ec[ID].getSimulator()->getIsDirectionUp()))
+		eStat[ID].currentFloor = ec[ID].getSimulator()->getCurrentFloor();
+		eStat[ID].taskAssigned = ec[ID].getSimulator()->getIsTaskActive();
+		if(eStat[ID].taskAssigned && (ec[ID].getSimulator()->getIsDirectionUp()))
 		{
-			upDirection[ID] = true;
+			eStat[ID].upDirection = true;
 		}
-		downDirection[ID] = !(ec[ID].getSimulator()->getIsDirectionUp());
+		eStat[ID].downDirection = !(ec[ID].getSimulator()->getIsDirectionUp());
 
-		if(upDirection[ID]){direction[ID] = DIRECTION_UP;}
-		else{direction[ID] = DIRECTION_DOWN;}
+		if(eStat[ID].upDirection){eStat[ID].direction = DIRECTION_UP;}
+		else{eStat[ID].direction = DIRECTION_DOWN;}
 
-		currentPosition[ID] = ceil(ec[ID].getSimulator()->geCurrentPosition());
-		taskActive[ID] = taskAssigned[ID];
+		eStat[ID].currentPosition = ceil(ec[ID].getSimulator()->geCurrentPosition());
+		eStat[ID].taskActive = eStat[ID].taskAssigned;
 
 		int upHeapSize = ec[ID].getUpHeap().getSize();
 		int downHeapSize = ec[ID].getDownHeap().getSize();
-		if(upHeapSize==0 && downHeapSize==0){GDFailedEmptyHeap[ID] = true;}
+		if(upHeapSize==0 && downHeapSize==0){eStat[ID].GDFailedEmptyHeap = true;}
 
 		if(upHeapSize > 0)
 		{
 			int topItem = (int)(ec[ID].getUpHeap().peek());
-			if(currentFloor[ID] == topItem && !taskAssigned[ID])
+			if(eStat[ID].currentFloor == topItem && !eStat[ID].taskAssigned)
 			{
-				printf("ST%d Task Completed %d\n", ID, destination[ID]);
+				printf("ST%d Task Completed %d\n", ID, eStat[ID].destination);
 				ec[ID].getUpHeap().pop();
 			}
 		}
@@ -332,9 +320,9 @@ void statusRun(void *arg)
 		if(downHeapSize > 0)
 		{
 			int topItem = (int)(ec[ID].getDownHeap().peek());
-			if(currentFloor[ID] == topItem && !taskAssigned[ID])
+			if(eStat[ID].currentFloor == topItem && !eStat[ID].taskAssigned)
 			{
-				printf("ST%d Task Completed %d\n", ID, destination[ID]);
+				printf("ST%d Task Completed %d\n", ID, eStat[ID].destination);
 				ec[ID].getDownHeap().pop();
 				releaseFreeCond(ID);
 			}
@@ -406,10 +394,10 @@ void supervisorStartUp(void *arg)
 
 	sleep(200);
 	printf("SSU%d GroupDispatcher FAILED, Oh my god :(\n", ID);
-	GDFailed[ID] = true;
+	eStat[ID].GDFailed = true;
 	sleep(400);
 	printf("SSU%d GroupDispatcher FIXED, good :)\n", ID);
-	GDFailed[ID] = false;
+	eStat[ID].GDFailed = false;
 
 	ec[ID].getUpHeap().pushHallCall(8);
 	printf("SSU%d Hall Call Up Floor : 3\n", ID);
