@@ -15,6 +15,38 @@
 
 char ElevatorController::nextID = 1;
 
+ECRTData::ECRTData() {
+	mlockall(MCL_CURRENT|MCL_FUTURE);
+
+	rt_mutex_create(&(this->mutex), NULL);
+	rt_mutex_create(&(this->mutexBuffer), NULL);
+	rt_cond_create(&(this->freeCond), NULL);
+
+	rt_task_create(&(this->ecThread), NULL, 0, 99, T_JOINABLE);
+	rt_task_create(&(this->frThread), NULL, 0, 99, T_JOINABLE);
+	rt_task_create(&(this->statusThread), NULL, 0, 99, T_JOINABLE);
+	rt_task_create(&(this->supervisorThread), NULL, 0, 99, T_JOINABLE);
+}
+
+ECRTData::~ECRTData() {
+	rt_task_delete(&(this->supervisorThread));
+	rt_task_delete(&(this->statusThread));
+	rt_task_delete(&(this->frThread));
+	rt_task_delete(&(this->ecThread));
+
+	rt_cond_delete(&(this->freeCond));
+	rt_mutex_delete(&(this->mutexBuffer));
+	rt_mutex_delete(&(this->mutex));
+}
+
+ElevatorStatus::ElevatorStatus()
+	: currentFloor(0),		direction(DIRECTION_UP),		currentPosition(0),
+		currentSpeed(0),		destination(0),							taskActive(false),
+		taskAssigned(0),		upDirection(false),							downDirection(false),
+		GDFailed(false),		GDFailedEmptyHeap(false)
+{}
+
+
 ElevatorController::ElevatorController()
 	: eStat(), rtData(), downHeap(), upHeap(), missedFloors() {
 	this->id = ElevatorController::getNextID();
@@ -28,7 +60,7 @@ ElevatorController::~ElevatorController() {
 	close(this->sock);
 }
 
-void ElevatorController::run() {
+void ElevatorController::communicate() {
 	while (true) {
 		try {
 			this->waitForGDRequest();

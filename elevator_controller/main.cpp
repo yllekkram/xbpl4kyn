@@ -4,7 +4,6 @@
 #include <unistd.h>
 #include <cstdlib>
 #include <math.h>
-#include <sys/mman.h>
 #include <native/task.h>
 #include <native/timer.h>
 #include <native/mutex.h>
@@ -42,12 +41,6 @@ void supervisorRun(void*);
 /* Global Data Declarations */
 unsigned char IDs[NUM_ELEVATORS]; // Store thread identifiers in gloabl memory to ensure that they always exist
 
-RT_TASK ecThread[NUM_ELEVATORS];
-RT_TASK frThread[NUM_ELEVATORS];
-RT_TASK udpThread[NUM_ELEVATORS];
-RT_TASK statusThread[NUM_ELEVATORS];
-RT_TASK supervisorThread[NUM_ELEVATORS];
-
 RT_TASK supervisorStart[NUM_ELEVATORS];
 RT_TASK release_cond[NUM_ELEVATORS];
 RT_TASK value_run[NUM_ELEVATORS];
@@ -63,8 +56,6 @@ unsigned char bufferSelection[NUM_ELEVATORS];
 
 int main(int argc, char* argv[]) {
 	/* Avoids memory swapping for this program */
-	mlockall(MCL_CURRENT|MCL_FUTURE);
-
 	signal(SIGTERM, catch_signal);
 	signal(SIGINT, catch_signal);
 
@@ -78,12 +69,12 @@ int main(int argc, char* argv[]) {
 		bufferSelection[i] = 0;
 
 		setupElevatorController(IDs[i], "192.168.251.1", "5000", "192.168.251.1", "5003");
-		
+
 		rt_task_start(&(ec[i].rtData.ecThread),					runECThread,		&IDs[i]);
-		rt_task_start(&(ec[i].rtData.udpThread),				runUDPThread,		&IDs[i]);
 		rt_task_start(&(ec[i].rtData.frThread), 				floorRun, 			&IDs[i]);
 		rt_task_start(&(ec[i].rtData.supervisorThread), supervisorRun, 	&IDs[i]);
 		rt_task_start(&(ec[i].rtData.statusThread), 		statusRun, 			&IDs[i]);
+		rt_task_start(&(uv[i].udpThread),								runUDPThread,		&IDs[i]);
 
 		rt_task_start(&supervisorStart[i],	supervisorRun,	&IDs[i]);
 		// rt_task_start(&release_cond[i],			randomRun,			&IDs[i]);
@@ -93,9 +84,9 @@ int main(int argc, char* argv[]) {
 	for (int i = 0; i < NUM_ELEVATORS; i++) {
 		rt_task_join(&(ec[i].rtData.ecThread));
 		rt_task_join(&(ec[i].rtData.frThread));
-		rt_task_join(&(ec[i].rtData.udpThread));
 		rt_task_join(&(ec[i].rtData.statusThread));
 		rt_task_join(&(ec[i].rtData.supervisorThread));
+		rt_task_join(&(uv[i].udpThread));
 
 		rt_task_join(&supervisorStart[i]);
 		rt_task_join(&release_cond[i]);
@@ -109,7 +100,7 @@ void runECThread(void* cookie) {
 	const int ID = *((int*)cookie);
 
 	printf("EC %d Thread\n", ID);
-	ec[ID].run();
+	ec[ID].communicate();
 }
 
 void runUDPThread(void* cookie) {
