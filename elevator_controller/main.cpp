@@ -18,7 +18,7 @@
 #include "UDPView.hpp"
 
 /* Constants */
-#define NUM_ELEVATORS 1
+#define NUM_ELEVATORS 3
 #define STANDARD_PAUSE 2500000000U
 /* End Constants */
 
@@ -307,11 +307,11 @@ void statusRun(void *arg)
 		int upHeapSize = ec[ID].getUpHeap().getSize();
 		int downHeapSize = ec[ID].getDownHeap().getSize();
 		if(upHeapSize==0 && downHeapSize==0){GDFailedEmptyHeap[ID] = true;}
-		
+
 		if(upHeapSize > 0)
 		{
 			int topItem = (int)(ec[ID].getUpHeap().peek());
-			if(currentFloor[ID] == topItem && !taskAssigned)
+			if(currentFloor[ID] == topItem && !taskAssigned[ID])
 			{
 				printf("ST%d Task Completed %d\n", ID, destination[ID]);
 				ec[ID].getUpHeap().pop();
@@ -325,7 +325,7 @@ void statusRun(void *arg)
 		if(downHeapSize > 0)
 		{
 			int topItem = (int)(ec[ID].getDownHeap().peek());
-			if(currentFloor[ID] == topItem && !taskAssigned)
+			if(currentFloor[ID] == topItem && !taskAssigned[ID])
 			{
 				printf("ST%d Task Completed %d\n", ID, destination[ID]);
 				ec[ID].getDownHeap().pop();
@@ -346,7 +346,9 @@ void randomRun(void *arg)
 {
 	int ID = *((int*)arg);
 	ec[ID].getUpHeap().pushHallCall(5);
+	rt_mutex_acquire(&mutex[ID], TM_INFINITE);
 	releaseFreeCond(ID);
+	rt_mutex_release(&mutex[ID]);
 	printf("RR%d Hall Call Up Floor : 5\n", ID);
 	sleep(40);
 
