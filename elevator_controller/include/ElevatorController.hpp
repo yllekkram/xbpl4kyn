@@ -60,6 +60,7 @@ class ElevatorController {
 
     void communicate();
 		void supervise();
+		void updateStatus();
 
 		void waitForGDRequest();
     void sendStatus();
@@ -102,6 +103,9 @@ class ElevatorController {
 		void sendMessage(const Message& message);
 		void sendMessage(const char* message, int len);
 		char* receiveTCP(unsigned int length);
+
+		bool releaseFreeCond();
+		void updateStatusBuffer();
 };
 
 #endif

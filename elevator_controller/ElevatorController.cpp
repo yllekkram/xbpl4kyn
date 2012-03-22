@@ -2,6 +2,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <iostream>
+#include <cmath>
 #include <native/cond.h>
 #include <native/mutex.h>
 #include <netinet/in.h>
@@ -94,6 +95,90 @@ void ElevatorController::supervise() {
 		rt_mutex_release(&(this->rtData.mutex));
 		sleep(20);
 	}
+}
+
+void ElevatorController::updateStatus() {
+	while(true)
+	{
+		sleep(3);
+		rt_mutex_acquire(&(this->rtData.mutex), TM_INFINITE);
+		this->eStat.currentFloor = this->getSimulator()->getCurrentFloor();
+		this->eStat.taskAssigned = this->getSimulator()->getIsTaskActive();
+		if(this->eStat.taskAssigned && (this->getSimulator()->getIsDirectionUp()))
+		{
+			this->eStat.upDirection = true;
+		}
+		this->eStat.downDirection = !(this->getSimulator()->getIsDirectionUp());
+
+		if(this->eStat.upDirection){this->eStat.direction = DIRECTION_UP;}
+		else{this->eStat.direction = DIRECTION_DOWN;}
+
+		this->eStat.currentPosition = (unsigned char)ceil(this->getSimulator()->geCurrentPosition());
+		this->eStat.taskActive = this->eStat.taskAssigned;
+
+		int upHeapSize = this->getUpHeap().getSize();
+		int downHeapSize = this->getDownHeap().getSize();
+		if(upHeapSize==0 && downHeapSize==0){this->eStat.GDFailedEmptyHeap = true;}
+
+		if(upHeapSize > 0)
+		{
+			int topItem = (int)(this->getUpHeap().peek());
+			if(this->eStat.currentFloor == topItem && !this->eStat.taskAssigned)
+			{
+				printf("ST%d Task Completed %d\n", this->getID(), this->eStat.destination);
+				this->getUpHeap().pop();
+			}
+		}
+
+		if(downHeapSize > 0)
+		{
+			int topItem = (int)(this->getDownHeap().peek());
+			if(this->eStat.currentFloor == topItem && !this->eStat.taskAssigned)
+			{
+				printf("ST%d Task Completed %d\n", this->getID(), this->eStat.destination);
+				this->getDownHeap().pop();
+				this->releaseFreeCond();
+			}
+		}
+		this->releaseFreeCond();
+
+		rt_mutex_release(&(this->rtData.mutex));
+		this->updateStatusBuffer();
+	}
+}
+
+bool ElevatorController::releaseFreeCond()
+{
+	int heapSize = this->getUpHeap().getSize() + this->getDownHeap().getSize();
+	if(heapSize > 0)
+	{
+		this->eStat.GDFailedEmptyHeap = false;
+		rt_cond_signal(&(this->rtData.freeCond));
+		return true;
+	}else
+	{
+		return false;
+	}
+}
+
+void ElevatorController::updateStatusBuffer()
+{
+	//upheap and the downheap (hallcall and floor selections should be included.
+	rt_mutex_acquire(&(this->rtData.mutexBuffer), TM_INFINITE);
+	bool selectedBuffer = this->eStat.bufferSelection;
+	rt_mutex_release(&(this->rtData.mutexBuffer));
+	
+	rt_mutex_acquire(&(this->rtData.mutex), TM_INFINITE);
+	this->eStat.statusBuffer[selectedBuffer][0] = this->eStat.currentFloor;
+	this->eStat.statusBuffer[selectedBuffer][1] = this->eStat.direction;
+	this->eStat.statusBuffer[selectedBuffer][2] = this->eStat.currentPosition;
+	this->eStat.statusBuffer[selectedBuffer][3] = this->eStat.currentSpeed;
+	//printf("writting to buffer %d %s\n", selectedBuffer, statusBuffer[selectedBuffer]);
+	rt_mutex_release(&(this->rtData.mutex));
+
+	rt_mutex_acquire(&(this->rtData.mutexBuffer), TM_INFINITE);
+	this->eStat.bufferSelection = ++(this->eStat.bufferSelection) % 2;
+	rt_mutex_release(&(this->rtData.mutexBuffer));
 }
 
 void ElevatorController::addSimulator(ElevatorSimulator* es) {

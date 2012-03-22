@@ -26,11 +26,11 @@ void catch_signal(int);
 void floorRun(void*);
 bool relseaseFreeCond();
 void runECThread(void*);
+void runStatusThread(void*);
 void runSupervisorThread(void*);
 void runUDPThread(void*);
 void setupElevatorController(int id, char*, char*, char*, char*);
 void sleep(int);
-void statusRun(void*);
 	/* Functions for testing */
 	void randomRun(void*);
 	void runValues(void*);
@@ -67,7 +67,7 @@ int main(int argc, char* argv[]) {
 		rt_task_start(&(ec[i].rtData.ecThread),					runECThread,					&IDs[i]);
 		rt_task_start(&(ec[i].rtData.frThread), 				floorRun, 						&IDs[i]);
 		rt_task_start(&(ec[i].rtData.supervisorThread), runSupervisorThread, 	&IDs[i]);
-		rt_task_start(&(ec[i].rtData.statusThread), 		statusRun, 						&IDs[i]);
+		rt_task_start(&(ec[i].rtData.statusThread), 		runStatusThread, 						&IDs[i]);
 		rt_task_start(&(uv[i].udpThread),								runUDPThread,					&IDs[i]);
 
 		rt_task_start(&supervisorStart[i],	supervisorStartUp,	&IDs[i]);
@@ -95,6 +95,13 @@ void runECThread(void* cookie) {
 
 	printf("EC %d Thread\n", ec[ID].getID());
 	ec[ID].communicate();
+}
+
+void runStatusThread(void* cookie) {
+	const int ID = *((int*)cookie);
+
+	printf("Stat%d Thread", ec[ID].getID());
+	ec[ID].updateStatus();
 }
 
 void runSupervisorThread(void* cookie) {
@@ -209,58 +216,6 @@ void updateStatusBuffer(const int ID)
 	rt_mutex_acquire(&(ec[ID].rtData.mutexBuffer), TM_INFINITE);
 	ec[ID].eStat.bufferSelection = ++(ec[ID].eStat.bufferSelection) % 2;
 	rt_mutex_release(&(ec[ID].rtData.mutexBuffer));
-}
-
-void statusRun(void *arg)
-{
-	const int ID = *((int*)arg);
-	while(true)
-	{
-		sleep(3);
-		rt_mutex_acquire(&(ec[ID].rtData.mutex), TM_INFINITE);
-		ec[ID].eStat.currentFloor = ec[ID].getSimulator()->getCurrentFloor();
-		ec[ID].eStat.taskAssigned = ec[ID].getSimulator()->getIsTaskActive();
-		if(ec[ID].eStat.taskAssigned && (ec[ID].getSimulator()->getIsDirectionUp()))
-		{
-			ec[ID].eStat.upDirection = true;
-		}
-		ec[ID].eStat.downDirection = !(ec[ID].getSimulator()->getIsDirectionUp());
-
-		if(ec[ID].eStat.upDirection){ec[ID].eStat.direction = DIRECTION_UP;}
-		else{ec[ID].eStat.direction = DIRECTION_DOWN;}
-
-		ec[ID].eStat.currentPosition = ceil(ec[ID].getSimulator()->geCurrentPosition());
-		ec[ID].eStat.taskActive = ec[ID].eStat.taskAssigned;
-
-		int upHeapSize = ec[ID].getUpHeap().getSize();
-		int downHeapSize = ec[ID].getDownHeap().getSize();
-		if(upHeapSize==0 && downHeapSize==0){ec[ID].eStat.GDFailedEmptyHeap = true;}
-
-		if(upHeapSize > 0)
-		{
-			int topItem = (int)(ec[ID].getUpHeap().peek());
-			if(ec[ID].eStat.currentFloor == topItem && !ec[ID].eStat.taskAssigned)
-			{
-				printf("ST%d Task Completed %d\n", ID, ec[ID].eStat.destination);
-				ec[ID].getUpHeap().pop();
-			}
-		}
-
-		if(downHeapSize > 0)
-		{
-			int topItem = (int)(ec[ID].getDownHeap().peek());
-			if(ec[ID].eStat.currentFloor == topItem && !ec[ID].eStat.taskAssigned)
-			{
-				printf("ST%d Task Completed %d\n", ID, ec[ID].eStat.destination);
-				ec[ID].getDownHeap().pop();
-				releaseFreeCond(ID);
-			}
-		}
-		releaseFreeCond(ID);
-
-		rt_mutex_release(&(ec[ID].rtData.mutex));
-		updateStatusBuffer(ID);
-	}
 }
 
 // this function is just for my testing purposes
