@@ -90,7 +90,6 @@ int main(int argc, char* argv[]) {
 
 	for (int i = 0; i < NUM_ELEVATORS; i++) {
 		IDs[i] = i;
-		std::cout << "ID: " << IDs[i] << std::endl;
 
 		rt_mutex_create(&rtData[i].mutex, 				NULL);
 		rt_mutex_create(&rtData[i].mutexBuffer, 	NULL);
@@ -121,11 +120,8 @@ int main(int argc, char* argv[]) {
 		bufferSelection[i] = 0;
 
 		setupElevatorController(IDs[i], "192.168.251.1", "5000", "192.168.251.1", "5003");
-		// ec[i].addSimulator(&es[i]);
 		
-		std::cout << "before EC ID: " << &IDs[i] << std::endl;
 		rt_task_start(&ecThread[i],					runECThread,		&IDs[i]);
-		std::cout << "after IDaddr: " << &IDs[i] << std::endl;
 		rt_task_start(&udpThread[i],				runUDPThread,		&IDs[i]);
 		rt_task_start(&frThread[i], 				floorRun, 			&IDs[i]);
 		rt_task_start(&supervisorThread[i], supervisorRun, 	&IDs[i]);
