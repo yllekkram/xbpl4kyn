@@ -255,7 +255,8 @@ void ElevatorController::waitForGDRequest() {
 }
 
 void ElevatorController::sendStatus() {
-	// std::vector<char>* hallCalls = new std::vector<char>(); // = FloorRequestHeap.getHallCalls();
+	std::vector<char>* hallCalls = new std::vector<char>();
+	std::vector<char>* floorRequests = new std::vector<char>();
 
 	// this->sendMessage(StatusResponseMessage(this->id, 
   //                                         5, 6, 7, hallCalls->size(), 
@@ -266,9 +267,9 @@ void ElevatorController::sendStatus() {
 						+1	/* Direction */
 						+1	/* Is moving? */
 						+1	/* num hall calls */
-						+0	/* Hall calls */
+						+hallCalls->size()*2	/* Hall calls */
 						+1	/* Num Floor Requests */
-						+0	/* Floor requests */
+						+floorRequests->size()	/* Floor requests */
 						+1;	/* Terminator */
 
 	char message[len];
@@ -283,7 +284,8 @@ void ElevatorController::sendStatus() {
 
 	this->sendMessage(message, len);
 
-	// delete hallCalls;
+	delete hallCalls;
+	delete floorRequests;
 }
 
 void ElevatorController::connectToGD(char* gdAddress, int port) {
