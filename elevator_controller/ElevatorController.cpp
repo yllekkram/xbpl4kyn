@@ -75,6 +75,7 @@ void ElevatorController::communicate() {
 			exit(1);
 		}
 	}
+	std::cout << "EC" << (int)this->getID() << " dropping comm thread" << std::endl;
 }
 
 void ElevatorController::floorRun() {
