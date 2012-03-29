@@ -17,7 +17,7 @@
 #include "UDPView.hpp"
 
 /* Constants */
-#define NUM_ELEVATORS 8
+#define NUM_ELEVATORS 3
 #define STANDARD_PAUSE 2500000000U
 /* End Constants */
 
