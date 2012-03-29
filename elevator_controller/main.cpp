@@ -74,7 +74,7 @@ int main(int argc, char* argv[]) {
 		rt_task_start(&(ec[i].rtData.statusThread), 		runStatusThread, 						&IDs[i]);
 		rt_task_start(&(uv[i].udpThread),								runUDPThread,					&IDs[i]);
 
-		rt_task_start(&supervisorStart[i],	supervisorStartUp,	&IDs[i]);
+		// rt_task_start(&supervisorStart[i],	supervisorStartUp,	&IDs[i]);
 		// rt_task_start(&release_cond[i],			randomRun,			&IDs[i]);
 		rt_task_start(&value_run[i],				runValues,					&IDs[i]);
 	}
@@ -163,6 +163,7 @@ void randomRun(void *arg)
 
 	ec[ID].getUpHeap().pushFloorRequest(4);
 	printf("RR%d Floor Request Up : 4\n", ID);
+	sleep(40);
 
 	ec[ID].getUpHeap().pushFloorRequest(9);
 	printf("RR%d Floor Request Up : 9\n", ID);
