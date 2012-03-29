@@ -56,10 +56,13 @@ ElevatorController::ElevatorController()
 	if ((this->sock = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0) {
 		Die("Failed to create socket");
 	}
+
+  this->es = new ElevatorSimulator();
 }
 
 ElevatorController::~ElevatorController() {
 	close(this->sock);
+  delete this->es;
 }
 
 void ElevatorController::communicate() {
