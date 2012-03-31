@@ -1,12 +1,12 @@
 #include <arpa/inet.h>
 #include <cstdlib>
 #include <cstring>
-#include <iostream>
-#include <netinet/in.h>
-#include <sys/socket.h>
-#include <unistd.h>
-#include <sys/timeb.h>
 #include <math.h>
+#include <netinet/in.h>
+#include <rtdk.h>
+#include <sys/socket.h>
+#include <sys/timeb.h>
+#include <unistd.h>
 
 #include "ElevatorSimulator.hpp"
 
@@ -189,4 +189,7 @@ bool ElevatorSimulator::getIsDoorOpening(){return DoorOpening;}
 bool ElevatorSimulator::getIsDoorOpen(){return DoorOpen;}
 bool ElevatorSimulator::getIsDoorClosing(){return DoorClosing;}
 float ElevatorSimulator::geCurrentPosition(){return currentPosition;}
-void ElevatorSimulator::print(){std::cout << "currentSpeed " << currentSpeed << " currentFloor " << currentFloor << " task " << task << " directionUP " << directionUP << " DoorOpening " << DoorOpening << " DoorOpen " << DoorOpen << " DoorClosing " << DoorClosing << std::endl;}
+void ElevatorSimulator::print(){
+	rt_printf("currentSpeed %d currentFloor %d task %d directionUp %d DoorOpening %d DoorOpen %d DoorClosing\n",
+			(unsigned int)currentSpeed,	(unsigned int)currentFloor,	directionUP, DoorOpening,	DoorOpen,	DoorClosing);
+}
