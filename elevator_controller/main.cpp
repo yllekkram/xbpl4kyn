@@ -39,7 +39,7 @@ void sleep(int);
 /* End Function Prototypes */
 
 /* Global Data Declarations */
-unsigned char IDs[NUM_ELEVATORS]; // Store thread identifiers in gloabl memory to ensure that they always exist
+unsigned char IDs[NUM_ELEVATORS]; // Store thread identifiers in global memory to ensure that they always exist
 
 RT_TASK supervisorStart[NUM_ELEVATORS];
 RT_TASK release_cond[NUM_ELEVATORS];
