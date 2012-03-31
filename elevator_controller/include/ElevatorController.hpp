@@ -108,8 +108,6 @@ class ElevatorController {
 			return nextID++;
 		}
 
-    void receiveHallCall(HallCallAssignmentMessage& message);
-
 		void sendRegistration();
 		void receiveAck();
 

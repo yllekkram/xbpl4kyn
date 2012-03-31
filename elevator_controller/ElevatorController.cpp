@@ -1,11 +1,11 @@
 #include <arpa/inet.h>
 #include <cstdlib>
 #include <cstring>
-#include <iostream>
 #include <cmath>
 #include <native/cond.h>
 #include <native/mutex.h>
 #include <netinet/in.h>
+#include <rtdk.h>
 #include <sys/socket.h>
 #include <unistd.h>
 
@@ -68,11 +68,11 @@ void ElevatorController::communicate() {
 			this->waitForGDRequest();
 		}
 		catch (Exception e) {
-			std::cout << e.what() << std::endl;
+			rt_printf("%s\n", e.what());
 			exit(1);
 		}
 	}
-	std::cout << "EC" << (int)this->getID() << " dropping comm thread" << std::endl;
+	rt_printf("EC%d dropping comm thread\n", (unsigned int)this->getID());
 }
 
 void ElevatorController::floorRun() {
@@ -252,7 +252,7 @@ void ElevatorController::waitForGDRequest() {
 		request = receiveTCP(MAX_GD_REQUEST_SIZE);
 	}
 	catch (Exception e) {
-		std::cout << "GD comm failed, enabling supervisor" << std::endl;
+		rt_printf("GD comm failed for EC%d, enabling supervisor thread\n", (unsigned int)this->getID());
 		this->eStat.GDFailed = true;
 		return;
 	}
@@ -260,15 +260,17 @@ void ElevatorController::waitForGDRequest() {
 
 	switch (requestType) {
 		case STATUS_REQUEST:
-			//std::cout << "EC" << (unsigned int)this->getID() << ": Status Request" << std::endl;
+			rt_printf("EC%d: Staus Request\n", (unsigned int)this->getID());
       this->sendStatus();
 			break;
 		case HALL_CALL_ASSIGNMENT:
-			std::cout << "EC" << (unsigned int)this->getID() << ": Hall Call Assigned: Floor " << (int) request[1] << std::endl;
+			rt_printf("EC%d: Received hall call for floor %d in %s direction\n",
+					(unsigned int)this->getID(), (unsigned int)request[HCA_FLOOR_INDEX],
+					((request[HCA_DIRECTION_INDEX] == DIRECTION_DOWN) ? "downward" : "upward"));
 			this->addHallCall(request[HCA_FLOOR_INDEX], request[HCA_DIRECTION_INDEX]);
 			break;
 		default:
-			std::cout << "EC" << (unsigned int)this->getID() << ": Unknown Message Type" << std::endl;
+			rt_printf("EC%d: Unknown Message Type\n", (unsigned int)this->getID());
 	}
 }
 
@@ -313,35 +315,30 @@ void ElevatorController::connectToGD(char* gdAddress, int port) {
 	echoserver.sin_addr.s_addr = inet_addr(gdAddress);
 	echoserver.sin_port = htons(port);
 
-  std::cout << "EC" << (unsigned int)this->getID() << ": Connecting to GroupDispatcher...";
+	rt_printf("EC%d: Connecting to GroupDispatcher...", this->getID());
 	/* Establish connection */
 	if (connect(this->sock,
 				(struct sockaddr *) &(echoserver),
 			sizeof(echoserver)) < 0) {
 		//Die("Failed to connect with server");
 	}
-  std::cout << "done." << std::endl;
+  rt_printf("done.\n");
 	this->sendRegistration();
 }
 
-void ElevatorController::receiveHallCall(HallCallAssignmentMessage& message) {
-  std::cout << "EC" << (unsigned int)this->getID() << ": Received hall call for floor " << (int) message.getFloor();
-  std::cout << " in " << ((message.getDirection() == DIRECTION_DOWN) ? "downward" : "upward") << " direction" << std::endl;
-}
-
 void ElevatorController::sendRegistration() {
-  std::cout << "EC" << (unsigned int)this->getID() << ": Sending EC->GD registration...";
+	rt_printf("EC%d: Sending EC->GD registration...", (unsigned int)this->getID());
 	sendMessage(RegisterWithGDMessage(this->getID()));
 
-  std::cout << "done." << std::endl;
+	rt_printf("done.\n");
 
 	receiveAck();
 }
 
 void ElevatorController::receiveAck() {
-  std::cout << "EC" << (unsigned int)this->getID() << ": Waitng for EC->GD ack...";
+	rt_printf("EC%d: Waiting for EC->GD ack...", (unsigned int)this->getID());
 	char* message = this->receiveTCP(2);
-  std::cout << "done." << std::endl;
+	rt_printf("done.\n");
 	if (message[0] != REGISTRATION_ACK)
 		Die("EC->GD Registration not acknowledged");
 }
@@ -381,15 +378,15 @@ char* ElevatorController::receiveTCP(unsigned int length) {
 }
 
 void ElevatorController::openDoor() {
-	std::cout << "EC" << (unsigned int)this->getID() << ": opening door" << std::endl;
+	rt_printf("EC%d: opening door\n", (unsigned int)this->getID());
 }
 
 void ElevatorController::closeDoor() {
-	std::cout << "EC" << (unsigned int)this->getID() << ": closing door" << std::endl;
+	rt_printf("EC%d: closing door\n", (unsigned int)this->getID());
 }
 
 void ElevatorController::emergencyStop() {
-	std::cout << "EC" << (unsigned int)this->getID() << ": emergency stop" << std::endl;
+	rt_printf("EC%d: emergency stop\n", (unsigned int)this->getID());
 }
 
 void ElevatorController::addHallCall(unsigned char floor, unsigned char callDirection) {

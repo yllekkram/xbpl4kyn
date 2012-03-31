@@ -8,6 +8,7 @@
 #include <native/timer.h>
 #include <native/mutex.h>
 #include <native/cond.h>
+#include <rtdk.h>
 
 #include "ElevatorCommon.hpp"
 #include "ElevatorController.hpp"
@@ -50,6 +51,8 @@ ElevatorSimulator 	es[NUM_ELEVATORS];
 /* End Global Data Declarations */
 
 int main(int argc, char* argv[]) {
+	rt_print_auto_init(1);
+
 	/* Avoids memory swapping for this program */
 	signal(SIGTERM, catch_signal);
 	signal(SIGINT, catch_signal);
@@ -195,7 +198,7 @@ void runValues(void *arg)
 	{
 		usleep(1000000);
 		ec[ID].getSimulator()->calculateValues();
-		std::cout << "RV" << ID << " ";
+		rt_printf("RV%d ", ID);
 		ec[ID].getSimulator()->print();
 	}
 }
