@@ -1,12 +1,11 @@
-#include <cstdio>
-#include <sys/socket.h>
 #include <arpa/inet.h>
 #include <cstdlib>
 #include <cstring>
-#include <iostream>
 #include <native/task.h>
-#include <unistd.h>
 #include <netinet/in.h>
+#include <rtdk.h>
+#include <sys/socket.h>
+#include <unistd.h>
 
 #include "ElevatorCommon.hpp"
 #include "ElevatorController.hpp"
@@ -27,16 +26,15 @@ void UDPView::init(char* guiAddress, char* guiPort) {
 }
 
 void UDPView::receiveStatus(ElevatorControllerStatus* status) {
-	printf("Received Status\n");
+	rt_printf("Received Status\n");
 }
 
 void UDPView::initUDP(char* address, char* port) {
-  std::cout << "Initialising UDP...";
+	rt_printf("EC%d: Initialising UDP...", this->getEC()->getID());
 	if ((this->sock = socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP)) < 0) {
 		Die("Failed to create socket");
 	}
-  std::cout << "done." << std::endl;
-	
+	rt_printf("done.\n");
 	/* Construct the server sockaddr_in structure */
 	memset(&(this->server), 0, sizeof(this->server));		/* Clear struct */
 	this->server.sin_family = AF_INET;									/* Internet/IP */
@@ -51,11 +49,11 @@ void UDPView::setController(ElevatorController* ec) {
 }
 
 void UDPView::registerWithViewer() {
-	printf("Register with viewer...");
+	rt_printf("Register with viewer...");
 	this->sendMessage(GUIRegistrationMessage(this->getEC()->getID()));
-	printf("wait for ack...");
+	rt_printf("wait for ack...");
   this->receiveAck();
-	printf("done\n");
+	rt_printf("done\n");
 }
 
 void UDPView::run() {
@@ -64,7 +62,7 @@ void UDPView::run() {
 			waitForMessage();
 		}
 		catch (Exception e) {
-			std::cout << e.what() << std::endl;
+			rt_printf("%s\n", e.what());
 		}
 	}
 }
@@ -73,33 +71,35 @@ void UDPView::waitForMessage() {
 	char* request = this->receiveMessage(MAX_GUI_REQUEST_SIZE);
 	char requestType = request[0];
 
-	std::cout << "EC" << (unsigned int)this->getEC()->getID() << ": Message: ";
+	rt_printf("EC%d: Message: ", (unsigned int)this->getEC()->getID());
 	printBuffer(request, MAX_GUI_REQUEST_SIZE);
-	std::cout << std::endl;
+	rt_printf("\n");
 
-	std::cout <<  "EC" << (unsigned int)this->getEC()->getID() << ": Received ";
+	rt_printf("EC%d: Received ", (unsigned int)this->getEC()->getID());
 	switch (requestType) {
 		case GUI_REGISTRATION_ACK:
-			std::cout << "Reg Ack" << std::endl;
+			rt_printf("Reg Ack\n");
 			break;
 		case FLOOR_SELECTION_MESSAGE:
-			std::cout << "floor selection: " << (int)request[1] << std::endl;
+			rt_printf("floor selection: %d\n", (unsigned int)request[1]);
 			this->getEC()->addFloorSelection(request[1]);
 			break;
 		case OPEN_DOOR_REQUEST:
-			std::cout << "open door request" << std::endl;
+			rt_printf("open door request\n");
 			this->getEC()->openDoor();
 			break;
 		case CLOSE_DOOR_REQUEST:
-			std::cout << "close door request" << std::endl;
+			rt_printf("close door request\n");
 			this->getEC()->closeDoor();
 			break;
 		case EMERGENGY_STOP_MESSAGE:
-			std::cout << "emergency stop message" << std::endl;
+			rt_printf("emergency stop message\n");
 			this->getEC()->emergencyStop();
 			break;
 		default:
-			std::cout << "unknown message type: " << printBuffer(request, MAX_GUI_REQUEST_SIZE) << std::endl;
+			rt_printf("unknown message type: ");
+			printBuffer(request, MAX_GUI_REQUEST_SIZE);
+			rt_printf("\n");
 	}
 }
 
@@ -130,11 +130,11 @@ char* UDPView::receiveMessage(unsigned int len) {
 	unsigned int clientlen = sizeof(client);
 	int received = 0;
 	
-  std::cout <<  "EC" << (unsigned int)this->getEC()->getID() << ": Receiving UDP message...";
+	rt_printf("EC%d: Receiving UDPMessage...", (unsigned int)this->getEC()->getID());
 	received = recvfrom(this->sock, buffer, BUFFSIZE, 0,
 														(struct sockaddr *) &client,
 														&clientlen);
-  std::cout << "done." << std::endl;
+	rt_printf("done.\n");
 	
 	/* Check that the client and server are using the same socket */
 	if (this->server.sin_addr.s_addr != client.sin_addr.s_addr) {
