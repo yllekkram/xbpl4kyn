@@ -17,7 +17,7 @@
 #include "UDPView.hpp"
 
 /* Constants */
-#define NUM_ELEVATORS 3
+#define NUM_ELEVATORS 1
 #define STANDARD_PAUSE 2500000000U
 /* End Constants */
 
@@ -69,14 +69,14 @@ int main(int argc, char* argv[]) {
 		setupElevatorController(IDs[i], argv[1], argv[2], argv[3], argv[4]);
 
 		rt_task_start(&(ec[i].rtData.ecThread),					runECThread,					&IDs[i]);
-		rt_task_start(&(ec[i].rtData.frThread), 				runFRThread, 						&IDs[i]);
-		rt_task_start(&(ec[i].rtData.supervisorThread), runSupervisorThread, 	&IDs[i]);
-		rt_task_start(&(ec[i].rtData.statusThread), 		runStatusThread, 						&IDs[i]);
-		rt_task_start(&(uv[i].udpThread),								runUDPThread,					&IDs[i]);
+		// rt_task_start(&(ec[i].rtData.frThread), 				runFRThread, 						&IDs[i]);
+		// rt_task_start(&(ec[i].rtData.supervisorThread), runSupervisorThread, 	&IDs[i]);
+		// rt_task_start(&(ec[i].rtData.statusThread), 		runStatusThread, 						&IDs[i]);
+		// rt_task_start(&(uv[i].udpThread),								runUDPThread,					&IDs[i]);
 
 		// rt_task_start(&supervisorStart[i],	supervisorStartUp,	&IDs[i]);
 		// rt_task_start(&release_cond[i],			randomRun,			&IDs[i]);
-		rt_task_start(&value_run[i],				runValues,					&IDs[i]);
+		// rt_task_start(&value_run[i],				runValues,					&IDs[i]);
 	}
 
 	for (int i = 0; i < NUM_ELEVATORS; i++) {
