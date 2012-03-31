@@ -1,10 +1,10 @@
-#include <cstdio>
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <cstdlib>
 #include <cstring>
 #include <iostream>
 #include <native/task.h>
+#include <rtdk.h>
 #include <unistd.h>
 #include <netinet/in.h>
 
@@ -27,7 +27,7 @@ void UDPView::init(char* guiAddress, char* guiPort) {
 }
 
 void UDPView::receiveStatus(ElevatorControllerStatus* status) {
-	printf("Received Status\n");
+	rt_printf("Received Status\n");
 }
 
 void UDPView::initUDP(char* address, char* port) {
@@ -51,11 +51,11 @@ void UDPView::setController(ElevatorController* ec) {
 }
 
 void UDPView::registerWithViewer() {
-	printf("Register with viewer...");
+	rt_printf("Register with viewer...");
 	this->sendMessage(GUIRegistrationMessage(this->getEC()->getID()));
-	printf("wait for ack...");
+	rt_printf("wait for ack...");
   this->receiveAck();
-	printf("done\n");
+	rt_printf("done\n");
 }
 
 void UDPView::run() {
