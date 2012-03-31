@@ -73,9 +73,9 @@ int main(int argc, char* argv[]) {
 
 		rt_task_start(&(ec[i].rtData.ecThread),					runECThread,					&IDs[i]);
 		// rt_task_start(&(ec[i].rtData.frThread), 				runFRThread, 						&IDs[i]);
-		// rt_task_start(&(ec[i].rtData.supervisorThread), runSupervisorThread, 	&IDs[i]);
-		// rt_task_start(&(ec[i].rtData.statusThread), 		runStatusThread, 						&IDs[i]);
-		// rt_task_start(&(uv[i].udpThread),								runUDPThread,					&IDs[i]);
+		rt_task_start(&(ec[i].rtData.supervisorThread), runSupervisorThread, 	&IDs[i]);
+		rt_task_start(&(ec[i].rtData.statusThread), 		runStatusThread, 						&IDs[i]);
+		rt_task_start(&(uv[i].udpThread),								runUDPThread,					&IDs[i]);
 
 		// rt_task_start(&supervisorStart[i],	supervisorStartUp,	&IDs[i]);
 		// rt_task_start(&release_cond[i],			randomRun,			&IDs[i]);
