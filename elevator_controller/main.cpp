@@ -18,7 +18,7 @@
 #include "UDPView.hpp"
 
 /* Constants */
-#define NUM_ELEVATORS 1
+#define NUM_ELEVATORS 8
 #define STANDARD_PAUSE 2500000000U
 /* End Constants */
 
@@ -72,7 +72,7 @@ int main(int argc, char* argv[]) {
 		setupElevatorController(IDs[i], argv[1], argv[2], argv[3], argv[4]);
 
 		rt_task_start(&(ec[i].rtData.ecThread),					runECThread,					&IDs[i]);
-		// rt_task_start(&(ec[i].rtData.frThread), 				runFRThread, 						&IDs[i]);
+		rt_task_start(&(ec[i].rtData.frThread), 				runFRThread, 						&IDs[i]);
 		rt_task_start(&(ec[i].rtData.supervisorThread), runSupervisorThread, 	&IDs[i]);
 		rt_task_start(&(ec[i].rtData.statusThread), 		runStatusThread, 						&IDs[i]);
 		rt_task_start(&(uv[i].udpThread),								runUDPThread,					&IDs[i]);
@@ -198,7 +198,7 @@ void runValues(void *arg)
 	{
 		usleep(1000000);
 		ec[ID].getSimulator()->calculateValues();
-		rt_printf("RV%d ", ID);
+		rt_printf("RV%d ", ec[ID].getID());
 		ec[ID].getSimulator()->print();
 	}
 }
