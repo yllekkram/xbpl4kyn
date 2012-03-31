@@ -30,7 +30,7 @@ void UDPView::receiveStatus(ElevatorControllerStatus* status) {
 }
 
 void UDPView::initUDP(char* address, char* port) {
-	rt_printf("EC%d: Initialising UDP...", this->getEC()->getID());
+	rt_printf("Initialising UDP...");
 	if ((this->sock = socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP)) < 0) {
 		Die("Failed to create socket");
 	}
