@@ -116,7 +116,7 @@ void ElevatorController::floorRun() {
 		
 			if(topItem != this->eStat.destination)
 			{
-				printf("FR%d next Dest is %d\n.", this->getID(), topItem);
+				rt_printf("FR%d next Dest is %d\n.", this->getID(), topItem);
 				this->getSimulator()->setFinalDestination(topItem);
 				this->eStat.destination = topItem;
 			}
@@ -182,7 +182,7 @@ void ElevatorController::updateStatus() {
 			int topItem = (int)(this->getUpHeap().peek());
 			if(this->eStat.currentFloor == topItem && !this->eStat.taskAssigned)
 			{
-				printf("ST%d Task Completed %d\n", this->getID(), this->eStat.destination);
+				rt_printf("ST%d Task Completed %d\n", this->getID(), this->eStat.destination);
 				this->getUpHeap().pop();
 			}
 		}
@@ -192,7 +192,7 @@ void ElevatorController::updateStatus() {
 			int topItem = (int)(this->getDownHeap().peek());
 			if(this->eStat.currentFloor == topItem && !this->eStat.taskAssigned)
 			{
-				printf("ST%d Task Completed %d\n", this->getID(), this->eStat.destination);
+				rt_printf("ST%d Task Completed %d\n", this->getID(), this->eStat.destination);
 				this->getDownHeap().pop();
 			}
 		}
@@ -229,7 +229,7 @@ void ElevatorController::updateStatusBuffer()
 	this->eStat.statusBuffer[selectedBuffer][1] = this->eStat.direction;
 	this->eStat.statusBuffer[selectedBuffer][2] = this->eStat.currentPosition;
 	this->eStat.statusBuffer[selectedBuffer][3] = this->eStat.currentSpeed;
-	//printf("writting to buffer %d %s\n", selectedBuffer, statusBuffer[selectedBuffer]);
+	//rt_printf("writting to buffer %d %s\n", selectedBuffer, statusBuffer[selectedBuffer]);
 	rt_mutex_release(&(this->rtData.mutex));
 
 	rt_mutex_acquire(&(this->rtData.mutexBuffer), TM_INFINITE);
