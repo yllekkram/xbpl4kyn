@@ -76,7 +76,7 @@ int main(int argc, char* argv[]) {
 
 		// rt_task_start(&supervisorStart[i],	supervisorStartUp,	&IDs[i]);
 		// rt_task_start(&release_cond[i],			randomRun,			&IDs[i]);
-		// rt_task_start(&value_run[i],				runValues,					&IDs[i]);
+		rt_task_start(&value_run[i],				runValues,					&IDs[i]);
 	}
 
 	for (int i = 0; i < NUM_ELEVATORS; i++) {
