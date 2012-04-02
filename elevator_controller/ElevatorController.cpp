@@ -159,7 +159,7 @@ void ElevatorController::updateStatus() {
 		rt_mutex_acquire(&(this->rtData.mutex), TM_INFINITE);
 		this->eStat.currentFloor = this->getSimulator()->getCurrentFloor();
 		this->eStat.taskAssigned = this->getSimulator()->getIsTaskActive();
-		if(this->eStat.taskAssigned && (this->getSimulator()->getIsDirectionUp()))
+		if(this->eStat.taskAssigned && (this->getSimulator()->getDirection() == DIRECTION_UP))
 		{
 			this->eStat.upDirection = true;
       this->eStat.direction = DIRECTION_UP;
@@ -295,8 +295,8 @@ void ElevatorController::sendStatus() {
 	char message[len];
 	message[0] = STATUS_RESPONSE;
 	message[1] = this->id;
-	message[2] = 1;
-	message[3] = DIRECTION_UP;
+	message[2] = this->eStat.currentPosition;
+	message[3] = this->eStat.direction;
 	message[4] = 0;
 	message[5] = 0;
 	message[6] = 0;
@@ -412,8 +412,8 @@ void ElevatorController::addHallCall(unsigned char floor, unsigned char callDire
 }
 
 void ElevatorController::addFloorSelection(unsigned char floor) {
-	if(es->getIsDirectionUp())
-	{	
+	if(es->getDirection() == DIRECTION_UP)
+	{
 		if (es->getCurrentFloor() >= (floor - 1)) { // The elevator cannot stop at the floor
 			this->missedFloorsSelection.push_back(floor);
 		}
@@ -422,7 +422,7 @@ void ElevatorController::addFloorSelection(unsigned char floor) {
 		}
 	}
 
-	if(!es->getIsDirectionUp())
+	if(es->getDirection() == DIRECTION_DOWN)
 	{
 		if (es->getCurrentFloor() <= (floor + 1)) {
 			this->missedFloorsSelection.push_back(floor);
