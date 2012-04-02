@@ -71,8 +71,16 @@ void UpwardFloorRunHeap::pushFloorRequest(char dest) {
 	floorRequestHeap->push(dest);
 }
 
+void UpwardFloorRunHeap::pushFloorRequestVector(std::vector<char>& dests) {
+	floorRequestHeap->pushVector(dests);
+}
+
 void UpwardFloorRunHeap::pushHallCall(char dest) {
 	hallCallHeap->push(dest);
+}
+
+void UpwardFloorRunHeap::pushHallCallVector(std::vector<char>& dests) {
+	hallCallHeap->pushVector(dests);
 }
 
 DownwardFloorRunHeap::DownwardFloorRunHeap()
@@ -145,6 +153,14 @@ void DownwardFloorRunHeap::pushFloorRequest(char dest) {
 	floorRequestHeap->push(dest);
 }
 
+void DownwardFloorRunHeap::pushFloorRequestVector(std::vector<char>& dests) {
+	floorRequestHeap->pushVector(dests);
+}
+
 void DownwardFloorRunHeap::pushHallCall(char dest) {
 	hallCallHeap->push(dest);
+}
+
+void DownwardFloorRunHeap::pushHallCallVector(std::vector<char>& dests) {
+	hallCallHeap->pushVector(dests);
 }
