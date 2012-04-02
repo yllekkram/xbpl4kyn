@@ -157,8 +157,10 @@ void ElevatorController::updateStatus() {
 		rt_task_wait_period(NULL);
 
 		rt_mutex_acquire(&(this->rtData.mutex), TM_INFINITE);
+
 		this->eStat.currentFloor = this->getSimulator()->getCurrentFloor();
 		this->eStat.taskAssigned = this->getSimulator()->getIsTaskActive();
+
 		if(this->eStat.taskAssigned && (this->getSimulator()->getDirection() == DIRECTION_UP))
 		{
 			this->eStat.upDirection = true;
@@ -462,9 +464,11 @@ void ElevatorController::updateMissedFloor(unsigned char direction)
 {
 	// Add missed hall calls
 	if(direction == DIRECTION_UP) {
+		rt_printf("EC%d: Appending missed up hall calls\n", (unsigned int)this->getID());
 		this->upHeap.pushHallCallVector(this->missedHallCalls);
 	}
 	else if (direction == DIRECTION_DOWN){
+		rt_printf("EC%d: Appending missed down hall calls\n", (unsigned int)this->getID());
 		this->downHeap.pushHallCallVector(this->missedHallCalls);
 	}
 	else {
@@ -474,9 +478,11 @@ void ElevatorController::updateMissedFloor(unsigned char direction)
 	
 	// Add missed floor requests
 	if(direction == DIRECTION_UP) {
+		rt_printf("EC%d: Appending missed down floor requests\n", (unsigned int)this->getID());
 		this->downHeap.pushFloorRequestVector(this->missedFloorSelections);
 	}
 	else if (direction == DIRECTION_DOWN) {
+		rt_printf("EC%d: Appending missed up floor requests\n", (unsigned int)this->getID());
 		this->upHeap.pushFloorRequestVector(this->missedFloorSelections);
 	}
 	else {
