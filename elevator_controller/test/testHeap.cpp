@@ -28,6 +28,17 @@ SUITE(MaxHeap) {
 		CHECK_EQUAL(7, heap.peek());
 	}
 
+	TEST_FIXTURE(EmptyMaxHeapFixture, PushVector) {
+		std::vector<int> data;
+		data.push_back(5);
+		data.push_back(7);
+		data.push_back(6);
+
+		heap.pushVector(data);
+		CHECK_EQUAL(3, heap.getSize());
+		CHECK_EQUAL(7, heap.peek());
+	}
+
 	TEST_FIXTURE(EmptyMaxHeapFixture, PopEmptyMaxHeap) {
 		CHECK_THROW(heap.pop(), EmptyHeapException);
 		CHECK_EQUAL(0, heap.getSize());
@@ -64,6 +75,17 @@ SUITE(MinHeap) {
 		heap.push(7);
 		heap.push(6);
 
+		CHECK_EQUAL(3, heap.getSize());
+		CHECK_EQUAL(5, heap.peek());
+	}
+
+	TEST_FIXTURE(EmptyMinHeapFixture, PushVector) {
+		std::vector<int> data;
+		data.push_back(5);
+		data.push_back(7);
+		data.push_back(6);
+
+		heap.pushVector(data);
 		CHECK_EQUAL(3, heap.getSize());
 		CHECK_EQUAL(5, heap.peek());
 	}
