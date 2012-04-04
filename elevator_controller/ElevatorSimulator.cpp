@@ -1,12 +1,12 @@
 #include <arpa/inet.h>
 #include <cstdlib>
 #include <cstring>
-#include <iostream>
-#include <netinet/in.h>
-#include <sys/socket.h>
-#include <unistd.h>
-#include <sys/timeb.h>
 #include <math.h>
+#include <netinet/in.h>
+#include <rtdk.h>
+#include <sys/socket.h>
+#include <sys/timeb.h>
+#include <unistd.h>
 
 #include "ElevatorSimulator.hpp"
 
@@ -21,7 +21,7 @@
 ElevatorSimulator::ElevatorSimulator()
 	: tp(new struct timeb), tpe(new struct timeb), currentPosition(0),
 	currentSpeed(0), currentFloor(0), finalDestination(0),
-	midLocation(0), task(false), directionUP(true),
+	midLocation(0), task(false), direction(DIRECTION_UP),
 	DoorOpening(false), DoorOpen(false), DoorClosing(false),
 	numState(0), accTime(0), decTime(0), maxDistTime(0), distAcc(0),
 	distDec(0), distMaxSpeed(0), midTime(0), midSpeed(0), doorOpenButton(false), doorCloseButton(false)
@@ -77,20 +77,20 @@ void ElevatorSimulator::calculateValues(){
 		if(numState==1){		//if current status is 1
 			if(elaspedTime < accTime){		//if the elapsed time is less than the time it takes to accelerate
 				//calculate the current position using acceleration and time
-				if(!directionUP){currentPosition = tempCurrentPosition - (0.5)*ACCELERATION*elaspedTime*elaspedTime;}
+				if(direction == DIRECTION_DOWN){currentPosition = tempCurrentPosition - (0.5)*ACCELERATION*elaspedTime*elaspedTime;}
 				else{currentPosition = tempCurrentPosition + (0.5)*ACCELERATION*elaspedTime*elaspedTime;}
 				currentSpeed += ACCELERATION*elaspedTime;	//calculate the current speed using acceleration and time
 			//if the elapsed time is less than the time it takes to accelerate and maximum speed time
 			}else if(elaspedTime < (accTime+maxDistTime)){
 				float extraTime = elaspedTime-accTime;	//amount of time spend with maximum speed
 				//calculate the current position using acceleration and time and maximum speed
-				if(!directionUP){currentPosition = tempCurrentPosition - (0.5)*ACCELERATION*accTime*accTime - MAX_SPEED*extraTime;}
+				if(direction == DIRECTION_DOWN){currentPosition = tempCurrentPosition - (0.5)*ACCELERATION*accTime*accTime - MAX_SPEED*extraTime;}
 				else{currentPosition = tempCurrentPosition + (0.5)*ACCELERATION*accTime*accTime + MAX_SPEED*extraTime;}
 				currentSpeed = MAX_SPEED;	//current speed will be the maximum speed
 			}else{
 				float extraTime = elaspedTime-(accTime+maxDistTime);	//currently in deceleration stage
 				//calculate the current position using acceleration and time and maximum speed and deceleration
-				if(!directionUP){currentPosition = tempCurrentPosition - (0.5)*ACCELERATION*accTime*accTime - MAX_SPEED*maxDistTime - (MAX_SPEED*extraTime + (0.5)*DECELATRAION*extraTime*extraTime);}
+				if(direction == DIRECTION_DOWN){currentPosition = tempCurrentPosition - (0.5)*ACCELERATION*accTime*accTime - MAX_SPEED*maxDistTime - (MAX_SPEED*extraTime + (0.5)*DECELATRAION*extraTime*extraTime);}
 				else{currentPosition = tempCurrentPosition + (0.5)*ACCELERATION*accTime*accTime + MAX_SPEED*maxDistTime + (MAX_SPEED*extraTime + (0.5)*DECELATRAION*extraTime*extraTime);}
 				//calculate the current speed using acceleration and time and maximum speed and deceleration
 				currentSpeed = DECELATRAION*extraTime + MAX_SPEED;
@@ -98,19 +98,19 @@ void ElevatorSimulator::calculateValues(){
 		}else if(numState==2){	//if current status is 1
 			if(elaspedTime <= midTime){	//if the elapsed time is within the accelerating time period
 				//calculate position using acceleration
-				if(!directionUP){currentPosition = tempCurrentPosition - (0.5)*ACCELERATION*elaspedTime*elaspedTime;}
+				if(direction == DIRECTION_DOWN){currentPosition = tempCurrentPosition - (0.5)*ACCELERATION*elaspedTime*elaspedTime;}
 				else{currentPosition = tempCurrentPosition + (0.5)*ACCELERATION*elaspedTime*elaspedTime;}
 				currentSpeed += ACCELERATION*elaspedTime;	//calculate speed using acceleration
 			}else if(elaspedTime > midTime){
 				float extraTime = elaspedTime-midTime;		//calculate the time spend in deceleration
 				//calculate current position using acceleration, deceleration
-				if(!directionUP){currentPosition = tempCurrentPosition - (0.5)*ACCELERATION*midTime*midTime + (0.5)*DECELATRAION*extraTime*extraTime;}
+				if(direction == DIRECTION_DOWN){currentPosition = tempCurrentPosition - (0.5)*ACCELERATION*midTime*midTime + (0.5)*DECELATRAION*extraTime*extraTime;}
 				else{currentPosition = tempCurrentPosition + (0.5)*ACCELERATION*midTime*midTime - (0.5)*DECELATRAION*extraTime*extraTime;}
 				currentSpeed = DECELATRAION*extraTime + midSpeed;	//calculate speed using DECELATRAION and time
 			}
 		}
 
-		if((currentPosition >= finalDestination*FLOOR_HEIGHT && directionUP) || (currentPosition <= finalDestination*FLOOR_HEIGHT && !directionUP))
+		if((currentPosition >= finalDestination*FLOOR_HEIGHT && (direction == DIRECTION_UP)) || (currentPosition <= finalDestination*FLOOR_HEIGHT && (direction == DIRECTION_DOWN)))
 		{
 			currentPosition = finalDestination*FLOOR_HEIGHT;	//if the current position exceed final destination assign to final destination
 			currentSpeed = 0;									//reset the current speed
@@ -121,22 +121,22 @@ void ElevatorSimulator::calculateValues(){
 		}
 
 		currentFloor = (int)(currentPosition/FLOOR_HEIGHT);	//calculate current floor
-		if(currentSpeed < 0 || ((currentPosition >= finalDestination*FLOOR_HEIGHT && directionUP || currentPosition <= finalDestination*FLOOR_HEIGHT && !directionUP) && elaspedTime >= travelTime && elaspedTime <= doorOpenedTime))	//if the destination is reached and door is opening
+		if(currentSpeed < 0 || ((currentPosition >= finalDestination*FLOOR_HEIGHT && (direction == DIRECTION_UP) || currentPosition <= finalDestination*FLOOR_HEIGHT && (direction == DIRECTION_DOWN)) && elaspedTime >= travelTime && elaspedTime <= doorOpenedTime))	//if the destination is reached and door is opening
 		{
 			numState = 0;	//reset the state
 			currentSpeed = 0;	//reset the current speed
 			currentFloor = finalDestination;			//set the current floor to final destination
 			currentPosition = finalDestination*FLOOR_HEIGHT;	//assign to final destination
 			DoorOpening = true;	//assign the door opening variable to true
-		}else if((currentPosition >= finalDestination*FLOOR_HEIGHT && directionUP || currentPosition <= finalDestination*FLOOR_HEIGHT && !directionUP) && elaspedTime >= doorOpenedTime && elaspedTime <= doorOpenedAndReadyTime)
+		}else if((currentPosition >= finalDestination*FLOOR_HEIGHT && (direction == DIRECTION_UP) || currentPosition <= finalDestination*FLOOR_HEIGHT && (direction == DIRECTION_DOWN)) && elaspedTime >= doorOpenedTime && elaspedTime <= doorOpenedAndReadyTime)
 		{
 			DoorOpening = false;
 			DoorOpen = true;	//assign the DoorOpen variable to true
-		}else if((currentPosition >= finalDestination*FLOOR_HEIGHT && directionUP || currentPosition <= finalDestination*FLOOR_HEIGHT && !directionUP) && elaspedTime >= doorOpenedAndReadyTime && elaspedTime <= doorClosedTime)
+		}else if((currentPosition >= finalDestination*FLOOR_HEIGHT && (direction == DIRECTION_UP) || currentPosition <= finalDestination*FLOOR_HEIGHT && (direction == DIRECTION_DOWN)) && elaspedTime >= doorOpenedAndReadyTime && elaspedTime <= doorClosedTime)
 		{
 			DoorOpen = false;
 			DoorClosing = true;	//assign the DoorClosing variable to true
-		}else if((currentPosition >= finalDestination*FLOOR_HEIGHT && directionUP || currentPosition <= finalDestination*FLOOR_HEIGHT && !directionUP) && elaspedTime >= doorClosedTime)
+		}else if((currentPosition >= finalDestination*FLOOR_HEIGHT && (direction == DIRECTION_UP) || currentPosition <= finalDestination*FLOOR_HEIGHT && (direction == DIRECTION_DOWN)) && elaspedTime >= doorClosedTime)
 		{
 			DoorClosing = false;
 			task = false;
@@ -154,12 +154,12 @@ void ElevatorSimulator::setFinalDestination(int floorNum)
 	finalDestination = floorNum;		//assign a new destination
 	ftime(tp);							//calculate the start time
 	task = true;						//assign the task value to true to indicate there is a task
-	directionUP = true;
+	direction = DIRECTION_UP;
 	float destination = floorNum*FLOOR_HEIGHT;	//find the location of the floor in meter
 	float requiredDistance = destination - currentPosition;	//find the required distance needed travel assuming up direction
 	if(currentPosition>destination)		//find we are traveling down
 	{
-		directionUP = false;	//set directionUp to false to indicate down
+		direction = DIRECTION_DOWN;
 		requiredDistance = currentPosition - destination;	//find the required distance needed travel down
 	}
 	findGraph(requiredDistance);	//call this method
@@ -184,9 +184,12 @@ void ElevatorSimulator::setDoorClose()
 float ElevatorSimulator::getCurrentSpeed(){return currentSpeed;}
 int ElevatorSimulator::getCurrentFloor(){return currentFloor;}
 bool ElevatorSimulator::getIsTaskActive(){return task;}
-bool ElevatorSimulator::getIsDirectionUp(){return directionUP;}
+unsigned char ElevatorSimulator::getDirection(){return direction;}
 bool ElevatorSimulator::getIsDoorOpening(){return DoorOpening;}
 bool ElevatorSimulator::getIsDoorOpen(){return DoorOpen;}
 bool ElevatorSimulator::getIsDoorClosing(){return DoorClosing;}
 float ElevatorSimulator::geCurrentPosition(){return currentPosition;}
-void ElevatorSimulator::print(){std::cout << "currentSpeed " << currentSpeed << " currentFloor " << currentFloor << " task " << task << " directionUP " << directionUP << " DoorOpening " << DoorOpening << " DoorOpen " << DoorOpen << " DoorClosing " << DoorClosing << std::endl;}
+void ElevatorSimulator::print(){
+	rt_printf("currentSpeed %d currentFloor %d task %d direction %d DoorOpening %d DoorOpen %d DoorClosing\n",
+			(unsigned int)currentSpeed,	(unsigned int)currentFloor,	direction, DoorOpening,	DoorOpen,	DoorClosing);
+}

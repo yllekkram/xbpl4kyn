@@ -8,6 +8,7 @@
 #include <native/timer.h>
 #include <native/mutex.h>
 #include <native/cond.h>
+#include <rtdk.h>
 
 #include "ElevatorCommon.hpp"
 #include "ElevatorController.hpp"
@@ -17,7 +18,7 @@
 #include "UDPView.hpp"
 
 /* Constants */
-#define NUM_ELEVATORS 8
+#define NUM_ELEVATORS 1
 #define STANDARD_PAUSE 2500000000U
 /* End Constants */
 
@@ -38,7 +39,7 @@ void sleep(int);
 /* End Function Prototypes */
 
 /* Global Data Declarations */
-unsigned char IDs[NUM_ELEVATORS]; // Store thread identifiers in gloabl memory to ensure that they always exist
+unsigned char IDs[NUM_ELEVATORS]; // Store thread identifiers in global memory to ensure that they always exist
 
 RT_TASK supervisorStart[NUM_ELEVATORS];
 RT_TASK release_cond[NUM_ELEVATORS];
@@ -50,6 +51,8 @@ ElevatorSimulator 	es[NUM_ELEVATORS];
 /* End Global Data Declarations */
 
 int main(int argc, char* argv[]) {
+	rt_print_auto_init(1);
+
 	/* Avoids memory swapping for this program */
 	signal(SIGTERM, catch_signal);
 	signal(SIGINT, catch_signal);
@@ -74,7 +77,7 @@ int main(int argc, char* argv[]) {
 		rt_task_start(&(ec[i].rtData.statusThread), 		runStatusThread, 						&IDs[i]);
 		rt_task_start(&(uv[i].udpThread),								runUDPThread,					&IDs[i]);
 
-		rt_task_start(&supervisorStart[i],	supervisorStartUp,	&IDs[i]);
+		// rt_task_start(&supervisorStart[i],	supervisorStartUp,	&IDs[i]);
 		// rt_task_start(&release_cond[i],			randomRun,			&IDs[i]);
 		rt_task_start(&value_run[i],				runValues,					&IDs[i]);
 	}
@@ -97,35 +100,35 @@ int main(int argc, char* argv[]) {
 void runECThread(void* cookie) {
 	const int ID = *((int*)cookie);
 
-	printf("EC%d Thread\n", ec[ID].getID());
+	rt_printf("EC%d Thread\n", ec[ID].getID());
 	ec[ID].communicate();
 }
 
 void runFRThread(void* cookie) {
 	int ID = *((int*)cookie);
 
-	printf("FR%d Thread\n", ec[ID].getID());
+	rt_printf("FR%d Thread\n", ec[ID].getID());
 	ec[ID].floorRun();
 }
 
 void runStatusThread(void* cookie) {
 	const int ID = *((int*)cookie);
 
-	printf("ST%d Thread\n", ec[ID].getID());
+	rt_printf("ST%d Thread\n", ec[ID].getID());
 	ec[ID].updateStatus();
 }
 
 void runSupervisorThread(void* cookie) {
 	const int ID = *((int*)cookie);
 
-	printf("SV%d Thread\n", ec[ID].getID());;
+	rt_printf("SV%d Thread\n", ec[ID].getID());;
 	ec[ID].supervise();
 }
 
 void runUDPThread(void* cookie) {
 	const int ID = *((int*)cookie);
 
-	printf("UDP%d Thread\n", ec[ID].getID());
+	rt_printf("UDP%d Thread\n", ec[ID].getID());
 	uv[ID].run();
 }
 
@@ -154,34 +157,35 @@ void randomRun(void *arg)
 {
 	const int ID = *((int*)arg);
 	ec[ID].getUpHeap().pushHallCall(5);
-	printf("RR%d Hall Call Up Floor : 5\n", ID);
+	rt_printf("RR%d Hall Call Up Floor : 5\n", ID);
 	sleep(40);
 
 	ec[ID].getUpHeap().pushHallCall(3);
-	printf("RR%d Hall Call Up Floor : 3\n", ID);
+	rt_printf("RR%d Hall Call Up Floor : 3\n", ID);
 	sleep(40);
 
 	ec[ID].getUpHeap().pushFloorRequest(4);
-	printf("RR%d Floor Request Up : 4\n", ID);
+	rt_printf("RR%d Floor Request Up : 4\n", ID);
+	sleep(40);
 
 	ec[ID].getUpHeap().pushFloorRequest(9);
-	printf("RR%d Floor Request Up : 9\n", ID);
+	rt_printf("RR%d Floor Request Up : 9\n", ID);
 	sleep(40);
 
 	ec[ID].getDownHeap().pushHallCall(6);
-	printf("RR%d Hall Call Down Floor : 6\n", ID);
+	rt_printf("RR%d Hall Call Down Floor : 6\n", ID);
 	sleep(40);
 
 	ec[ID].getDownHeap().pushHallCall(2);
-	printf("RR%d Hall Call Down Floor : 2\n", ID);
+	rt_printf("RR%d Hall Call Down Floor : 2\n", ID);
 	sleep(40);
 
 	ec[ID].getDownHeap().pushFloorRequest(3);
-	printf("RR%d Floor Request Down : 3\n", ID);
+	rt_printf("RR%d Floor Request Down : 3\n", ID);
 	sleep(40);
 
 	ec[ID].getDownHeap().pushFloorRequest(0);
-	printf("RR%d Floor Request Down : 0\n", ID);
+	rt_printf("RR%d Floor Request Down : 0\n", ID);
 	sleep(40);
 }
 
@@ -194,7 +198,7 @@ void runValues(void *arg)
 	{
 		usleep(1000000);
 		ec[ID].getSimulator()->calculateValues();
-		std::cout << "RV" << ID << " ";
+		rt_printf("RV%d ", ec[ID].getID());
 		ec[ID].getSimulator()->print();
 	}
 }
@@ -205,18 +209,18 @@ void supervisorStartUp(void *arg)
 	const int ID = *((int*)arg);
 
 	sleep(200);
-	printf("SSU%d GroupDispatcher FAILED, Oh my god :(\n", ID);
-	ec[ID].eStat.GDFailed = true;
+	rt_printf("SSU%d GroupDispatcher FAILED, Oh my god :(\n", ID);
+	ec[ID].eStat.setGDFailed(true);
 	sleep(400);
-	printf("SSU%d GroupDispatcher FIXED, good :)\n", ID);
-	ec[ID].eStat.GDFailed = false;
+	rt_printf("SSU%d GroupDispatcher FIXED, good :)\n", ID);
+	ec[ID].eStat.setGDFailed(false);
 
 	ec[ID].getUpHeap().pushHallCall(8);
-	printf("SSU%d Hall Call Up Floor : 3\n", ID);
+	rt_printf("SSU%d Hall Call Up Floor : 3\n", ID);
 	sleep(40);
 
 	ec[ID].getUpHeap().pushFloorRequest(15);
-	printf("SSU%d Floor Request Up : 4\n", ID);
+	rt_printf("SSU%d Floor Request Up : 4\n", ID);
 }
 
 void catch_signal(int sig) {
