@@ -1,3 +1,6 @@
 #!/bin/bash
-ssh root@192.168.251.128 rm -rf code/classes/sysc3303/project/elevator_controller/*
-tar -czf - ./* | ssh root@192.168.251.128 tar -xzmf - -C code/classes/sysc3303/project/elevator_controller
+CODE_DIR='/root/project/elevator_controller'
+SSH_COM='ssh root@192.168.251.128'
+
+$SSH_COM rm -rf $CODE_DIR/*
+tar -czf - ./* | $SSH_COM tar -xzmf - -C $CODE_DIR
