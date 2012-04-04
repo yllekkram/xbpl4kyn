@@ -278,7 +278,7 @@ void ElevatorController::sendStatus() {
 
 	char len = 1 	/* EC ID */
 						+1	/* Message Type */
-						+1	/* Position */
+						+1	/* Floor */
 						+1	/* Direction */
 						+1	/* Is moving? */
 						+1	/* num hall calls */
@@ -290,7 +290,7 @@ void ElevatorController::sendStatus() {
 	char message[len];
 	message[0] = STATUS_RESPONSE;
 	message[1] = this->id;
-	message[2] = this->eStat.getCurrentPosition();
+	message[2] = this->eStat.getCurrentFloor();
 	message[3] = this->eStat.getDirection();
 	message[4] = (this->eStat.getCurrentSpeed() != 0) ? 1 : 0;
 
@@ -300,7 +300,7 @@ void ElevatorController::sendStatus() {
 	message[5] = hallCalls->size();
 	for (std::vector<char>::iterator it = hallCalls->begin(); it != hallCalls->end(); ++it) {
 		message[++offset + 5] = *it;
-		message[++offset + 5 +1] = this->eStat.getDirection();
+		message[++offset + 5] = this->eStat.getDirection();
 	}
 
 	message[offset + 6] = floorRequests->size();
