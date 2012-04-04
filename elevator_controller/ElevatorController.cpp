@@ -277,12 +277,10 @@ void ElevatorController::waitForGDRequest() {
 }
 
 void ElevatorController::sendStatus() {
-	std::vector<char>* hallCalls = new std::vector<char>();
-	std::vector<char>* floorRequests = new std::vector<char>();
+	FloorRunHeap& heap = (this->eStat.direction == DIRECTION_UP) ? static_cast<FloorRunHeap&>(this->upHeap) : this->downHeap;
+	std::vector<char>* hallCalls = heap.getHallCalls();
+	std::vector<char>* floorRequests = heap.getFloorRequests();
 
-	// this->sendMessage(StatusResponseMessage(this->id, 
-  //                                         5, 6, 7, hallCalls->size(), 
-  //                                         (char*) &hallCalls[0]));
 	char len = 1 	/* EC ID */
 						+1	/* Message Type */
 						+1	/* Position */
@@ -299,10 +297,24 @@ void ElevatorController::sendStatus() {
 	message[1] = this->id;
 	message[2] = this->eStat.currentPosition;
 	message[3] = this->eStat.direction;
-	message[4] = 0;
-	message[5] = 0;
-	message[6] = 0;
-	message[7] = MESSAGE_TERMINATOR;
+	message[4] = (this->eStat.currentSpeed != 0) ? 1 : 0;
+
+	/* Add variable-length data */
+	char offset = 0;
+
+	message[5] = hallCalls->size();
+	for (std::vector<char>::iterator it = hallCalls->begin(); it != hallCalls->end(); ++it) {
+		message[++offset + 5] = *it;
+		message[++offset + 5 +1] = this->eStat.direction;
+	}
+
+	message[offset + 6] = floorRequests->size();
+	for (std::vector<char>::iterator it = floorRequests->begin(); it != floorRequests->end(); ++it) {
+		message[++offset + 6] = *it;
+	}
+
+
+	message[7 + offset] = MESSAGE_TERMINATOR;
 
 	this->sendMessage(message, len);
 
