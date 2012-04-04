@@ -28,6 +28,17 @@ struct ECRTData {
 struct ElevatorStatus {
 	ElevatorStatus();
 
+	unsigned char getCurretnFloor() 		const { return currentFloor; }
+	unsigned char getDirection() 				const { return direction; }
+	unsigned char getCurrentPosition() 	const { return currentPosition; }
+	unsigned char getCurrentSpeed() 		const { return currentSpeed; }
+	unsigned char getDestination() 			const { return destination; }
+	unsigned char getTaskActive() 			const { return taskActive; }
+	bool getTaskAssigned() 							const { return taskAssigned; }
+	bool getGDFailed() 									const { return GDFailed; }
+	bool getGDFailedEmptyHeap() 				const { return GDFailedEmptyHeap; }
+	bool getElevatorServiceDirection() 	const { return elevatorServiceDirection; }
+
 	unsigned char currentFloor;
 	unsigned char direction;
 	unsigned char currentPosition;
@@ -35,8 +46,6 @@ struct ElevatorStatus {
 	unsigned char destination;
 	unsigned char taskActive;
 	bool taskAssigned;
-	bool upDirection;
-	bool downDirection;
 	bool GDFailed;
 	bool GDFailedEmptyHeap;
 	bool elevatorServiceDirection;

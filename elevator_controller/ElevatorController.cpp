@@ -43,9 +43,8 @@ ECRTData::~ECRTData() {
 ElevatorStatus::ElevatorStatus()
 	: currentFloor(0),		direction(DIRECTION_UP),		currentPosition(0),
 		currentSpeed(0),		destination(0),							taskActive(false),
-		taskAssigned(0),		upDirection(false),					downDirection(false),
-		GDFailed(false),		GDFailedEmptyHeap(false),		elevatorServiceDirection(true),
-    bufferSelection(0)
+		taskAssigned(0),		GDFailed(false),						GDFailedEmptyHeap(false),
+		elevatorServiceDirection(true),									bufferSelection(0)
 {}
 
 
@@ -63,7 +62,7 @@ ElevatorController::~ElevatorController() {
 }
 
 void ElevatorController::communicate() {
-	while (!this->eStat.GDFailed) {
+	while (!this->eStat.getGDFailed()) {
 		try {
 			this->waitForGDRequest();
 		}
@@ -79,7 +78,7 @@ void ElevatorController::floorRun() {
 	unsigned char topItem;
 	while(true)
 	{
-		if(!this->eStat.GDFailedEmptyHeap)
+		if(!this->eStat.getGDFailedEmptyHeap())
 		{
 			rt_mutex_acquire(&(this->rtData.mutex), TM_INFINITE);
 			rt_cond_wait(&(this->rtData.freeCond), &(this->rtData.mutex), TM_INFINITE);
@@ -114,7 +113,7 @@ void ElevatorController::floorRun() {
 				}
 			}
 		
-			if(topItem != this->eStat.destination)
+			if(topItem != this->eStat.getDestination())
 			{
 				rt_printf("FR%d next Dest is %d\n.", this->getID(), topItem);
 				this->getSimulator()->setFinalDestination(topItem);
@@ -129,18 +128,18 @@ void ElevatorController::supervise() {
 	while(true)
 	{
 		rt_mutex_acquire(&(this->rtData.mutex), TM_INFINITE);
-		if(this->eStat.GDFailed && this->eStat.GDFailedEmptyHeap)
+		if(this->eStat.getGDFailed() && this->eStat.getGDFailedEmptyHeap())
 		{
 			if(!this->eStat.taskAssigned)
 			{
-				if((this->eStat.downDirection && this->eStat.destination!=0) || this->eStat.destination == MAX_FLOORS)
+				if(((this->eStat.getDirection() == DIRECTION_DOWN) && this->eStat.getDestination()!=0) || this->eStat.getDestination() == MAX_FLOORS)
 				{
 					this->eStat.destination--;
-					this->getSimulator()->setFinalDestination(this->eStat.destination);
-				}else if(this->eStat.destination == 0 || this->eStat.destination != MAX_FLOORS)
+					this->getSimulator()->setFinalDestination(this->eStat.getDestination());
+				}else if(this->eStat.getDestination() == 0 || this->eStat.getDestination() != MAX_FLOORS)
 				{
 					this->eStat.destination++;
-					this->getSimulator()->setFinalDestination(this->eStat.destination);
+					this->getSimulator()->setFinalDestination(this->eStat.getDestination());
 				}
 			}
 		}
@@ -161,14 +160,11 @@ void ElevatorController::updateStatus() {
 		this->eStat.taskAssigned = this->getSimulator()->getIsTaskActive();
 		if(this->eStat.taskAssigned && (this->getSimulator()->getIsDirectionUp()))
 		{
-			this->eStat.upDirection = true;
       this->eStat.direction = DIRECTION_UP;
 		}
     else {
-      this->eStat.upDirection = false;
 			this->eStat.direction = DIRECTION_DOWN;
     }
-		this->eStat.downDirection = !(this->eStat.upDirection);
 
 		this->eStat.currentPosition = (unsigned char)ceil(this->getSimulator()->geCurrentPosition());
 		this->eStat.taskActive = this->eStat.taskAssigned;
@@ -182,7 +178,7 @@ void ElevatorController::updateStatus() {
 			int topItem = (int)(this->getUpHeap().peek());
 			if(this->eStat.currentFloor == topItem && !this->eStat.taskAssigned)
 			{
-				rt_printf("ST%d Task Completed %d\n", this->getID(), this->eStat.destination);
+				rt_printf("ST%d Task Completed %d\n", this->getID(), this->eStat.getDestination());
 				this->getUpHeap().pop();
 			}
 		}
@@ -192,7 +188,7 @@ void ElevatorController::updateStatus() {
 			int topItem = (int)(this->getDownHeap().peek());
 			if(this->eStat.currentFloor == topItem && !this->eStat.taskAssigned)
 			{
-				rt_printf("ST%d Task Completed %d\n", this->getID(), this->eStat.destination);
+				rt_printf("ST%d Task Completed %d\n", this->getID(), this->eStat.getDestination());
 				this->getDownHeap().pop();
 			}
 		}
@@ -226,7 +222,7 @@ void ElevatorController::updateStatusBuffer()
 	
 	rt_mutex_acquire(&(this->rtData.mutex), TM_INFINITE);
 	this->eStat.statusBuffer[selectedBuffer][0] = this->eStat.currentFloor;
-	this->eStat.statusBuffer[selectedBuffer][1] = this->eStat.direction;
+	this->eStat.statusBuffer[selectedBuffer][1] = this->eStat.getDirection();
 	this->eStat.statusBuffer[selectedBuffer][2] = this->eStat.currentPosition;
 	this->eStat.statusBuffer[selectedBuffer][3] = this->eStat.currentSpeed;
 	//rt_printf("writting to buffer %d %s\n", selectedBuffer, statusBuffer[selectedBuffer]);
@@ -391,7 +387,7 @@ void ElevatorController::emergencyStop() {
 
 void ElevatorController::addHallCall(unsigned char floor, unsigned char callDirection) {
 	if (callDirection == DIRECTION_UP) {
-		if ((es->getCurrentFloor() >= (floor - 1)) && (eStat.direction == DIRECTION_UP)) { // The elevator cannot stop at the floor
+		if ((es->getCurrentFloor() >= (floor - 1)) && (eStat.getDirection() == DIRECTION_UP)) { // The elevator cannot stop at the floor
 			this->missedFloors.push_back(floor);
 		}
 		else {
@@ -399,7 +395,7 @@ void ElevatorController::addHallCall(unsigned char floor, unsigned char callDire
 		}
 	}
 	else if (callDirection == DIRECTION_DOWN) {
-		if ((es->getCurrentFloor() <= (floor + 1))  && (eStat.direction == DIRECTION_DOWN)) {
+		if ((es->getCurrentFloor() <= (floor + 1))  && (eStat.getDirection() == DIRECTION_DOWN)) {
 			this->missedFloors.push_back(floor);
 		}
 		else {
