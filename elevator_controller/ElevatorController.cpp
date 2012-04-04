@@ -41,10 +41,10 @@ ECRTData::~ECRTData() {
 }
 
 ElevatorStatus::ElevatorStatus()
-	: currentFloor(0),		direction(DIRECTION_UP),		currentPosition(0),
-		currentSpeed(0),		destination(0),							taskActive(false),
-		taskAssigned(0),		GDFailed(false),						GDFailedEmptyHeap(false),
-		elevatorServiceDirection(DIRECTION_UP),					bufferSelection(0)
+	: bufferSelection(0), currentFloor(0),	direction(DIRECTION_UP),
+		currentPosition(0),	currentSpeed(0),	destination(0),
+		serviceDirection(DIRECTION_UP),				taskActive(false),
+		taskAssigned(0),		GDFailed(false),	GDFailedEmptyHeap(false)
 {}
 
 
@@ -87,29 +87,29 @@ void ElevatorController::floorRun() {
 			int downHeapSize = this->getDownHeap().getSize();
 			if(upHeapSize==0 && downHeapSize==0){this->eStat.setGDFailedEmptyHeap(true);}
 			
-			if(!this->eStat.getElevatorServiceDirection())
+			if(!this->eStat.getServiceDirection())
 			{
 				if(downHeapSize > 0)
 				{
 					topItem = this->getDownHeap().peek();
-					this->eStat.setElevatorServiceDirection(false);
+					this->eStat.setServiceDirection(false);
 				}else if(upHeapSize > 0)
 				{
 					this->updateMissedFloor(DIRECTION_DOWN);
 					topItem = this->getUpHeap().peek();
-					this->eStat.setElevatorServiceDirection(true);
+					this->eStat.setServiceDirection(true);
 				}
 			}else
 			{
 				if(upHeapSize > 0)
 				{
 					topItem = this->getUpHeap().peek();
-					this->eStat.setElevatorServiceDirection(true);
+					this->eStat.setServiceDirection(true);
 				}else if(downHeapSize > 0)
 				{
 					this->updateMissedFloor(DIRECTION_UP);
 					topItem = this->getDownHeap().peek();
-					this->eStat.setElevatorServiceDirection(false);
+					this->eStat.setServiceDirection(false);
 				}
 			}
 		
@@ -159,7 +159,7 @@ void ElevatorController::updateStatus() {
 		this->eStat.setCurrentFloor(this->getSimulator()->getCurrentFloor());
 		this->eStat.setTaskAssigned(this->getSimulator()->getIsTaskActive());
 
-		if(this->eStat.taskAssigned && (this->getSimulator()->getDirection() == DIRECTION_UP))
+		if(this->eStat.getTaskAssigned() && (this->getSimulator()->getDirection() == DIRECTION_UP))
 		{
       this->eStat.setDirection(DIRECTION_UP);
 		}
@@ -222,10 +222,10 @@ void ElevatorController::updateStatusBuffer()
 	rt_mutex_release(&(this->rtData.mutexBuffer));
 	
 	rt_mutex_acquire(&(this->rtData.mutex), TM_INFINITE);
-	this->eStat.statusBuffer[selectedBuffer][0] = this->eStat.getCurrentFloor();
-	this->eStat.statusBuffer[selectedBuffer][1] = this->eStat.getDirection();
-	this->eStat.statusBuffer[selectedBuffer][2] = this->eStat.getCurrentPosition();
-	this->eStat.statusBuffer[selectedBuffer][3] = this->eStat.getCurrentSpeed();
+	this->eStat.statusBuffer[selectedBuffer][STATUS_CURRENT_FLOOR_INDEX] = this->eStat.getCurrentFloor();
+	this->eStat.statusBuffer[selectedBuffer][STATUS_DIRECTION_INDEX] = this->eStat.getDirection();
+	this->eStat.statusBuffer[selectedBuffer][STATUS_CURRENT_POSITION_INDEX] = this->eStat.getCurrentPosition();
+	this->eStat.statusBuffer[selectedBuffer][STATUS_CURRENT_SPEED_INDEX] = this->eStat.getCurrentSpeed();
 	//rt_printf("writting to buffer %d %s\n", selectedBuffer, statusBuffer[selectedBuffer]);
 	rt_mutex_release(&(this->rtData.mutex));
 
@@ -272,7 +272,7 @@ void ElevatorController::waitForGDRequest() {
 }
 
 void ElevatorController::sendStatus() {
-	FloorRunHeap& heap = (this->eStat.direction == DIRECTION_UP) ? static_cast<FloorRunHeap&>(this->upHeap) : this->downHeap;
+	FloorRunHeap& heap = (this->eStat.getDirection() == DIRECTION_UP) ? static_cast<FloorRunHeap&>(this->upHeap) : this->downHeap;
 	std::vector<char>* hallCalls = heap.getHallCalls();
 	std::vector<char>* floorRequests = heap.getFloorRequests();
 
@@ -290,9 +290,9 @@ void ElevatorController::sendStatus() {
 	char message[len];
 	message[0] = STATUS_RESPONSE;
 	message[1] = this->id;
-	message[2] = this->eStat.currentPosition;
-	message[3] = this->eStat.direction;
-	message[4] = (this->eStat.currentSpeed != 0) ? 1 : 0;
+	message[2] = this->eStat.getCurrentPosition();
+	message[3] = this->eStat.getDirection();
+	message[4] = (this->eStat.getCurrentSpeed() != 0) ? 1 : 0;
 
 	/* Add variable-length data */
 	char offset = 0;
@@ -300,7 +300,7 @@ void ElevatorController::sendStatus() {
 	message[5] = hallCalls->size();
 	for (std::vector<char>::iterator it = hallCalls->begin(); it != hallCalls->end(); ++it) {
 		message[++offset + 5] = *it;
-		message[++offset + 5 +1] = this->eStat.direction;
+		message[++offset + 5 +1] = this->eStat.getDirection();
 	}
 
 	message[offset + 6] = floorRequests->size();
@@ -368,7 +368,6 @@ void ElevatorController::sendMessage(const char* message, int len) {
 
 char* ElevatorController::receiveTCP(unsigned int length) {
 	char* buffer = new char[BUFFSIZE];
-	unsigned int received = 0;
 
 	/* Receive the word back from the server */
 	int bytes = 0;

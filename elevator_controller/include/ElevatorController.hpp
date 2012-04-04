@@ -33,19 +33,19 @@ struct ElevatorStatus {
 	unsigned char getCurrentPosition() 	const { return currentPosition; }
 	unsigned char getCurrentSpeed() 		const { return currentSpeed; }
 	unsigned char getDestination() 			const { return destination; }
-	unsigned char getserviceDirection()	const { return serviceDirection; }
+	unsigned char getServiceDirection()	const { return serviceDirection; }
 	unsigned char getTaskActive() 			const { return taskActive; }
 	bool getTaskAssigned() 							const { return taskAssigned; }
 	bool getGDFailed() 									const { return GDFailed; }
 	bool getGDFailedEmptyHeap() 				const { return GDFailedEmptyHeap; }
 
-	void setCurrentFloor(		unsigned char currentFloor) 		{ this->currentFloor 		= currentFloor; }
-	void setDirection(			unsigned char direction) 				{ this->direction 			= direction; }
-	void setCurrentPosition(unsigned char currentPosition) 	{ this->currentPosition = currentPosition; }
-	void setCurrentSpeed(		unsigned char currentSpeed) 		{ this->currentSpeed 		= currentSpeed; }
-	void setDestination(		unsigned char destination) 			{ this->destination 		= destination; }
-	void setServiceDirection(unsigned char serviceDirection) { this->serviceDirection = elevatorServiceDirection; }
-	void setTaskActive(			unsigned char taskActive) 			{ this->taskActive 			= taskActive; }
+	void setCurrentFloor(		unsigned char currentFloor) 		{ this->currentFloor 			= currentFloor; }
+	void setDirection(			unsigned char direction) 				{ this->direction 				= direction; }
+	void setCurrentPosition(unsigned char currentPosition) 	{ this->currentPosition 	= currentPosition; }
+	void setCurrentSpeed(		unsigned char currentSpeed) 		{ this->currentSpeed 			= currentSpeed; }
+	void setDestination(		unsigned char destination) 			{ this->destination 			= destination; }
+	void setServiceDirection(unsigned char serviceDirection){ this->serviceDirection 	= serviceDirection; }
+	void setTaskActive(			unsigned char taskActive) 			{ this->taskActive 				= taskActive; }
 	void setTaskAssigned(			bool taskAssigned) 			{ this->taskAssigned 			= taskAssigned; }
 	void setGDFailed(					bool GDFailed) 					{ this->GDFailed 					= GDFailed; }
 	void setGDFailedEmptyHeap(bool GDFailedEmptyHeap)	{ this->GDFailedEmptyHeap = GDFailedEmptyHeap; }

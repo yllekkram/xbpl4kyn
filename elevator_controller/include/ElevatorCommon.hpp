@@ -13,6 +13,11 @@
 #define DIRECTION_UP 1
 #define DIRECTION_DOWN 2
 
+#define STATUS_CURRENT_FLOOR_INDEX 0
+#define STATUS_DIRECTION_INDEX 1
+#define STATUS_CURRENT_POSITION_INDEX 2
+#define STATUS_CURRENT_SPEED_INDEX 3
+
 // Types for messages received from the GroupDispatcher
 #define MAX_GD_REQUEST_SIZE 3
 
