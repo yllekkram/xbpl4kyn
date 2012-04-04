@@ -415,10 +415,10 @@ void ElevatorController::addHallCall(unsigned char floor, unsigned char callDire
 	}
 	else {
 		// If the elevator is moving, we need to check if it can stop at the given floor
-		if (this->eStat.direction == DIRECTION_UP) {
+		if (this->eStat.getDirection() == DIRECTION_UP) {
 			rt_printf("EC%d: Checking if up stop at %d possible\n", (unsigned int)this->getID(), (unsigned int)floor);
 
-			if (eStat.currentFloor >= (floor - 1)) {
+			if (eStat.getCurrentFloor() >= (floor - 1)) {
 				// Cannot stop in time
 				this->missedHallCalls.push_back(floor);
 			}
@@ -427,10 +427,10 @@ void ElevatorController::addHallCall(unsigned char floor, unsigned char callDire
 				this->upHeap.pushHallCall(floor);
 			}
 		}
-		else if (this->eStat.direction == DIRECTION_DOWN) {
+		else if (this->eStat.getDirection() == DIRECTION_DOWN) {
 			rt_printf("EC%d: Checking if down stop at %d possible\n", (unsigned int)this->getID(), (unsigned int)floor);
 
-			if (this->eStat.currentFloor <= (floor + 1)) {
+			if (this->eStat.getCurrentFloor() <= (floor + 1)) {
 				// Cannot stop in time
 				this->missedHallCalls.push_back(floor);
 			}
