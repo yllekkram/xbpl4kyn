@@ -1,6 +1,8 @@
 #ifndef ELEVATOR_SIMULATOR_HPP
 #define ELEVATOR_SIMULATOR_HPP
 
+#include "ElevatorCommon.hpp"
+
 #define MAX_SPEED	3			//maximum speed of elevator
 #define ACCELERATION	0.64			//acceleration of elevator
 #define DECELATRAION	-0.64			//Deceleration of elevator
@@ -21,7 +23,7 @@ class ElevatorSimulator {
 		float geCurrentPosition();
 		int getCurrentFloor();
 		bool getIsTaskActive();
-		bool getIsDirectionUp();
+		unsigned char getDirection();
 		bool getIsDoorOpening();
 		bool getIsDoorOpen();
 		bool getIsDoorClosing();
@@ -40,7 +42,7 @@ class ElevatorSimulator {
 		int finalDestination;			//final destination is the final floor number
 		float midLocation;			//final destination is the final floor number
 		bool task;				//is there a task available
-		bool directionUP;			//is elevator traveling up
+		unsigned char direction;
 		bool DoorOpening;			//is elevator door opening
 		bool DoorOpen;				//is elevator door open
 		bool DoorClosing;			//is elevator door closing

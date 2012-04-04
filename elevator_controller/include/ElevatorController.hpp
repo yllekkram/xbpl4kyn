@@ -98,7 +98,7 @@ class ElevatorController {
 		/* Elevator Operation */
 		void addHallCall(unsigned char floor, unsigned char direction);
 		void addFloorSelection(unsigned char floor);
-		void updateMissedFloor(bool up);
+		void updateMissedFloor(unsigned char direction);
 		void pushFloorButton(char floor);
 		void openDoor();
 		void closeDoor();
@@ -120,8 +120,8 @@ class ElevatorController {
 
 		DownwardFloorRunHeap downHeap;
 		UpwardFloorRunHeap upHeap;
-		std::vector<char> missedFloors;
-		std::vector<char> missedFloorsSelection;
+		std::vector<char> missedHallCalls;
+		std::vector<char> missedFloorSelections;
 
 		ElevatorSimulator* es;
 
