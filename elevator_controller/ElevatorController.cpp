@@ -44,7 +44,7 @@ ElevatorStatus::ElevatorStatus()
 	: currentFloor(0),		direction(DIRECTION_UP),		currentPosition(0),
 		currentSpeed(0),		destination(0),							taskActive(false),
 		taskAssigned(0),		GDFailed(false),						GDFailedEmptyHeap(false),
-		elevatorServiceDirection(true),									bufferSelection(0)
+		elevatorServiceDirection(DIRECTION_UP),					bufferSelection(0)
 {}
 
 
