@@ -85,31 +85,31 @@ void ElevatorController::floorRun() {
 
 			int upHeapSize = this->getUpHeap().getSize();
 			int downHeapSize = this->getDownHeap().getSize();
-			if(upHeapSize==0 && downHeapSize==0){this->eStat.GDFailedEmptyHeap = true;}
+			if(upHeapSize==0 && downHeapSize==0){this->eStat.setGDFailedEmptyHeap(true);}
 			
-			if(!this->eStat.elevatorServiceDirection)
+			if(!this->eStat.getElevatorServiceDirection())
 			{
 				if(downHeapSize > 0)
 				{
 					topItem = this->getDownHeap().peek();
-					this->eStat.elevatorServiceDirection = false;
+					this->eStat.setElevatorServiceDirection(false);
 				}else if(upHeapSize > 0)
 				{
 					this->updateMissedFloor(false);
 					topItem = this->getUpHeap().peek();
-					this->eStat.elevatorServiceDirection = true;
+					this->eStat.setElevatorServiceDirection(true);
 				}
 			}else
 			{
 				if(upHeapSize > 0)
 				{
 					topItem = this->getUpHeap().peek();
-					this->eStat.elevatorServiceDirection = true;
+					this->eStat.setElevatorServiceDirection(true);
 				}else if(downHeapSize > 0)
 				{
 					this->updateMissedFloor(true);
 					topItem = this->getDownHeap().peek();
-					this->eStat.elevatorServiceDirection = false;
+					this->eStat.setElevatorServiceDirection(false);
 				}
 			}
 		
@@ -117,7 +117,7 @@ void ElevatorController::floorRun() {
 			{
 				rt_printf("FR%d next Dest is %d\n.", this->getID(), topItem);
 				this->getSimulator()->setFinalDestination(topItem);
-				this->eStat.destination = topItem;
+				this->eStat.setDestination(topItem);
 			}
 			rt_mutex_release(&(this->rtData.mutex));
 		}
@@ -130,15 +130,15 @@ void ElevatorController::supervise() {
 		rt_mutex_acquire(&(this->rtData.mutex), TM_INFINITE);
 		if(this->eStat.getGDFailed() && this->eStat.getGDFailedEmptyHeap())
 		{
-			if(!this->eStat.taskAssigned)
+			if(!this->eStat.getTaskAssigned())
 			{
 				if(((this->eStat.getDirection() == DIRECTION_DOWN) && this->eStat.getDestination()!=0) || this->eStat.getDestination() == MAX_FLOORS)
 				{
-					this->eStat.destination--;
+					this->eStat.setDestination(this->eStat.getDestination() - 1);
 					this->getSimulator()->setFinalDestination(this->eStat.getDestination());
 				}else if(this->eStat.getDestination() == 0 || this->eStat.getDestination() != MAX_FLOORS)
 				{
-					this->eStat.destination++;
+					this->eStat.setDestination(this->eStat.getDestination() + 1);
 					this->getSimulator()->setFinalDestination(this->eStat.getDestination());
 				}
 			}
@@ -156,27 +156,28 @@ void ElevatorController::updateStatus() {
 		rt_task_wait_period(NULL);
 
 		rt_mutex_acquire(&(this->rtData.mutex), TM_INFINITE);
-		this->eStat.currentFloor = this->getSimulator()->getCurrentFloor();
-		this->eStat.taskAssigned = this->getSimulator()->getIsTaskActive();
-		if(this->eStat.taskAssigned && (this->getSimulator()->getIsDirectionUp()))
+		this->eStat.setCurrentFloor(this->getSimulator()->getCurrentFloor());
+		this->eStat.setTaskAssigned(this->getSimulator()->getIsTaskActive());
+
+		if(this->eStat.getTaskAssigned() && (this->getSimulator()->getIsDirectionUp()))
 		{
-      this->eStat.direction = DIRECTION_UP;
+      this->eStat.setDirection(DIRECTION_UP);
 		}
     else {
-			this->eStat.direction = DIRECTION_DOWN;
+			this->eStat.setDirection(DIRECTION_DOWN);
     }
 
-		this->eStat.currentPosition = (unsigned char)ceil(this->getSimulator()->geCurrentPosition());
-		this->eStat.taskActive = this->eStat.taskAssigned;
+		this->eStat.setCurrentPosition((unsigned char)ceil(this->getSimulator()->geCurrentPosition()));
+		this->eStat.setTaskActive(this->eStat.getTaskAssigned());
 
 		int upHeapSize = this->getUpHeap().getSize();
 		int downHeapSize = this->getDownHeap().getSize();
-		if(upHeapSize==0 && downHeapSize==0){this->eStat.GDFailedEmptyHeap = true;}
+		if(upHeapSize==0 && downHeapSize==0){this->eStat.setGDFailedEmptyHeap(true);}
 
 		if(upHeapSize > 0)
 		{
 			int topItem = (int)(this->getUpHeap().peek());
-			if(this->eStat.currentFloor == topItem && !this->eStat.taskAssigned)
+			if(this->eStat.getCurrentFloor() == topItem && !this->eStat.getTaskAssigned())
 			{
 				rt_printf("ST%d Task Completed %d\n", this->getID(), this->eStat.getDestination());
 				this->getUpHeap().pop();
@@ -186,7 +187,7 @@ void ElevatorController::updateStatus() {
 		if(downHeapSize > 0)
 		{
 			int topItem = (int)(this->getDownHeap().peek());
-			if(this->eStat.currentFloor == topItem && !this->eStat.taskAssigned)
+			if(this->eStat.getCurrentFloor() == topItem && !this->eStat.getTaskAssigned())
 			{
 				rt_printf("ST%d Task Completed %d\n", this->getID(), this->eStat.getDestination());
 				this->getDownHeap().pop();
@@ -204,7 +205,7 @@ bool ElevatorController::releaseFreeCond()
 	int heapSize = this->getUpHeap().getSize() + this->getDownHeap().getSize();
 	if(heapSize > 0)
 	{
-		this->eStat.GDFailedEmptyHeap = false;
+		this->eStat.setGDFailedEmptyHeap(false);
 		rt_cond_signal(&(this->rtData.freeCond));
 		return true;
 	}else
@@ -217,14 +218,14 @@ void ElevatorController::updateStatusBuffer()
 {
 	//upheap and the downheap (hallcall and floor selections should be included.
 	rt_mutex_acquire(&(this->rtData.mutexBuffer), TM_INFINITE);
-	bool selectedBuffer = this->eStat.bufferSelection;
+	unsigned char selectedBuffer = this->eStat.bufferSelection;
 	rt_mutex_release(&(this->rtData.mutexBuffer));
 	
 	rt_mutex_acquire(&(this->rtData.mutex), TM_INFINITE);
-	this->eStat.statusBuffer[selectedBuffer][0] = this->eStat.currentFloor;
+	this->eStat.statusBuffer[selectedBuffer][0] = this->eStat.getCurrentFloor();
 	this->eStat.statusBuffer[selectedBuffer][1] = this->eStat.getDirection();
-	this->eStat.statusBuffer[selectedBuffer][2] = this->eStat.currentPosition;
-	this->eStat.statusBuffer[selectedBuffer][3] = this->eStat.currentSpeed;
+	this->eStat.statusBuffer[selectedBuffer][2] = this->eStat.getCurrentPosition();
+	this->eStat.statusBuffer[selectedBuffer][3] = this->eStat.getCurrentSpeed();
 	//rt_printf("writting to buffer %d %s\n", selectedBuffer, statusBuffer[selectedBuffer]);
 	rt_mutex_release(&(this->rtData.mutex));
 
@@ -249,7 +250,7 @@ void ElevatorController::waitForGDRequest() {
 	}
 	catch (Exception e) {
 		rt_printf("GD comm failed for EC%d, enabling supervisor thread\n", (unsigned int)this->getID());
-		this->eStat.GDFailed = true;
+		this->eStat.setGDFailed(true);
 		return;
 	}
 	char requestType = request[0];

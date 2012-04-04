@@ -28,7 +28,7 @@ struct ECRTData {
 struct ElevatorStatus {
 	ElevatorStatus();
 
-	unsigned char getCurretnFloor() 		const { return currentFloor; }
+	unsigned char getCurrentFloor() 		const { return currentFloor; }
 	unsigned char getDirection() 				const { return direction; }
 	unsigned char getCurrentPosition() 	const { return currentPosition; }
 	unsigned char getCurrentSpeed() 		const { return currentSpeed; }
@@ -39,19 +39,31 @@ struct ElevatorStatus {
 	bool getGDFailedEmptyHeap() 				const { return GDFailedEmptyHeap; }
 	bool getElevatorServiceDirection() 	const { return elevatorServiceDirection; }
 
-	unsigned char currentFloor;
-	unsigned char direction;
-	unsigned char currentPosition;
-	unsigned char currentSpeed;
-	unsigned char destination;
-	unsigned char taskActive;
-	bool taskAssigned;
-	bool GDFailed;
-	bool GDFailedEmptyHeap;
-	bool elevatorServiceDirection;
+	void setCurrentFloor(		unsigned char currentFloor) 		{ this->currentFloor 		= currentFloor; }
+	void setDirection(			unsigned char direction) 				{ this->direction 			= direction; }
+	void setCurrentPosition(unsigned char currentPosition) 	{ this->currentPosition = currentPosition; }
+	void setCurrentSpeed(		unsigned char currentSpeed) 		{ this->currentSpeed 		= currentSpeed; }
+	void setDestination(		unsigned char destination) 			{ this->destination 		= destination; }
+	void setTaskActive(			unsigned char taskActive) 			{ this->taskActive 			= taskActive; }
+	void setTaskAssigned(			bool taskAssigned) 			{ this->taskAssigned 			= taskAssigned; }
+	void setGDFailed(					bool GDFailed) 					{ this->GDFailed 					= GDFailed; }
+	void setGDFailedEmptyHeap(bool GDFailedEmptyHeap)	{ this->GDFailedEmptyHeap = GDFailedEmptyHeap; }
+	void setElevatorServiceDirection(bool elevatorServiceDirection) { this->elevatorServiceDirection = elevatorServiceDirection; }
 
 	unsigned char statusBuffer[2][BUFFSIZE];
 	unsigned char bufferSelection;
+
+	private:
+		unsigned char currentFloor;
+		unsigned char direction;
+		unsigned char currentPosition;
+		unsigned char currentSpeed;
+		unsigned char destination;
+		unsigned char taskActive;
+		bool taskAssigned;
+		bool GDFailed;
+		bool GDFailedEmptyHeap;
+		bool elevatorServiceDirection;
 };
 
 class ElevatorController {

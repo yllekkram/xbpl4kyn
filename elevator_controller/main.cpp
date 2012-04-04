@@ -210,10 +210,10 @@ void supervisorStartUp(void *arg)
 
 	sleep(200);
 	rt_printf("SSU%d GroupDispatcher FAILED, Oh my god :(\n", ID);
-	ec[ID].eStat.GDFailed = true;
+	ec[ID].eStat.setGDFailed(true);
 	sleep(400);
 	rt_printf("SSU%d GroupDispatcher FIXED, good :)\n", ID);
-	ec[ID].eStat.GDFailed = false;
+	ec[ID].eStat.setGDFailed(false);
 
 	ec[ID].getUpHeap().pushHallCall(8);
 	rt_printf("SSU%d Hall Call Up Floor : 3\n", ID);
