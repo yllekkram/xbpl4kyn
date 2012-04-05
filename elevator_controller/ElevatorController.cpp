@@ -257,7 +257,7 @@ void ElevatorController::waitForGDRequest() {
 
 	switch (requestType) {
 		case STATUS_REQUEST:
-			rt_printf("EC%d: Staus Request\n", (unsigned int)this->getID());
+			// rt_printf("EC%d: Status Request\n", (unsigned int)this->getID());
       this->sendStatus();
 			break;
 		case HALL_CALL_ASSIGNMENT:
@@ -272,9 +272,13 @@ void ElevatorController::waitForGDRequest() {
 }
 
 void ElevatorController::sendStatus() {
-	FloorRunHeap& heap = (this->eStat.getDirection() == DIRECTION_UP) ? static_cast<FloorRunHeap&>(this->upHeap) : this->downHeap;
-	std::vector<char>* hallCalls = heap.getHallCalls();
-	std::vector<char>* floorRequests = heap.getFloorRequests();
+	std::vector<char>* upHallCalls = upHeap.getHallCalls();
+	std::vector<char>* downHallCalls = downHeap.getHallCalls();
+	std::vector<char>* upFloorRequests = upHeap.getFloorRequests();
+	std::vector<char>* downFloorRequests = downHeap.getFloorRequests();
+
+	char numHallCalls = upHallCalls->size() + downHallCalls->size() + missedHallCalls.size();
+	char numFloorRequests = upFloorRequests->size() + downFloorRequests->size() + missedFloorSelections.size();
 
 	char len = 1 	/* EC ID */
 						+1	/* Message Type */
@@ -282,9 +286,9 @@ void ElevatorController::sendStatus() {
 						+1	/* Direction */
 						+1	/* Is moving? */
 						+1	/* num hall calls */
-						+hallCalls->size()*2	/* Hall calls */
+						+numHallCalls * 2	/* Hall calls */
 						+1	/* Num Floor Requests */
-						+floorRequests->size()	/* Floor requests */
+						+numFloorRequests	/* Floor requests */
 						+1;	/* Terminator */
 
 	char message[len];
@@ -297,24 +301,49 @@ void ElevatorController::sendStatus() {
 	/* Add variable-length data */
 	char offset = 0;
 
-	message[5] = hallCalls->size();
-	for (std::vector<char>::iterator it = hallCalls->begin(); it != hallCalls->end(); ++it) {
+	// Hall Calls in up direction
+	message[5] = numHallCalls;
+	for (std::vector<char>::iterator it = upHallCalls->begin(); it != upHallCalls->end(); ++it) {
+		message[++offset + 5] = *it;
+		message[++offset + 5] = DIRECTION_UP;
+	}
+	// Hall Calls in down direction
+	for (std::vector<char>::iterator it = downHallCalls->begin(); it != downHallCalls->end(); ++it) {
+		message[++offset + 5] = *it;
+		message[++offset + 5] = DIRECTION_DOWN;
+	}
+	// Floors that couldn't be stopped at
+	for (std::vector<char>::iterator it = missedHallCalls.begin(); it != missedHallCalls.end(); ++it) {
 		message[++offset + 5] = *it;
 		message[++offset + 5] = this->eStat.getDirection();
 	}
 
-	message[offset + 6] = floorRequests->size();
-	for (std::vector<char>::iterator it = floorRequests->begin(); it != floorRequests->end(); ++it) {
+	// Floor requests in the up direction
+	message[offset + 6] = numFloorRequests;
+	for (std::vector<char>::iterator it = upFloorRequests->begin(); it != upFloorRequests->end(); ++it) {
 		message[++offset + 6] = *it;
 	}
 
+	// Floor requests in the down direction
+	message[offset + 6] = downFloorRequests->size();
+	for (std::vector<char>::iterator it = downFloorRequests->begin(); it != downFloorRequests->end(); ++it) {
+		message[++offset + 6] = *it;
+	}
+
+	// Missed Floor requests
+	message[offset + 6] = missedFloorSelections.size();
+	for (std::vector<char>::iterator it = missedFloorSelections.begin(); it != missedFloorSelections.end(); ++it) {
+		message[++offset + 6] = *it;
+	}
 
 	message[7 + offset] = MESSAGE_TERMINATOR;
 
 	this->sendMessage(message, len);
 
-	delete hallCalls;
-	delete floorRequests;
+	delete upHallCalls;
+	delete downHallCalls;
+	delete upFloorRequests;
+	delete downFloorRequests;
 }
 
 void ElevatorController::connectToGD(char* gdAddress, int port) {
