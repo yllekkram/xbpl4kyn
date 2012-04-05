@@ -56,9 +56,11 @@ public class Log {
 	 */
 	public static void closeStatsLogger(){
 		synchronized(fileMonitor){			
+			currentFileName = null;
 			try{
-				currentFileName = null;
-				out.close();
+				if(out != null){					
+					out.close();
+				}
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
