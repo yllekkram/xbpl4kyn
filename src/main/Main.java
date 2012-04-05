@@ -1,7 +1,6 @@
 package main;
 
 import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
 
 import main.util.Log;
 import main.view.ElevatorControlWindow;

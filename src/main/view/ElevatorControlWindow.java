@@ -9,6 +9,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import javax.swing.*;
 
+import test.stress.MorningRush;
+
 import main.util.*;
 import main.view.util.UIUtils;
 
@@ -20,7 +22,8 @@ public class ElevatorControlWindow extends JFrame implements ActionListener{
 	private ConcurrentHashMap<Integer, ElevatorPanel> elevatorPanels;
 	private ConcurrentHashMap<Integer, FloorPanel> floorPanels;
 	
-	private JMenuItem startMenuItem, exitMenuItem, connectMenuItem;
+	private JMenuItem startMenuItem, exitMenuItem;
+	private JMenuItem morningRushTestMenuItem;
 	private JButton startButton;
 	private JPanel mainPanel;
 	private JTabbedPane elevatorTabs;
@@ -28,8 +31,6 @@ public class ElevatorControlWindow extends JFrame implements ActionListener{
 	private boolean elevatorsConnected = false;
 	
 	private static ElevatorControlWindow instance;
-	
-	private int elevatorNumber = 1;
 	
 	public synchronized static ElevatorControlWindow getInstance(){
 		if(instance == null){
@@ -52,6 +53,11 @@ public class ElevatorControlWindow extends JFrame implements ActionListener{
 		elevatorTabs.setTabLayoutPolicy(JTabbedPane.WRAP_TAB_LAYOUT);
 		elevatorPanels = new ConcurrentHashMap<Integer, ElevatorPanel>();
 		floorPanels = new ConcurrentHashMap<Integer, FloorPanel>();
+		
+		//set menu bar
+    	JMenuBar menubar = new JMenuBar();
+    	this.setJMenuBar( menubar );
+    	
 		// Set up the File menu
 	    {
 	    	//menu
@@ -66,15 +72,21 @@ public class ElevatorControlWindow extends JFrame implements ActionListener{
 	    	exitMenuItem = new JMenuItem("Exit");
 	    	exitMenuItem.addActionListener(this);
 	    	fileMenu.add( exitMenuItem );
-
-	    	//connect
-	    	connectMenuItem = new JMenuItem ("Connect");
-	    	connectMenuItem.addActionListener(this);
-	    	fileMenu.add( connectMenuItem );
 	    	
-	    	JMenuBar menubar = new JMenuBar();
 	    	menubar.add( fileMenu );
-	    	this.setJMenuBar( menubar );
+	    }
+	    
+	    // Set up the stress test menu
+	    {
+	    	//menu
+	    	JMenu stressTestMenu = new JMenu("Stress Tests");
+	    	
+	    	//morning rush
+	    	morningRushTestMenuItem = new JMenuItem ("Morning Rush");
+	    	morningRushTestMenuItem.addActionListener(this);
+	    	stressTestMenu.add( morningRushTestMenuItem );
+	    	
+	    	menubar.add( stressTestMenu );
 	    }
 	    
 	    //startPanel
@@ -171,8 +183,10 @@ public class ElevatorControlWindow extends JFrame implements ActionListener{
 			ViewControl.getInstance().onStart();
 		}else if( source == exitMenuItem ){
 			ViewControl.getInstance().onExit();
-		}else if( source == connectMenuItem ){
-			addElevatorPanel(elevatorNumber++, 0);
+		}
+		
+		else if( source == morningRushTestMenuItem ){
+			MorningRush.run();
 		}
 	}
 	
