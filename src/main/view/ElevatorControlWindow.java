@@ -41,7 +41,7 @@ public class ElevatorControlWindow extends JFrame implements ActionListener{
 	
 	private ElevatorControlWindow(){
 		super("Group 4 - Elevator Control System");
-		setSize(1000, 600);
+		setSize(650, 850);
 				
 		//initialize panels
 		mainPanel = new JPanel();
