@@ -15,10 +15,9 @@ public class FloorPanel extends JPanel implements ActionListener {
 
 	private static final long serialVersionUID = 8967073701202397640L;
 	
-	JButton up;
-	JButton down;
-	int floorNumber;
-	String title;
+	private JButton up;
+	private JButton down;
+	private int floorNumber;
 	
     public FloorPanel(int floorNumber, String title, int directions ) {
     	super();
@@ -46,14 +45,15 @@ public class FloorPanel extends JPanel implements ActionListener {
      	}
      	
      	this.floorNumber = floorNumber;
-     	this.title = title;
  	}
   
  
   	public void actionPerformed( ActionEvent e ) {
   		if (e.getSource().equals( up )) {
+  			up.setEnabled(false);
   			ViewControl.getInstance().onHallCall(floorNumber, Constants.DIRECTION_UP);
-  		} else {
+  		} else if(e.getSource().equals( down )){
+  			down.setEnabled(false);
   			ViewControl.getInstance().onHallCall(floorNumber, Constants.DIRECTION_DOWN);
   		}
   	}

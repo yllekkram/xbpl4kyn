@@ -121,6 +121,7 @@ public class TCPConnectionManager extends Observable{
 				socketWrapper.getSocket().close();
 			} catch (IOException e) {}
 		}
+		instance = null;
 	}
 	
 	public void waitForNewConnection(){

@@ -15,18 +15,13 @@ public class ElevatorPanel extends JScrollPane implements ActionListener {
 	
 	private static final long serialVersionUID = 2562440202529823914L;
 	
-	private JPanel buttonGrid;
-	private JPanel delegate;
+	private JPanel buttonGrid, delegate;
 	private FloorButton[] floorButtons;
-	private JButton stopButton;
-	private JButton openDoorButton;
-	private JButton closeDoorButton;
+	private JButton stopButton, openDoorButton, closeDoorButton;
 	private JLabel floorIndicator;
 	
 	private int carNumber;
-	
-	private int floor;
-	private int direction;
+	private int floor, direction;
 	
     public ElevatorPanel(int carNumber, int initialFloor) {
     	super();
