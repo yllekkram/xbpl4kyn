@@ -28,6 +28,7 @@ public class ElevatorPanel extends JScrollPane implements ActionListener {
     	
     	setLayout(new ScrollPaneLayout());
     	setPreferredSize(new Dimension(300,400));
+    	this.getVerticalScrollBar().setUnitIncrement(16);
     	
     	GridBagLayout gridBagLayout = new GridBagLayout();
     	delegate = new JPanel(gridBagLayout);

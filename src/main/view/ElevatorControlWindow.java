@@ -142,6 +142,7 @@ public class ElevatorControlWindow extends JFrame implements ActionListener{
     	UIUtils.addEmptyBorder(floorPanelContainer);
 
 		scroll.setViewportView(floorPanelContainer);
+		scroll.getVerticalScrollBar().setUnitIncrement(16);
 		
 		
 		//top floor
