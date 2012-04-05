@@ -76,7 +76,7 @@ public class ViewControl {
 		}
 		SwingUtilities.invokeLater(new Runnable(){
 			public void run(){
-				floorPanel.enableButton(direction);
+				floorPanel.enableButton(direction, true);
 			}
 		});
 	}
@@ -116,6 +116,7 @@ public class ViewControl {
 	}
 
 	public void onHallCall(int floorNumber, int directionRequested){
+		ElevatorControlWindow.getInstance().getFloorPanel(floorNumber).enableButton(directionRequested, false);
 		String directionRequestedStr = UIUtils.getDirectionString(directionRequested);
 		Log.log("ViewControl - User on floor " + floorNumber + " pressed the " + directionRequestedStr + " button");
 		
@@ -126,6 +127,9 @@ public class ViewControl {
 	}
 	
 	public void onFloorSelection(int carNumber, int floorNumber){
+		//disable the button
+		ElevatorControlWindow.getInstance().getElevatorPanel(carNumber).setButtonPressed(floorNumber, true);
+		
 		Log.log("ViewControl - User selected floor " + floorNumber + " in elevator " + carNumber);
 		
 		//send a message to the appropriate elevator

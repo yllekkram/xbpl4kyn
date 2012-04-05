@@ -165,7 +165,7 @@ public class ElevatorControlWindow extends JFrame implements ActionListener{
 	
 	public void actionPerformed(ActionEvent event) {
 		Object source = event.getSource();
-		
+
 		if( source == startMenuItem || source == startButton){
 			ViewControl.getInstance().onStart();
 		}else if( source == exitMenuItem ){
