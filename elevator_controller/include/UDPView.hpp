@@ -23,6 +23,10 @@ class UDPView : public ElevatorControllerView {
 
 		void receiveStatus(ElevatorControllerStatus* status);
 		
+		void notifyFloorReached(unsigned char floor);
+
+		void notifyDirectionChanged(unsigned char direction);
+		
 		void sendMessage(char* message, int len=0);
 		char* receiveMessage(unsigned int len=0);
 		

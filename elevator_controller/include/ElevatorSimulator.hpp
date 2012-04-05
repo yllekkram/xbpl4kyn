@@ -3,13 +3,13 @@
 
 #include "ElevatorCommon.hpp"
 
-#define MAX_SPEED	3			//maximum speed of elevator
-#define ACCELERATION	0.64			//acceleration of elevator
-#define DECELATRAION	-0.64			//Deceleration of elevator
+#define MAX_SPEED	5			//maximum speed of elevator
+#define ACCELERATION	999			//acceleration of elevator
+#define DECELATRAION	-999			//Deceleration of elevator
 #define FLOOR_HEIGHT	10			//height of floor
-#define DOOR_OPEN_TIME	2			//time take to open door
-#define DOOR_CLOSE_TIME	2			//time until the door is open for
-#define IN_OUT_TIME	2			//time take to close door
+#define DOOR_OPEN_TIME	1			//time take to open door
+#define DOOR_CLOSE_TIME	1			//time until the door is open for
+#define IN_OUT_TIME	3			//time take to close door
 
 class ElevatorSimulator {
 	public:

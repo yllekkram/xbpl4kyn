@@ -143,3 +143,21 @@ char* UDPView::receiveMessage(unsigned int len) {
 	
 	return buffer;
 }
+
+void UDPView::notifyFloorReached(unsigned char floor){	
+	int len = 3;	
+	char message[len];
+	message[0] = FLOOR_REACHED_NOTIFICATION;
+	message[1] = (unsigned int)this->getEC()->getID();
+	message[2] = floor;
+	this->sendMessage(message, len);
+}
+
+void UDPView::notifyDirectionChanged(unsigned char direction){
+	int len = 3;	
+	char message[len];
+	message[0] = NEW_DIRECTION_NOTIFICATION;
+	message[1] = (unsigned int)this->getEC()->getID();
+	message[2] = direction;
+	this->sendMessage(message, len);
+}

@@ -11,6 +11,10 @@ class ElevatorControllerView {
     virtual ~ElevatorControllerView() {}
 		virtual void receiveStatus(ElevatorControllerStatus* status) = 0;
 		
+		virtual void notifyFloorReached(unsigned char floor) = 0;
+
+		virtual void notifyDirectionChanged(unsigned char direction) = 0;
+		
 		virtual void setController(ElevatorController* ec) {
 			this->ec = ec;
 		}

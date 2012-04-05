@@ -121,6 +121,7 @@ void ElevatorController::floorRun() {
 			if(tempDirection != this->getSimulator()->getDirection())
 			{
 				this->updateMissedFloor(tempDirection);
+				this->notifyDirectionChanged(this->getSimulator()->getDirection());
 			}
 
 			rt_mutex_release(&(this->rtData.mutex));
@@ -160,7 +161,12 @@ void ElevatorController::updateStatus() {
 		rt_task_wait_period(NULL);
 
 		rt_mutex_acquire(&(this->rtData.mutex), TM_INFINITE);
+		int tempFloor = this->eStat.getCurrentFloor();
 		this->eStat.setCurrentFloor(this->getSimulator()->getCurrentFloor());
+		if(tempFloor != this->eStat.getCurrentFloor())
+		{
+			this->notifyFloorReached(this->eStat.getCurrentFloor());
+		}
 		this->eStat.setTaskAssigned(this->getSimulator()->getIsTaskActive());
 		this->eStat.setCurrentSpeed(this->getSimulator()->getCurrentSpeed());
 		this->eStat.setDirection(this->getSimulator()->getDirection());
@@ -226,7 +232,7 @@ bool ElevatorController::releaseFreeCond()
 
 void ElevatorController::updateStatusBuffer()
 {
-	//upheap and the downheap (hallcall and floor selections should be included.
+	//upheap and the downheap (hallcall and floor selections should benotifyDirectionChanged included.
 	rt_mutex_acquire(&(this->rtData.mutexBuffer), TM_INFINITE);
 	unsigned char selectedBuffer = this->eStat.bufferSelection;
 	rt_mutex_release(&(this->rtData.mutexBuffer));
@@ -609,4 +615,20 @@ void ElevatorController::updateMissedFloor(unsigned char direction)
 	}
 	this->missedHallCalls.clear();
 	this->missedFloorSelections.clear();
+}
+
+void ElevatorController::notifyFloorReached(unsigned char floor)
+{
+	for(std::vector<ElevatorControllerView*>::iterator it = views.begin(); it != views.end(); ++it)
+	{
+		(*it) -> notifyFloorReached(floor);
+	}
+}
+
+void ElevatorController::notifyDirectionChanged(unsigned char direction)
+{
+	for(std::vector<ElevatorControllerView*>::iterator it = views.begin(); it != views.end(); ++it)
+	{
+		(*it) -> notifyDirectionChanged(direction);
+	}
 }

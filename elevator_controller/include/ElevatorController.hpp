@@ -99,6 +99,9 @@ class ElevatorController {
 		void addHallCall(unsigned char floor, unsigned char direction);
 		void addFloorSelection(unsigned char floor);
 		void updateMissedFloor(unsigned char direction);
+		void notifyFloorReached(unsigned char floor);
+		void notifyDirectionChanged(unsigned char floor);
+
 		void pushFloorButton(char floor);
 		void openDoor();
 		void closeDoor();
