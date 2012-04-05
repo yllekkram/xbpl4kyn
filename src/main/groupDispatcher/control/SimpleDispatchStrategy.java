@@ -30,7 +30,7 @@ public class SimpleDispatchStrategy implements DispatchStrategy{
 			
 			int distance =  Math.abs(elevatorData.getPosition() - floor);
 			if( elevatorData.getDirection() == direction ){
-				if( distance < leastDistance && distance > 1 ){
+				if( distance < leastDistance && (distance > 1 || (distance == 0 && !elevatorData.isMoving())) ){
 					leastDistance = distance;
 					selectedElevatorId = elevatorId.intValue();
 				} 
@@ -47,6 +47,19 @@ public class SimpleDispatchStrategy implements DispatchStrategy{
 		if(selectedElevatorId != -1){
 			return selectedElevatorId;
 		}
-		return selectedElevatorIdOp;
+		
+		if(selectedElevatorIdOp != -1){
+			return selectedElevatorIdOp;
+		}
+		
+		if(!elevatorCars.isEmpty()){
+			Enumeration<Integer> keys = elevatorCars.keys();
+			if(keys.hasMoreElements()){
+				return keys.nextElement().intValue();
+			}
+			
+		}
+
+		return -1;
 	}
 }

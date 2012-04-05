@@ -19,8 +19,8 @@
 
 
 ElevatorSimulator::ElevatorSimulator()
-	: tp(new struct timeb), tpe(new struct timeb), currentPosition(0),
-	currentSpeed(0), currentFloor(0), finalDestination(0),
+	: tp(new struct timeb), tpe(new struct timeb), currentPosition(10),
+	currentSpeed(0), currentFloor(1), finalDestination(0),
 	midLocation(0), task(false), direction(DIRECTION_UP),
 	DoorOpening(false), DoorOpen(false), DoorClosing(false),
 	numState(0), accTime(0), decTime(0), maxDistTime(0), distAcc(0),
@@ -191,5 +191,5 @@ bool ElevatorSimulator::getIsDoorClosing(){return DoorClosing;}
 float ElevatorSimulator::geCurrentPosition(){return currentPosition;}
 void ElevatorSimulator::print(){
 	rt_printf("currentSpeed %d currentFloor %d task %d direction %d DoorOpening %d DoorOpen %d DoorClosing\n",
-			(unsigned int)currentSpeed,	(unsigned int)currentFloor,	direction, DoorOpening,	DoorOpen,	DoorClosing);
+			(unsigned int)currentSpeed,	(unsigned int)currentFloor,	task, DoorOpening,	DoorOpen,	DoorClosing);
 }
