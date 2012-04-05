@@ -47,7 +47,7 @@ public class ViewControl {
 	 */
 	public void onExit(){
 		Log.log("Exiting");
-		System.exit(0);
+		Main.exit(0);
 	}
 	
 	public void onElevatorRegister(int elevatorId, String ip, int port){
