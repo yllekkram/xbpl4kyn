@@ -28,21 +28,42 @@ struct ECRTData {
 struct ElevatorStatus {
 	ElevatorStatus();
 
-	unsigned char currentFloor;
-	unsigned char direction;
-	unsigned char currentPosition;
-	unsigned char currentSpeed;
-	unsigned char destination;
-	unsigned char taskActive;
-	bool taskAssigned;
-	bool upDirection;
-	bool downDirection;
-	bool GDFailed;
-	bool GDFailedEmptyHeap;
-	bool elevatorServiceDirection;
+	unsigned char getCurrentFloor() 		const { return currentFloor; }
+	unsigned char getDirection() 				const { return direction; }
+	unsigned char getCurrentPosition() 	const { return currentPosition; }
+	unsigned char getCurrentSpeed() 		const { return currentSpeed; }
+	unsigned char getDestination() 			const { return destination; }
+	unsigned char getServiceDirection()	const { return serviceDirection; }
+	unsigned char getTaskActive() 			const { return taskActive; }
+	bool getTaskAssigned() 							const { return taskAssigned; }
+	bool getGDFailed() 									const { return GDFailed; }
+	bool getGDFailedEmptyHeap() 				const { return GDFailedEmptyHeap; }
+
+	void setCurrentFloor(		unsigned char currentFloor) 		{ this->currentFloor 			= currentFloor; }
+	void setDirection(			unsigned char direction) 				{ this->direction 				= direction; }
+	void setCurrentPosition(unsigned char currentPosition) 	{ this->currentPosition 	= currentPosition; }
+	void setCurrentSpeed(		unsigned char currentSpeed) 		{ this->currentSpeed 			= currentSpeed; }
+	void setDestination(		unsigned char destination) 			{ this->destination 			= destination; }
+	void setServiceDirection(unsigned char serviceDirection){ this->serviceDirection 	= serviceDirection; }
+	void setTaskActive(			unsigned char taskActive) 			{ this->taskActive 				= taskActive; }
+	void setTaskAssigned(			bool taskAssigned) 			{ this->taskAssigned 			= taskAssigned; }
+	void setGDFailed(					bool GDFailed) 					{ this->GDFailed 					= GDFailed; }
+	void setGDFailedEmptyHeap(bool GDFailedEmptyHeap)	{ this->GDFailedEmptyHeap = GDFailedEmptyHeap; }
 
 	unsigned char statusBuffer[2][BUFFSIZE];
 	unsigned char bufferSelection;
+
+	private:
+		unsigned char currentFloor;
+		unsigned char direction;
+		unsigned char currentPosition;
+		unsigned char currentSpeed;
+		unsigned char destination;
+		unsigned char serviceDirection;
+		unsigned char taskActive;
+		bool taskAssigned;
+		bool GDFailed;
+		bool GDFailedEmptyHeap;
 };
 
 class ElevatorController {
@@ -77,7 +98,7 @@ class ElevatorController {
 		/* Elevator Operation */
 		void addHallCall(unsigned char floor, unsigned char direction);
 		void addFloorSelection(unsigned char floor);
-		void updateMissedFloor(bool up);
+		void updateMissedFloor(unsigned char direction);
 		void pushFloorButton(char floor);
 		void openDoor();
 		void closeDoor();
@@ -99,8 +120,8 @@ class ElevatorController {
 
 		DownwardFloorRunHeap downHeap;
 		UpwardFloorRunHeap upHeap;
-		std::vector<char> missedFloors;
-		std::vector<char> missedFloorsSelection;
+		std::vector<char> missedHallCalls;
+		std::vector<char> missedFloorSelections;
 
 		ElevatorSimulator* es;
 

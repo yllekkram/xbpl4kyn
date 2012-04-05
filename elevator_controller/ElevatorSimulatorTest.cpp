@@ -24,7 +24,7 @@ int main(int argc, char* argv[]) {
 	{
 		es.calculateValues();
 		usleep(timeSleep);
-		assertTrue(es.getIsDirectionUp());
+		assertTrue(es.getDirection() == DIRECTION_UP);
 		assertTrue(es.getCurrentFloor() >= initialFloor);
 		if(es.getCurrentSpeed()>0)
 		{
@@ -61,13 +61,12 @@ int main(int argc, char* argv[]) {
 	destination = 12;
 	initialFloor = es.getCurrentFloor();
 	es.setFinalDestination(destination);
-	bool up = true;
 	while(true)
 	{
 		es.calculateValues();
 		usleep(timeSleep/2);
 		assertTrue(es.getCurrentFloor() >= 3);
-		assertTrue(es.getIsDirectionUp() == up);
+		assertTrue(es.getDirection() == DIRECTION_UP);
 		if(es.getCurrentFloor() >= 8 && up)
 		{
 			up = false;

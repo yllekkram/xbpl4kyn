@@ -52,7 +52,7 @@ public class ViewControl {
 	
 	public void onElevatorRegister(int elevatorId, String ip, int port){
 		UDPConnectionManager.getInstance().addElevatorAddress(elevatorId, ip, port);
-		ElevatorControlWindow.getInstance().addCar(elevatorId, 0);
+		ElevatorControlWindow.getInstance().addElevatorPanel(elevatorId, 0);
 	}
 
 	public void onElevatorError(int elevatorId){
@@ -76,7 +76,7 @@ public class ViewControl {
 		}
 		SwingUtilities.invokeLater(new Runnable(){
 			public void run(){
-				floorPanel.enableButton(direction);
+				floorPanel.enableButton(direction, true);
 			}
 		});
 	}
@@ -116,8 +116,9 @@ public class ViewControl {
 	}
 
 	public void onHallCall(int floorNumber, int directionRequested){
+		ElevatorControlWindow.getInstance().getFloorPanel(floorNumber).enableButton(directionRequested, false);
 		String directionRequestedStr = UIUtils.getDirectionString(directionRequested);
-		Log.log("ElevatorMonitor - User on floor " + floorNumber + " pressed the " + directionRequestedStr + " button");
+		Log.log("ViewControl - User on floor " + floorNumber + " pressed the " + directionRequestedStr + " button");
 		
 		//send a message to the groupDispatcher
 		HallCallRequestMessage hallCallMessage = new HallCallRequestMessage(floorNumber, directionRequested);
@@ -126,7 +127,10 @@ public class ViewControl {
 	}
 	
 	public void onFloorSelection(int carNumber, int floorNumber){
-		Log.log("ElevatorMonitor - User selected floor " + floorNumber + " in elevator " + carNumber);
+		//disable the button
+		ElevatorControlWindow.getInstance().getElevatorPanel(carNumber).setButtonPressed(floorNumber, true);
+		
+		Log.log("ViewControl - User selected floor " + floorNumber + " in elevator " + carNumber);
 		
 		//send a message to the appropriate elevator
 		UDPConnectionManager.getInstance().sendDataToElevator(carNumber, new FloorSelectionMessage(floorNumber).serialize());

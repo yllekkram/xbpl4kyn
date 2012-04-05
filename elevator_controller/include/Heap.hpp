@@ -14,6 +14,7 @@ class Heap {
     virtual ~Heap() { delete this->data; }
     
     virtual void push(T item) = 0;
+		virtual void pushVector(std::vector<T>& items) = 0;
     virtual T pop() = 0;
     virtual T peek() {
       if (this->getSize() == 0)
@@ -46,6 +47,14 @@ class MaxHeap : public Heap<T> {
 			push_heap(this->data->begin(), this->data->end());
 		}
 
+		void pushVector(std::vector<T>& items) {
+			typename std::vector<T>::iterator it;
+			for (it = items.begin(); it < items.end(); ++it) {
+				this->data->push_back(*it);
+			}
+			make_heap(this->data->begin(), this->data->end());
+		}
+
 		T pop() {
 			T temp = this->peek();
 
@@ -66,7 +75,15 @@ class MinHeap : public Heap<T> {
 			this->data->push_back(item);
 			push_heap(this->data->begin(), this->data->end(), comp);
 		}
-		
+
+		void pushVector(std::vector<T>& items) {
+			typename std::vector<T>::iterator it;
+			for (it = items.begin(); it < items.end(); ++it) {
+				this->data->push_back(*it);
+			}
+			make_heap(this->data->begin(), this->data->end(), comp);
+		}
+
 		T pop() {
 			T temp = this->peek();
 			
@@ -117,7 +134,9 @@ class UpwardFloorRunHeap : public FloorRunHeap {
 		virtual char pop();
 		
 		void pushFloorRequest(char dest);
+		void pushFloorRequestVector(std::vector<char>& dests);
 		void pushHallCall(char dest);
+		void pushHallCallVector(std::vector<char>& dests);
 };
 
 class DownwardFloorRunHeap : public FloorRunHeap {
@@ -129,7 +148,9 @@ class DownwardFloorRunHeap : public FloorRunHeap {
 		virtual char pop();
 		
 		void pushFloorRequest(char dest);
+		void pushFloorRequestVector(std::vector<char>& dests);
 		void pushHallCall(char dest);
+		void pushHallCallVector(std::vector<char>& dests);
 };
 
 #endif

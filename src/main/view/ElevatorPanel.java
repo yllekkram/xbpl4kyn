@@ -15,18 +15,13 @@ public class ElevatorPanel extends JScrollPane implements ActionListener {
 	
 	private static final long serialVersionUID = 2562440202529823914L;
 	
-	private JPanel buttonGrid;
-	private JPanel delegate;
+	private JPanel buttonGrid, delegate;
 	private FloorButton[] floorButtons;
-	private JButton stopButton;
-	private JButton openDoorButton;
-	private JButton closeDoorButton;
+	private JButton stopButton, openDoorButton, closeDoorButton;
 	private JLabel floorIndicator;
 	
 	private int carNumber;
-	
-	private int floor;
-	private int direction;
+	private int floor, direction;
 	
     public ElevatorPanel(int carNumber, int initialFloor) {
     	super();
@@ -47,11 +42,11 @@ public class ElevatorPanel extends JScrollPane implements ActionListener {
     	floorButtons = new FloorButton[Constants.FLOOR_COUNT];
     	
     	//create the floor buttons
-    	floorButtons[0] = new FloorButton("B", 0);
+    	floorButtons[0] = new FloorButton("B", 1);
     	floorButtons[0].addActionListener( this );
     	buttonGrid.add(floorButtons[0]);
     	for(int i=1; i<Constants.FLOOR_COUNT; i++) {
-    		floorButtons[i] = new FloorButton("" + i, i);
+    		floorButtons[i] = new FloorButton("" + (i+1), i+1);
     		floorButtons[i].addActionListener( this );
     		buttonGrid.add(floorButtons[i]);
     	}
@@ -91,7 +86,6 @@ public class ElevatorPanel extends JScrollPane implements ActionListener {
   		Object source = event.getSource();
   		if (source instanceof FloorButton){
   			FloorButton floorButton = (FloorButton) source;
-  			setButtonPressed(floorButton.getFloorNumber(), true);
   			ViewControl.getInstance().onFloorSelection(carNumber, floorButton.getFloorNumber());
   		}else if (source == stopButton){
   			ViewControl.getInstance().onStopRequest(carNumber);
@@ -128,7 +122,7 @@ public class ElevatorPanel extends JScrollPane implements ActionListener {
   	public void setButtonPressed(final int floorNumber, final boolean set){
   		SwingUtilities.invokeLater(new Runnable(){
   			public void run(){
-  				floorButtons[floorNumber].setEnabled(!set);
+  				floorButtons[floorNumber-1].setEnabled(!set);
   			}
   		});
   	}
