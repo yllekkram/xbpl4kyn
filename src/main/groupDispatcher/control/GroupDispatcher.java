@@ -144,8 +144,8 @@ public class GroupDispatcher implements Observer{
 	public void updateECStatus(int elevatorId, ECStatusMessage status){
 		ElevatorData elevator = elevatorCars.get(Integer.valueOf(elevatorId));
 		
-		if(elevator.isMoving() && !status.isMoving()){
-			//if elevator has stopped, let the GUI know
+		if((elevator.isMoving() && !status.isMoving()) || ((elevator.getDirection() != status.getDirection()) && !status.isMoving())){
+			//if elevator has stopped OR if the elevator is idle and the direction has suddenly changed, let the GUI know
 			onFloorReached(status.getPosition(), status.getDirection());
 		}
 		elevator.setDirection(status.getDirection());
