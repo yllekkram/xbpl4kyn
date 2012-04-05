@@ -86,39 +86,41 @@ void ElevatorController::floorRun() {
 			int upHeapSize = this->getUpHeap().getSize();
 			int downHeapSize = this->getDownHeap().getSize();
 			if(upHeapSize==0 && downHeapSize==0){this->eStat.setGDFailedEmptyHeap(true);}
-			
-			if(!this->eStat.getServiceDirection())
+
+			if(this->eStat.getServiceDirection() == DIRECTION_DOWN)
 			{
 				if(downHeapSize > 0)
 				{
 					topItem = this->getDownHeap().peek();
-					this->eStat.setServiceDirection(false);
 				}else if(upHeapSize > 0)
 				{
-					this->updateMissedFloor(DIRECTION_DOWN);
 					topItem = this->getUpHeap().peek();
-					this->eStat.setServiceDirection(true);
-				}
-			}else
+				}this->downHeap.pushFloorRequestVector(this->missedFloorSelections);
+			}else if(this->eStat.getServiceDirection() == DIRECTION_UP)
 			{
 				if(upHeapSize > 0)
 				{
 					topItem = this->getUpHeap().peek();
-					this->eStat.setServiceDirection(true);
 				}else if(downHeapSize > 0)
 				{
-					this->updateMissedFloor(DIRECTION_UP);
 					topItem = this->getDownHeap().peek();
-					this->eStat.setServiceDirection(false);
 				}
 			}
 		
+			int tempDirection = this->eStat.getDirection();
 			if(topItem != this->eStat.getDestination())
 			{
 				rt_printf("FR%d next Dest is %d\n.", this->getID(), topItem);
 				this->getSimulator()->setFinalDestination(topItem);
 				this->eStat.setDestination(topItem);
+				rt_printf("FR%d tempDirection is %d afterDirection is %d\n.", this->getID(), tempDirection, this->getSimulator()->getDirection());
 			}
+
+			if(tempDirection != this->getSimulator()->getDirection())
+			{
+				this->updateMissedFloor(tempDirection);
+			}
+
 			rt_mutex_release(&(this->rtData.mutex));
 		}
 	}
@@ -158,14 +160,8 @@ void ElevatorController::updateStatus() {
 		rt_mutex_acquire(&(this->rtData.mutex), TM_INFINITE);
 		this->eStat.setCurrentFloor(this->getSimulator()->getCurrentFloor());
 		this->eStat.setTaskAssigned(this->getSimulator()->getIsTaskActive());
-
-		if(this->eStat.getTaskAssigned() && (this->getSimulator()->getDirection() == DIRECTION_UP))
-		{
-      this->eStat.setDirection(DIRECTION_UP);
-		}
-    else {
-			this->eStat.setDirection(DIRECTION_DOWN);
-    }
+		this->eStat.setCurrentSpeed(this->getSimulator()->getCurrentSpeed());
+		this->eStat.setDirection(this->getSimulator()->getDirection());
 
 		this->eStat.setCurrentPosition((unsigned char)ceil(this->getSimulator()->geCurrentPosition()));
 		this->eStat.setTaskActive(this->eStat.getTaskAssigned());
@@ -193,10 +189,22 @@ void ElevatorController::updateStatus() {
 				this->getDownHeap().pop();
 			}
 		}
+
+		upHeapSize = this->getUpHeap().getSize();
+		downHeapSize = this->getDownHeap().getSize();
+		int total = upHeapSize + downHeapSize;
+		if(this->eStat.getDirection()==DIRECTION_UP && upHeapSize == 0 && downHeapSize > 0){ this->eStat.setServiceDirection(DIRECTION_DOWN); }
+		else if(this->eStat.getDirection()==DIRECTION_UP && upHeapSize > 0){ this->eStat.setServiceDirection(DIRECTION_UP); }
+		else if(this->eStat.getDirection()==DIRECTION_DOWN && downHeapSize == 0 && upHeapSize > 0){ this->eStat.setServiceDirection(DIRECTION_UP); }
+		else if(this->eStat.getDirection()==DIRECTION_DOWN && downHeapSize > 0){ this->eStat.setServiceDirection(DIRECTION_DOWN); }
+		if(total==0){this->updateMissedFloor(this->eStat.getDirection());}
 		this->releaseFreeCond();
 
 		rt_mutex_release(&(this->rtData.mutex));
 		this->updateStatusBuffer();
+
+		/*rt_printf("UPDATED : currentSpeed %d currentFloor %d task %d\n",
+			(unsigned int)this->eStat.getCurrentSpeed(),	(unsigned int)this->eStat.getCurrentFloor(),	this->eStat.getTaskActive());*/
 	}
 }
 
@@ -290,7 +298,7 @@ void ElevatorController::sendStatus() {
 	char message[len];
 	message[0] = STATUS_RESPONSE;
 	message[1] = this->id;
-	message[2] = this->eStat.getCurrentPosition();
+	message[2] = this->eStat.getCurrentFloor();
 	message[3] = this->eStat.getDirection();
 	message[4] = (this->eStat.getCurrentSpeed() != 0) ? 1 : 0;
 
@@ -402,11 +410,11 @@ void ElevatorController::addHallCall(unsigned char floor, unsigned char callDire
 		// If the elevator is stationary, always add the hall call to the heap
 		if (callDirection == DIRECTION_UP) {
 			this->upHeap.pushHallCall(floor);
-			rt_printf("EC%d: Added %d to upHeap\n", (unsigned int)this->getID(), (unsigned int)floor);
+			rt_printf("EC%d: Added %d to upHeap 1\n", (unsigned int)this->getID(), (unsigned int)floor);
 		}
 		else if (callDirection == DIRECTION_DOWN) {
 			this->downHeap.pushHallCall(floor);
-			rt_printf("EC%d: Added %d to downHeap\n", (unsigned int)this->getID(), (unsigned int)floor);
+			rt_printf("EC%d: Added %d to downHeap 1\n", (unsigned int)this->getID(), (unsigned int)floor);
 		}
 		else {
 			rt_printf("EC%d: Invalid direction for hall call: %d\n", (unsigned int)this->getID(), (unsigned int)floor);
@@ -414,28 +422,32 @@ void ElevatorController::addHallCall(unsigned char floor, unsigned char callDire
 	}
 	else {
 		// If the elevator is moving, we need to check if it can stop at the given floor
-		if (this->eStat.getDirection() == DIRECTION_UP) {
+		if (callDirection == DIRECTION_UP) {
 			rt_printf("EC%d: Checking if up stop at %d possible\n", (unsigned int)this->getID(), (unsigned int)floor);
 
-			if (eStat.getCurrentFloor() >= (floor - 1)) {
+			if (this->eStat.getDirection() == DIRECTION_UP && eStat.getCurrentFloor() >= (floor - 1)) {
 				// Cannot stop in time
 				this->missedHallCalls.push_back(floor);
+				rt_printf("EC%d: Added %d to missedHallCalls\n", (unsigned int)this->getID(), (unsigned int)floor);
 			}
 			else {
 				// Can Stop in time
 				this->upHeap.pushHallCall(floor);
+				rt_printf("EC%d: Added %d to upHeap 2\n", (unsigned int)this->getID(), (unsigned int)floor);
 			}
 		}
-		else if (this->eStat.getDirection() == DIRECTION_DOWN) {
+		else if ( callDirection == DIRECTION_DOWN) {
 			rt_printf("EC%d: Checking if down stop at %d possible\n", (unsigned int)this->getID(), (unsigned int)floor);
 
-			if (this->eStat.getCurrentFloor() <= (floor + 1)) {
+			if (this->eStat.getDirection() == DIRECTION_DOWN && this->eStat.getCurrentFloor() <= (floor + 1)) {
 				// Cannot stop in time
 				this->missedHallCalls.push_back(floor);
+				rt_printf("EC%d: Added %d to missedHallCalls\n", (unsigned int)this->getID(), (unsigned int)floor);
 			}
 			else {
 				//Can stop in time
 				this->downHeap.pushHallCall(floor);
+				rt_printf("EC%d: Added %d to downHeap 2\n", (unsigned int)this->getID(), (unsigned int)floor);
 			}
 		}
 		else {
@@ -472,27 +484,16 @@ void ElevatorController::updateMissedFloor(unsigned char direction)
 	if(direction == DIRECTION_UP) {
 		rt_printf("EC%d: Appending missed up hall calls\n", (unsigned int)this->getID());
 		this->upHeap.pushHallCallVector(this->missedHallCalls);
+		this->downHeap.pushFloorRequestVector(this->missedFloorSelections);
 	}
 	else if (direction == DIRECTION_DOWN){
 		rt_printf("EC%d: Appending missed down hall calls\n", (unsigned int)this->getID());
 		this->downHeap.pushHallCallVector(this->missedHallCalls);
-	}
-	else {
-		rt_printf("EC%d: Unknown direction %d\n", (unsigned int)this->getID(), (unsigned int)direction);
-	}
-	this->missedHallCalls.clear();
-	
-	// Add missed floor requests
-	if(direction == DIRECTION_UP) {
-		rt_printf("EC%d: Appending missed down floor requests\n", (unsigned int)this->getID());
-		this->downHeap.pushFloorRequestVector(this->missedFloorSelections);
-	}
-	else if (direction == DIRECTION_DOWN) {
-		rt_printf("EC%d: Appending missed up floor requests\n", (unsigned int)this->getID());
 		this->upHeap.pushFloorRequestVector(this->missedFloorSelections);
 	}
 	else {
 		rt_printf("EC%d: Unknown direction %d\n", (unsigned int)this->getID(), (unsigned int)direction);
 	}
+	this->missedHallCalls.clear();
 	this->missedFloorSelections.clear();
 }
