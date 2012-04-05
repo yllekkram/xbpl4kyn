@@ -27,6 +27,7 @@ import main.model.Destination;
 import main.model.ElevatorData;
 import main.util.Constants;
 import main.util.Log;
+import main.view.ViewControl;
 
 
 public class GroupDispatcher implements Observer{
@@ -125,6 +126,7 @@ public class GroupDispatcher implements Observer{
 		int selectedElevator = GroupDispatcher.getInstance().getDispatchStrategy().dispatch(floor, direction);
 		if(selectedElevator == -1){
 			Log.log("No elevators connected. Hall call discarded.");
+			ViewControl.getInstance().onHallCallServiced(floor, direction);
 			return;
 		}
 		TCPConnectionManager.getInstance().sendData(selectedElevator, new HallCallAssignmentMessage(floor, direction).serialize());
@@ -142,7 +144,7 @@ public class GroupDispatcher implements Observer{
 	public void updateECStatus(int elevatorId, ECStatusMessage status){
 		ElevatorData elevator = elevatorCars.get(Integer.valueOf(elevatorId));
 		
-		if(elevator.isMoving() && status.isMoving()){
+		if(elevator.isMoving() && !status.isMoving()){
 			//if elevator has stopped, let the GUI know
 			onFloorReached(status.getPosition(), status.getDirection());
 		}

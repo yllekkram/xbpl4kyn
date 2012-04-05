@@ -17,7 +17,7 @@ public class ElevatorControlWindow extends JFrame implements ActionListener{
 
 	private static final long serialVersionUID = 3168789651745366452L;
 
-	private ConcurrentHashMap<Integer, ElevatorPanel> carPanels;
+	private ConcurrentHashMap<Integer, ElevatorPanel> elevatorPanels;
 	private ConcurrentHashMap<Integer, FloorPanel> floorPanels;
 	
 	private JMenuItem startMenuItem, exitMenuItem, connectMenuItem;
@@ -41,7 +41,7 @@ public class ElevatorControlWindow extends JFrame implements ActionListener{
 	
 	private ElevatorControlWindow(){
 		super("Group 4 - Elevator Control System");
-		setSize(1000, 600);
+		setSize(650, 850);
 				
 		//initialize panels
 		mainPanel = new JPanel();
@@ -50,7 +50,7 @@ public class ElevatorControlWindow extends JFrame implements ActionListener{
 	    setContentPane(mainPanel);
 	    elevatorTabs = new JTabbedPane(JTabbedPane.TOP, JTabbedPane.WRAP_TAB_LAYOUT);
 		elevatorTabs.setTabLayoutPolicy(JTabbedPane.WRAP_TAB_LAYOUT);
-		carPanels = new ConcurrentHashMap<Integer, ElevatorPanel>();
+		elevatorPanels = new ConcurrentHashMap<Integer, ElevatorPanel>();
 		floorPanels = new ConcurrentHashMap<Integer, FloorPanel>();
 		// Set up the File menu
 	    {
@@ -115,7 +115,7 @@ public class ElevatorControlWindow extends JFrame implements ActionListener{
 	}
 	
 	
-	public void addCar(final int title, final int initialFloor){
+	public void addElevatorPanel(final int title, final int initialFloor){
 		SwingUtilities.invokeLater(new Runnable(){
 			public void run(){
 				if( !elevatorsConnected ){
@@ -124,7 +124,7 @@ public class ElevatorControlWindow extends JFrame implements ActionListener{
 					elevatorsConnected = true;
 				}
 				ElevatorPanel carPanel = new ElevatorPanel(title, initialFloor);
-				carPanels.put(Integer.valueOf(title), carPanel);
+				elevatorPanels.put(Integer.valueOf(title), carPanel);
 				elevatorTabs.add("" + title, carPanel);
 				mainPanel.validate();
 				ElevatorControlWindow.this.repaint();
@@ -171,12 +171,12 @@ public class ElevatorControlWindow extends JFrame implements ActionListener{
 		}else if( source == exitMenuItem ){
 			ViewControl.getInstance().onExit();
 		}else if( source == connectMenuItem ){
-			addCar(elevatorNumber++, 0);
+			addElevatorPanel(elevatorNumber++, 0);
 		}
 	}
 	
 	public ElevatorPanel getElevatorPanel(int elevatorId){
-		return this.carPanels.get(Integer.valueOf(elevatorId));
+		return this.elevatorPanels.get(Integer.valueOf(elevatorId));
 	}
 	
 	public FloorPanel getFloorPanel(int floor){

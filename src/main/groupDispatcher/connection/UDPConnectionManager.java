@@ -86,5 +86,6 @@ public class UDPConnectionManager {
 			sendSocket.close();
 		if(receiveSocket != null)
 			receiveSocket.close();
+		instance = null;
 	}
 }
