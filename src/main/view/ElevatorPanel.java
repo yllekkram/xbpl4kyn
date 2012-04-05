@@ -42,11 +42,11 @@ public class ElevatorPanel extends JScrollPane implements ActionListener {
     	floorButtons = new FloorButton[Constants.FLOOR_COUNT];
     	
     	//create the floor buttons
-    	floorButtons[0] = new FloorButton("B", 0);
+    	floorButtons[0] = new FloorButton("B", 1);
     	floorButtons[0].addActionListener( this );
     	buttonGrid.add(floorButtons[0]);
     	for(int i=1; i<Constants.FLOOR_COUNT; i++) {
-    		floorButtons[i] = new FloorButton("" + i, i);
+    		floorButtons[i] = new FloorButton("" + (i+1), i+1);
     		floorButtons[i].addActionListener( this );
     		buttonGrid.add(floorButtons[i]);
     	}
@@ -123,7 +123,7 @@ public class ElevatorPanel extends JScrollPane implements ActionListener {
   	public void setButtonPressed(final int floorNumber, final boolean set){
   		SwingUtilities.invokeLater(new Runnable(){
   			public void run(){
-  				floorButtons[floorNumber].setEnabled(!set);
+  				floorButtons[floorNumber-1].setEnabled(!set);
   			}
   		});
   	}
