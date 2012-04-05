@@ -86,7 +86,6 @@ public class ElevatorPanel extends JScrollPane implements ActionListener {
   		Object source = event.getSource();
   		if (source instanceof FloorButton){
   			FloorButton floorButton = (FloorButton) source;
-  			setButtonPressed(floorButton.getFloorNumber(), true);
   			ViewControl.getInstance().onFloorSelection(carNumber, floorButton.getFloorNumber());
   		}else if (source == stopButton){
   			ViewControl.getInstance().onStopRequest(carNumber);

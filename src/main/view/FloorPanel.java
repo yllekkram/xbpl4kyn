@@ -50,19 +50,17 @@ public class FloorPanel extends JPanel implements ActionListener {
  
   	public void actionPerformed( ActionEvent e ) {
   		if (e.getSource().equals( up )) {
-  			up.setEnabled(false);
   			ViewControl.getInstance().onHallCall(floorNumber, Constants.DIRECTION_UP);
   		} else if(e.getSource().equals( down )){
-  			down.setEnabled(false);
   			ViewControl.getInstance().onHallCall(floorNumber, Constants.DIRECTION_DOWN);
   		}
   	}
   	
-  	public void enableButton(int direction){
+  	public void enableButton(int direction, boolean set){
   		if(direction == Constants.DIRECTION_UP){
-  			up.setEnabled(true);
+  			up.setEnabled(set);
   		}else if(direction == Constants.DIRECTION_DOWN){
-  			down.setEnabled(true);
+  			down.setEnabled(set);
   		}else{
   			Log.log("FloorPanel.enableButton() - Unexpected direction " + direction);
   		}
