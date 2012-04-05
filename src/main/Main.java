@@ -14,24 +14,19 @@ public class Main {
 	
 	public static void onFatalError(Throwable th){
 		onError(th);
-		System.exit(1);
+		exit(1);
+	}
+	
+	public static void exit(int status){
+		Log.closeStatsLogger();
+		System.exit(status);
 	}
 	
 	
 	public static void main(String[] args){
 		try {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-		} catch (ClassNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (InstantiationException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IllegalAccessException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (UnsupportedLookAndFeelException e) {
-			// TODO Auto-generated catch block
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		ElevatorControlWindow.getInstance().display();
